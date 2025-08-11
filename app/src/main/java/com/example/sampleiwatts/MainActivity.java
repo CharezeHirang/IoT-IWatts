@@ -20,8 +20,16 @@ public class MainActivity extends AppCompatActivity {
 
         Button button1 = findViewById(R.id.button1);
         button1.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, TipsActivity.class);
+            Intent intent = new Intent(MainActivity.this, RealTimeMonitoringActivity.class);
             startActivity(intent);
+            finish();
+        });
+
+        Button button2 = findViewById(R.id.button2);
+        button2.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
+            finish();
         });
 
     }

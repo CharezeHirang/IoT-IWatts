@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SampleIWATTS">
         <activity
+            android:name=".RealTimeMonitoringActivity"
+            android:exported="false" />
+        <activity
             android:name=".DeviceSettingsActivity"
             android:exported="false" />
         <activity
@@ -43,13 +46,13 @@
             android:name=".A_TipsActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".SettingsActivity"
             android:exported="false" />
         <activity
             android:name=".TipsActivity"
             android:exported="false" />
         <activity
-            android:name=".SettingsActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

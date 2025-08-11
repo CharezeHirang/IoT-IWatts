@@ -21,6 +21,12 @@ public class SettingsActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_settings);
 
+        icBack = findViewById(R.id.ic_back);
+        icBack.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        });
         btnDeviceSettings = findViewById(R.id.btn_device_settings);
         btnNotification = findViewById(R.id.btn_notification);
         btnAlert = findViewById(R.id.btn_alert);
