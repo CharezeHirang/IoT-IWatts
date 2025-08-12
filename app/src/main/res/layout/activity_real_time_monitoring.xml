@@ -9,7 +9,7 @@
 
     <View
         android:id="@+id/topBar"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="80dp"
         android:background="@drawable/bg_yellow_top"
         app:layout_constraintTop_toTopOf="parent"
@@ -25,6 +25,7 @@
         android:layout_marginStart="15dp"
         android:layout_marginTop="15dp"
         tools:ignore="contentDescription"/>
+
     <TextView
         android:id="@+id/RealTimeText"
         android:layout_width="match_parent"
@@ -38,6 +39,7 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="#863B17"/>
+
     <View
         android:id="@+id/dividerTop"
         android:layout_width="0dp"
@@ -46,558 +48,8 @@
         app:layout_constraintTop_toBottomOf="@id/RealTimeText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-    <!-- Filters row -->
-    <ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="680dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dividerTop"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/button"
-        android:fillViewport="true">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <FrameLayout
-                android:id="@+id/bg_mainConsumption"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/realTimeText"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="10dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp">
-
-                <!-- Background -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="330dp"/>
-
-                <!-- TextView 1 -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/text32"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginStart="20dp"
-                    android:textSize="15sp"
-                    android:textColor="#863B17"/>
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="80dp"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginEnd="15dp"
-                    android:layout_marginTop="50dp">
-
-                    <View
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_yellowish"
-                        />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text33"
-                        android:textColor="#863B17"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="10dp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text34"
-                        android:textColor="#863B17"
-                        android:layout_gravity="center"
-                        android:textSize="20sp"
-                        android:layout_marginBottom="5dp"
-                        android:textStyle="bold"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text35"
-                        android:textColor="#863B17"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="20dp"/>
-
-
-                </FrameLayout>
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="80dp"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginEnd="15dp"
-                    android:layout_marginTop="140dp">
-
-                    <View
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_yellowish"
-                        />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text36"
-                        android:textColor="#863B17"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="10dp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text19"
-                        android:textColor="#863B17"
-                        android:layout_gravity="center"
-                        android:textSize="20sp"
-                        android:layout_marginBottom="5dp"
-                        android:textStyle="bold"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text15"
-                        android:textColor="#863B17"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="20dp"/>
-
-
-                </FrameLayout>
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="80dp"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginEnd="15dp"
-                    android:layout_marginTop="230dp">
-
-                    <View
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_yellowish"
-                        />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text37"
-                        android:textColor="#863B17"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="10dp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text22"
-                        android:textColor="#863B17"
-                        android:layout_gravity="center"
-                        android:textSize="20sp"
-                        android:layout_marginBottom="5dp"
-                        android:textStyle="bold"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text22"
-                        android:textColor="#863B17"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="20dp"/>
-
-
-                </FrameLayout>
-
-
-            </FrameLayout>
-
-            <FrameLayout
-                android:id="@+id/bg_areaConsumption"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/bg_mainConsumption"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="20dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp">
-
-                <!-- Background -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="750dp"
-                    android:background="@drawable/bg_light_yellow"/>
-
-                <!-- TextView 1 -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/text51"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginStart="20dp"
-                    android:textSize="15sp"
-                    android:textColor="#863B17"/>
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="220dp"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginEnd="15dp"
-                    android:layout_marginTop="50dp">
-
-                    <View
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_yellowish"
-                        />
-                    <EditText
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:autofillHints="name"
-                        android:hint="@string/text16"
-                        tools:ignore="TextFields,inputType"
-                        android:textColorHint="#863B17"
-                        android:textColor="#863B17"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="10dp"/>
-
-                    <FrameLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="110dp"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_marginTop="100dp">
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@drawable/bg_light_yellow"/>
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:layout_marginStart="10dp"
-                            android:layout_marginEnd="10dp"
-                            android:baselineAligned="false">
-                            <FrameLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1">
-
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text38"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17" />
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text34"
-                                    android:layout_marginTop="20dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text37"
-                                    android:layout_marginTop="50dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text22"
-                                    android:layout_marginTop="70dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    />
-                            </FrameLayout>
-                            <FrameLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1">
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text39"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text19"
-                                    android:layout_marginTop="20dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text40"
-                                    android:layout_marginTop="50dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text29"
-                                    android:layout_marginTop="70dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    />
-                            </FrameLayout>
-
-                        </LinearLayout>
-
-                    </FrameLayout>
-
-
-                </FrameLayout>
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="220dp"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginEnd="15dp"
-                    android:layout_marginTop="280dp">
-
-                    <View
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_yellowish"
-                        />
-                    <EditText
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:autofillHints="name"
-                        android:hint="@string/text17"
-                        tools:ignore="TextFields,inputType"
-                        android:textColorHint="#863B17"
-                        android:textColor="#863B17"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="10dp"/>
-
-                    <FrameLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="110dp"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_marginTop="100dp">
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@drawable/bg_light_yellow"/>
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:layout_marginStart="10dp"
-                            android:layout_marginEnd="10dp"
-                            android:baselineAligned="false">
-                            <FrameLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1">
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text38"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text34"
-                                    android:layout_marginTop="20dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text37"
-                                    android:layout_marginTop="50dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text22"
-                                    android:layout_marginTop="70dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    />
-                            </FrameLayout>
-                            <FrameLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1">
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text39"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text19"
-                                    android:layout_marginTop="20dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text40"
-                                    android:layout_marginTop="50dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text29"
-                                    android:layout_marginTop="70dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    />
-                            </FrameLayout>
-
-                        </LinearLayout>
-
-                    </FrameLayout>
-
-
-                </FrameLayout>
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="220dp"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginEnd="15dp"
-                    android:layout_marginTop="510dp">
-
-                    <View
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_yellowish"
-                        />
-                    <EditText
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:autofillHints="name"
-                        android:hint="@string/text18"
-                        tools:ignore="TextFields,inputType"
-                        android:textColorHint="#863B17"
-                        android:textColor="#863B17"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="10dp"/>
-
-                    <FrameLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="110dp"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_marginTop="100dp">
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@drawable/bg_light_yellow"/>
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:layout_marginStart="10dp"
-                            android:layout_marginEnd="10dp"
-                            android:baselineAligned="false">
-                            <FrameLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1">
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text38"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text34"
-                                    android:layout_marginTop="20dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text37"
-                                    android:layout_marginTop="50dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text22"
-                                    android:layout_marginTop="70dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    />
-                            </FrameLayout>
-                            <FrameLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1">
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text39"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text19"
-                                    android:layout_marginTop="20dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text40"
-                                    android:layout_marginTop="50dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"/>
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/text29"
-                                    android:layout_marginTop="70dp"
-                                    android:textAlignment="center"
-                                    android:textColor="#863B17"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    />
-                            </FrameLayout>
-
-                        </LinearLayout>
-
-                    </FrameLayout>
-
-
-                </FrameLayout>
-            </FrameLayout>
-
-        </LinearLayout>
-    </ScrollView>
+    <!-- Bottom Navigation Bar -->
     <LinearLayout
         android:id="@+id/button"
         android:layout_width="match_parent"
@@ -610,6 +62,7 @@
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="15dp"
         android:weightSum="5">
+
         <ImageView
             android:layout_width="0dp"
             android:layout_height="40dp"
@@ -641,6 +94,753 @@
             android:layout_weight="1"
             tools:ignore="ContentDescription"/>
 
-
     </LinearLayout>
+
+    <!-- Main ScrollView - Fixed to not overlap bottom nav -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dividerTop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        android:fillViewport="true"
+        android:paddingBottom="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Main Consumption Section -->
+            <FrameLayout
+                android:id="@+id/bg_mainConsumption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp">
+
+                <!-- Background -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="330dp"
+                    android:background="@drawable/bg_light_yellow"/>
+
+                <!-- Daily Consumption Summary Label -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text32"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginStart="20dp"
+                    android:textSize="15sp"
+                    android:textColor="#863B17"/>
+
+                <!-- Today's Total Card -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginTop="50dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_yellowish"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text33"
+                        android:textColor="#863B17"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"/>
+
+                    <TextView
+                        android:id="@+id/todays_total_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text34"
+                        android:textColor="#863B17"
+                        android:layout_gravity="center"
+                        android:textSize="20sp"
+                        android:layout_marginBottom="5dp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/todays_total_percentage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text35"
+                        android:textColor="#863B17"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="20dp"/>
+
+                </FrameLayout>
+
+                <!-- Peak Usage Card -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginTop="140dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_yellowish"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text36"
+                        android:textColor="#863B17"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"/>
+
+                    <TextView
+                        android:id="@+id/peak_usage_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text19"
+                        android:textColor="#863B17"
+                        android:layout_gravity="center"
+                        android:textSize="20sp"
+                        android:layout_marginBottom="5dp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/peak_usage_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text15"
+                        android:textColor="#863B17"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="20dp"/>
+
+                </FrameLayout>
+
+                <!-- Estimated Cost Card -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginTop="230dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_yellowish"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text37"
+                        android:textColor="#863B17"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"/>
+
+                    <TextView
+                        android:id="@+id/estimated_cost_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text22"
+                        android:textColor="#863B17"
+                        android:layout_gravity="center"
+                        android:textSize="20sp"
+                        android:layout_marginBottom="5dp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/estimated_cost_details"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text22"
+                        android:textColor="#863B17"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="20dp"/>
+
+                </FrameLayout>
+
+            </FrameLayout>
+
+            <!-- Area Consumption Section -->
+            <!-- Area Consumption Section -->
+            <FrameLayout
+                android:id="@+id/bg_areaConsumption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp">
+
+                <!-- Background -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="900dp"
+                    android:background="@drawable/bg_light_yellow"/>
+
+                <!-- Area Consumption Patterns Label -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text51"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginStart="20dp"
+                    android:textSize="15sp"
+                    android:textColor="#863B17"/>
+
+                <!-- Area 1 -->
+                <FrameLayout
+                    android:id="@+id/area1_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginTop="50dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_yellowish"/>
+
+                    <!-- Area Label -->
+                    <TextView
+                        android:id="@+id/area1_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text16"
+                        android:textColor="#863B17"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+
+                    <!-- Graph Area -->
+                    <FrameLayout
+                        android:id="@+id/area1_chart_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginTop="35dp"
+                        android:background="#F0F0F0">
+
+                        <!-- Placeholder for chart -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="24-Hour Usage Chart"
+                            android:layout_gravity="center"
+                            android:textColor="#666666"
+                            android:textSize="16sp"
+                            android:textStyle="bold"/>
+
+                    </FrameLayout>
+
+                    <!-- Stats Container - Two Rows -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="165dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:orientation="vertical">
+
+                        <!-- First Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:weightSum="2">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Total Consumption"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="12sp"/>
+                                <TextView
+                                    android:id="@+id/area1_total_consumption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="13.1 kWh"
+                                    android:layout_marginTop="2dp"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Peak Consumption"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="12sp"/>
+                                <TextView
+                                    android:id="@+id/area1_peak_consumption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="179W at 14:30"
+                                    android:layout_marginTop="2dp"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Second Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:weightSum="2">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Estimated Cost"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="12sp"/>
+                                <TextView
+                                    android:id="@+id/area1_estimated_cost"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="₱20.57"
+                                    android:layout_marginTop="2dp"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Share of Total"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="12sp"/>
+                                <TextView
+                                    android:id="@+id/area1_share_percentage"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="38%"
+                                    android:layout_marginTop="2dp"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </FrameLayout>
+
+                <!-- Area 2 -->
+                <FrameLayout
+                    android:id="@+id/area2_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginTop="320dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_yellowish"/>
+
+                    <!-- Area Label -->
+                    <TextView
+                        android:id="@+id/area2_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text17"
+                        android:textColor="#863B17"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+
+                    <!-- Graph Area -->
+                    <FrameLayout
+                        android:id="@+id/area2_chart_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginTop="35dp"
+                        android:background="#F0F0F0">
+
+                        <!-- Placeholder for chart -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="24-Hour Usage Chart"
+                            android:layout_gravity="center"
+                            android:textColor="#666666"
+                            android:textSize="16sp"
+                            android:textStyle="bold"/>
+
+                    </FrameLayout>
+
+                    <!-- Stats Container - Two Rows -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="165dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:orientation="vertical">
+
+                        <!-- First Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:weightSum="2">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Total Consumption"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="12sp"/>
+                                <TextView
+                                    android:id="@+id/area2_total_consumption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="12.3 kWh"
+                                    android:layout_marginTop="2dp"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Peak Consumption"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="12sp"/>
+                                <TextView
+                                    android:id="@+id/area2_peak_consumption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="155W at 12:15"
+                                    android:layout_marginTop="2dp"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Second Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:weightSum="2">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Estimated Cost"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="12sp"/>
+                                <TextView
+                                    android:id="@+id/area2_estimated_cost"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="₱18.45"
+                                    android:layout_marginTop="2dp"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Share of Total"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="12sp"/>
+                                <TextView
+                                    android:id="@+id/area2_share_percentage"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="35%"
+                                    android:layout_marginTop="2dp"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </FrameLayout>
+
+                <!-- Area 3 -->
+                <FrameLayout
+                    android:id="@+id/area3_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginTop="590dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_yellowish"/>
+
+                    <!-- Area Label -->
+                    <TextView
+                        android:id="@+id/area3_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text18"
+                        android:textColor="#863B17"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+
+                    <!-- Graph Area -->
+                    <FrameLayout
+                        android:id="@+id/area3_chart_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginTop="35dp"
+                        android:background="#F0F0F0">
+
+                        <!-- Placeholder for chart -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="24-Hour Usage Chart"
+                            android:layout_gravity="center"
+                            android:textColor="#666666"
+                            android:textSize="16sp"
+                            android:textStyle="bold"/>
+
+                    </FrameLayout>
+
+                    <!-- Stats Container - Two Rows -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="165dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:orientation="vertical">
+
+                        <!-- First Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:weightSum="2">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Total Consumption"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="12sp"/>
+                                <TextView
+                                    android:id="@+id/area3_total_consumption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="9.4 kWh"
+                                    android:layout_marginTop="2dp"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Peak Consumption"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="12sp"/>
+                                <TextView
+                                    android:id="@+id/area3_peak_consumption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="125W at 22:45"
+                                    android:layout_marginTop="2dp"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Second Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:weightSum="2">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Estimated Cost"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="12sp"/>
+                                <TextView
+                                    android:id="@+id/area3_estimated_cost"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="₱14.12"
+                                    android:layout_marginTop="2dp"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Share of Total"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="12sp"/>
+                                <TextView
+                                    android:id="@+id/area3_share_percentage"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="27%"
+                                    android:layout_marginTop="2dp"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </FrameLayout>
+
+            </FrameLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
