@@ -1,5 +1,6 @@
 package com.example.sampleiwatts;
 
+
 import android.app.Application;
 import android.util.Log;
 import com.example.sampleiwatts.managers.DataProcessingManager;
@@ -28,9 +29,9 @@ public class IWattsApplication extends Application {
             Log.w(TAG, "Firebase persistence already enabled");
         }
 
-        // Initialize automated data processing
+        // Initialize processing manager (no background processing)
         processingManager = new DataProcessingManager(this);
-        processingManager.initializeAutoProcessing();
+        processingManager.initializeAppProcessing();
 
         Log.d(TAG, "I-WATTS Application initialized successfully");
     }

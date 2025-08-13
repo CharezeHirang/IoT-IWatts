@@ -8,13 +8,11 @@ import com.example.sampleiwatts.managers.DataProcessingManager;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private DataProcessingManager processingManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,8 +22,7 @@ public class MainActivity extends AppCompatActivity {
         IWattsApplication app = (IWattsApplication) getApplication();
         processingManager = app.getProcessingManager();
 
-        Log.d(TAG, "MainActivity created - automated processing is " +
-                (processingManager.isAutoProcessingEnabled() ? "ACTIVE" : "STOPPED"));
+        Log.d(TAG, "MainActivity created");
 
         Button button1 = findViewById(R.id.button1);
         button1.setOnClickListener(v -> {
@@ -40,6 +37,14 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Process data when app becomes active
+        Log.d(TAG, "MainActivity resumed - processing data");
+        processingManager.processDataInForeground();
     }
 }
