@@ -45,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Process data when app becomes active
         Log.d(TAG, "MainActivity resumed - processing data");
-        processingManager.processDataInForeground();
+
+        DataProcessingManager manager = ((IWattsApplication) getApplication()).getProcessingManager();
+        manager.processDataInForeground();
     }
 }
