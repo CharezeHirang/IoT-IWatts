@@ -1,0 +1,17 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/colorOnSurface">
+
+    <!-- Real-time monitoring icon (bar chart with activity indicator) -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M3,13h4v8H3V13zM9,9h4v12H9V9zM15,5h4v16h-4V5z"/>
+
+    <!-- Activity indicator dot -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M19,3m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"/>
+</vector>

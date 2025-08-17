@@ -41,20 +41,34 @@ public class DataProcessingManager {
         Log.d(TAG, "DataProcessingManager initialized with Philippine timezone: " + PHILIPPINE_TIMEZONE.getDisplayName());
     }
 
+    public void initializeAppProcessing() {
+        Log.d(TAG, "DataProcessingManager initialized for new database structure");
+    }
+
+    public boolean isAutoProcessingEnabled() {
+        return true;
+    }
+
     public void processDataInForeground() {
         // Always process when called (app resume/start)
-        // The 1-hour rule is just for automatic background processing
         long currentTime = System.currentTimeMillis();
 
-        Log.d(TAG, "Starting data processing on app resume/start...");
-        processUnprocessedHours();
+        Log.d(TAG, "🚀 Starting complete data processing on app resume/start...");
 
-        // Add delay between operations to reduce load
-        new android.os.Handler().postDelayed(() -> {
-            processDailySummaries();
-            prefs.edit().putLong(KEY_LAST_PROCESSING_TIME, currentTime).apply();
-            Log.d(TAG, "Data processing completed");
-        }, 2000); // 2 second delay
+        // Step 1: Process hourly summaries first, then daily summaries
+        processUnprocessedHoursSequential(() -> {
+            // Step 2: After hourly processing completes, process daily summaries
+            Log.d(TAG, "📊 Hourly processing completed, starting daily summaries...");
+
+            // Wait a bit for Firebase to settle, then process daily
+            new android.os.Handler().postDelayed(() -> {
+                processDailySummariesSequential(() -> {
+                    // Step 3: Mark completion
+                    prefs.edit().putLong(KEY_LAST_PROCESSING_TIME, currentTime).apply();
+                    Log.d(TAG, "✅ Complete data processing finished successfully!");
+                });
+            }, 3000); // 3 second delay for Firebase to settle
+        });
     }
 
     // Method for scheduled/automatic processing with time restrictions
@@ -66,28 +80,24 @@ public class DataProcessingManager {
         // Only process if more than 1 hour has passed (for scheduled processing)
         if (timeSinceLastRun > 60 * 60 * 1000) {
             Log.d(TAG, "Starting scheduled data processing... (Time since last run: " + (timeSinceLastRun / 60000) + " minutes)");
-            processUnprocessedHours();
-
-            new android.os.Handler().postDelayed(() -> {
-                processDailySummaries();
-                prefs.edit().putLong(KEY_LAST_PROCESSING_TIME, currentTime).apply();
-                Log.d(TAG, "Scheduled data processing completed");
-            }, 2000);
+            processUnprocessedHoursSequential(() -> {
+                new android.os.Handler().postDelayed(() -> {
+                    processDailySummariesSequential(() -> {
+                        prefs.edit().putLong(KEY_LAST_PROCESSING_TIME, currentTime).apply();
+                        Log.d(TAG, "Scheduled data processing completed");
+                    });
+                }, 2000);
+            });
         } else {
             long minutesLeft = (60 * 60 * 1000 - timeSinceLastRun) / (60 * 1000);
             Log.d(TAG, "Skipping scheduled processing - wait " + minutesLeft + " more minutes");
         }
     }
 
-    public void initializeAppProcessing() {
-        Log.d(TAG, "DataProcessingManager initialized for new database structure");
-    }
+    // Sequential processing with callback
+    private void processUnprocessedHoursSequential(Runnable onComplete) {
+        Log.d(TAG, "🔄 Starting sequential hourly processing...");
 
-    public boolean isAutoProcessingEnabled() {
-        return true;
-    }
-
-    private void processUnprocessedHours() {
         // Get system settings first
         databaseRef.child("system_settings").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -104,28 +114,32 @@ public class DataProcessingManager {
                     }
                 }
 
-                findAndProcessAllUnprocessedHours(electricityRate, voltageReference);
+                Log.d(TAG, "📋 Using rates - Electricity: " + electricityRate + "/kWh, Voltage: " + voltageReference + "V");
+                findAndProcessAllUnprocessedDatesSequential(electricityRate, voltageReference, onComplete);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to get system settings: " + error.getMessage());
+                Log.e(TAG, "❌ Failed to get system settings: " + error.getMessage());
+                if (onComplete != null) onComplete.run();
             }
         });
     }
 
-    private void findAndProcessAllUnprocessedHours(double electricityRate, double voltageReference) {
+    private void findAndProcessAllUnprocessedDatesSequential(double electricityRate, double voltageReference, Runnable onComplete) {
         databaseRef.child("sensor_readings").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot readingsSnapshot) {
                 if (!readingsSnapshot.exists()) {
-                    Log.w(TAG, "No sensor readings found");
+                    Log.w(TAG, "⚠️ No sensor readings found");
+                    if (onComplete != null) onComplete.run();
                     return;
                 }
 
                 // Group readings by date and hour
                 Map<String, Map<String, List<Map<String, Object>>>> readingsByDateAndHour = new HashMap<>();
 
+                int totalReadings = 0;
                 for (DataSnapshot readingSnapshot : readingsSnapshot.getChildren()) {
                     Map<String, Object> reading = (Map<String, Object>) readingSnapshot.getValue();
                     if (reading != null && reading.containsKey("datetime")) {
@@ -141,21 +155,28 @@ public class DataProcessingManager {
                                             .computeIfAbsent(date, k -> new HashMap<>())
                                             .computeIfAbsent(hour, k -> new ArrayList<>())
                                             .add(reading);
+                                    totalReadings++;
+                                } else {
+                                    Log.d(TAG, "⏳ Skipping current hour: " + date + " " + hour);
                                 }
                             }
                         } catch (Exception e) {
-                            Log.w(TAG, "Invalid datetime format in reading: " + reading.get("datetime"));
+                            Log.w(TAG, "⚠️ Invalid datetime format in reading: " + reading.get("datetime"));
                         }
                     }
                 }
 
-                // Process each date-hour combination
-                processDateHourCombinations(readingsByDateAndHour, electricityRate, voltageReference);
+                Log.d(TAG, "📊 Found " + totalReadings + " readings to process across " +
+                        readingsByDateAndHour.size() + " dates");
+
+                // Process each date-hour combination sequentially
+                processDateHourCombinationsSequential(readingsByDateAndHour, electricityRate, voltageReference, onComplete);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to get sensor readings: " + error.getMessage());
+                Log.e(TAG, "❌ Failed to get sensor readings: " + error.getMessage());
+                if (onComplete != null) onComplete.run();
             }
         });
     }
@@ -172,37 +193,80 @@ public class DataProcessingManager {
         return date.equals(currentDate) && hour.equals(currentHour);
     }
 
-    private void processDateHourCombinations(Map<String, Map<String, List<Map<String, Object>>>> readingsByDateAndHour,
-                                             double electricityRate, double voltageReference) {
+    private void processDateHourCombinationsSequential(Map<String, Map<String, List<Map<String, Object>>>> readingsByDateAndHour,
+                                                       double electricityRate, double voltageReference, Runnable onComplete) {
 
+        // Convert to list for sequential processing
+        List<ProcessingTask> tasks = new ArrayList<>();
         for (String date : readingsByDateAndHour.keySet()) {
             Map<String, List<Map<String, Object>>> hoursData = readingsByDateAndHour.get(date);
-
             for (String hour : hoursData.keySet()) {
-                // Check if hourly summary already exists
-                databaseRef.child("hourly_summaries").child(date).child(hour)
-                        .addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot existingSnapshot) {
-                                if (!existingSnapshot.exists()) {
-                                    // Process this hour
-                                    List<Map<String, Object>> hourReadings = hoursData.get(hour);
-                                    processHourlyData(date, hour, hourReadings, electricityRate, voltageReference);
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-                                Log.e(TAG, "Failed to check existing hourly summary: " + error.getMessage());
-                            }
-                        });
+                List<Map<String, Object>> readings = hoursData.get(hour);
+                tasks.add(new ProcessingTask(date, hour, readings));
             }
         }
+
+        Log.d(TAG, "📝 Created " + tasks.size() + " processing tasks");
+
+        if (tasks.isEmpty()) {
+            Log.d(TAG, "✅ No hourly processing tasks needed");
+            if (onComplete != null) onComplete.run();
+            return;
+        }
+
+        // Process tasks sequentially
+        processTasksSequentially(tasks, 0, electricityRate, voltageReference, onComplete);
     }
 
-    private void processHourlyData(String date, String hour, List<Map<String, Object>> readings,
-                                   double electricityRate, double voltageReference) {
+    private void processTasksSequentially(List<ProcessingTask> tasks, int currentIndex,
+                                          double electricityRate, double voltageReference, Runnable onComplete) {
+        if (currentIndex >= tasks.size()) {
+            Log.d(TAG, "✅ All hourly processing tasks completed!");
+            if (onComplete != null) onComplete.run();
+            return;
+        }
+
+        ProcessingTask task = tasks.get(currentIndex);
+        String date = task.date;
+        String hour = task.hour;
+        List<Map<String, Object>> readings = task.readings;
+
+        Log.d(TAG, "🔄 Processing task " + (currentIndex + 1) + "/" + tasks.size() +
+                ": " + date + " hour " + hour + " (" + readings.size() + " readings)");
+
+        // Check if hourly summary already exists
+        databaseRef.child("hourly_summaries").child(date).child(hour)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot existingSnapshot) {
+                        if (!existingSnapshot.exists()) {
+                            // Process this hour
+                            processHourlyDataWithCallback(date, hour, readings, electricityRate, voltageReference, () -> {
+                                // After processing, continue to next task
+                                new android.os.Handler().postDelayed(() -> {
+                                    processTasksSequentially(tasks, currentIndex + 1, electricityRate, voltageReference, onComplete);
+                                }, 500); // Small delay between tasks
+                            });
+                        } else {
+                            Log.d(TAG, "⏭️ Hourly summary already exists for " + date + " hour " + hour + ", skipping");
+                            // Skip to next task
+                            processTasksSequentially(tasks, currentIndex + 1, electricityRate, voltageReference, onComplete);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e(TAG, "❌ Failed to check existing hourly summary: " + error.getMessage());
+                        // Continue to next task even on error
+                        processTasksSequentially(tasks, currentIndex + 1, electricityRate, voltageReference, onComplete);
+                    }
+                });
+    }
+
+    private void processHourlyDataWithCallback(String date, String hour, List<Map<String, Object>> readings,
+                                               double electricityRate, double voltageReference, Runnable onComplete) {
         if (readings == null || readings.isEmpty()) {
+            if (onComplete != null) onComplete.run();
             return;
         }
 
@@ -219,13 +283,6 @@ public class DataProcessingManager {
                     String[] values = value.split(",");
                     if (values.length >= 5) {
                         // Parse values: BV,CV,A1,A2,A3,IR
-                        // BV - Battery Voltage (1.51V-2.1V)
-                        // CV - Charging Voltage (~5V, >=2V = charging)
-                        // A1 - Current Line 1
-                        // A2 - Current Line 2
-                        // A3 - Current Line 3
-                        // IR - Power Interruption (optional timestamp)
-
                         double batteryVoltage = Double.parseDouble(values[0]); // BV
                         double chargingVoltage = Double.parseDouble(values[1]); // CV
                         double current1 = Double.parseDouble(values[2]); // A1
@@ -249,7 +306,7 @@ public class DataProcessingManager {
                     }
                 }
             } catch (Exception e) {
-                Log.w(TAG, "Error parsing reading value: " + reading.get("value"));
+                Log.w(TAG, "⚠️ Error parsing reading value: " + reading.get("value"));
             }
         }
 
@@ -261,8 +318,6 @@ public class DataProcessingManager {
             double avgArea3Watts = area3Watts / validReadings;
 
             // Calculate kWh based on actual readings (handling incomplete hours)
-            // Expected readings per hour = 720 (3600 seconds / 5 seconds per reading)
-            // Scale energy based on actual reading coverage
             double expectedReadings = 720.0;
             double timeCoverage = Math.min(1.0, validReadings / expectedReadings);
 
@@ -273,7 +328,7 @@ public class DataProcessingManager {
 
             double totalCost = totalKwh * electricityRate;
 
-            // Create hourly summary (no BV/CV averages as requested)
+            // Create hourly summary
             Map<String, Object> hourlySummary = new HashMap<>();
             hourlySummary.put("total_kwh", Math.round(totalKwh * 1000.0) / 1000.0);
             hourlySummary.put("total_cost", Math.round(totalCost * 100.0) / 100.0);
@@ -291,51 +346,94 @@ public class DataProcessingManager {
             // Save hourly summary
             databaseRef.child("hourly_summaries").child(date).child(hour).setValue(hourlySummary)
                     .addOnSuccessListener(aVoid -> {
-                        Log.d(TAG, "Hourly summary saved for " + date + " hour " + hour + " (" + finalValidReadings + " readings)");
+                        Log.d(TAG, "✅ Hourly summary saved for " + date + " hour " + hour + " (" + finalValidReadings + " readings)");
+                        if (onComplete != null) onComplete.run();
                     })
                     .addOnFailureListener(e -> {
-                        Log.e(TAG, "Failed to save hourly summary for " + date + " hour " + hour, e);
+                        Log.e(TAG, "❌ Failed to save hourly summary for " + date + " hour " + hour + ": " + e.getMessage());
+                        if (onComplete != null) onComplete.run();
                     });
+        } else {
+            Log.w(TAG, "⚠️ No valid readings found for " + date + " hour " + hour);
+            if (onComplete != null) onComplete.run();
         }
     }
 
-    private void processDailySummaries() {
+    private void processDailySummariesSequential(Runnable onComplete) {
+        Log.d(TAG, "🔄 Starting sequential daily processing...");
+
         databaseRef.child("hourly_summaries").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot hourlySummariesSnapshot) {
                 if (!hourlySummariesSnapshot.exists()) {
+                    Log.w(TAG, "⚠️ No hourly summaries found for daily processing");
+                    if (onComplete != null) onComplete.run();
                     return;
                 }
 
+                // Collect all dates that have hourly summaries
+                List<String> datesToProcess = new ArrayList<>();
                 for (DataSnapshot dateSnapshot : hourlySummariesSnapshot.getChildren()) {
                     String date = dateSnapshot.getKey();
-
-                    // Process all dates that have hourly summaries (removed current date restriction for testing)
-                    Log.d(TAG, "Found hourly summaries for date: " + date);
-                    generateDailySummaryForDate(date, dateSnapshot);
+                    Log.d(TAG, "📅 Found hourly summaries for date: " + date);
+                    datesToProcess.add(date);
                 }
+
+                Log.d(TAG, "📋 Will process daily summaries for " + datesToProcess.size() + " dates");
+
+                if (datesToProcess.isEmpty()) {
+                    Log.d(TAG, "✅ No daily processing needed");
+                    if (onComplete != null) onComplete.run();
+                    return;
+                }
+
+                // Process dates sequentially
+                processDailyDatesSequentially(datesToProcess, 0, hourlySummariesSnapshot, onComplete);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to get hourly summaries for daily processing: " + error.getMessage());
+                Log.e(TAG, "❌ Failed to get hourly summaries for daily processing: " + error.getMessage());
+                if (onComplete != null) onComplete.run();
             }
         });
     }
 
-    private void generateDailySummaryForDate(String date, DataSnapshot hourlyDataSnapshot) {
-        Log.d(TAG, "Attempting to generate daily summary for: " + date);
+    private void processDailyDatesSequentially(List<String> dates, int currentIndex,
+                                               DataSnapshot hourlySummariesSnapshot, Runnable onComplete) {
+        if (currentIndex >= dates.size()) {
+            Log.d(TAG, "✅ All daily processing completed!");
+            if (onComplete != null) onComplete.run();
+            return;
+        }
+
+        String date = dates.get(currentIndex);
+        DataSnapshot dateSnapshot = hourlySummariesSnapshot.child(date);
+
+        Log.d(TAG, "🔄 Processing daily summary " + (currentIndex + 1) + "/" + dates.size() + ": " + date);
+
+        generateDailySummaryForDateWithCallback(date, dateSnapshot, () -> {
+            // Continue to next date after small delay
+            new android.os.Handler().postDelayed(() -> {
+                processDailyDatesSequentially(dates, currentIndex + 1, hourlySummariesSnapshot, onComplete);
+            }, 500); // Small delay between daily summaries
+        });
+    }
+
+    private void generateDailySummaryForDateWithCallback(String date, DataSnapshot hourlyDataSnapshot, Runnable onComplete) {
+        Log.d(TAG, "🔄 Attempting to generate daily summary for: " + date);
 
         // Check if daily summary already exists
         databaseRef.child("daily_summaries").child(date).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot existingDailySnapshot) {
                 if (existingDailySnapshot.exists()) {
-                    Log.d(TAG, "Daily summary already exists for " + date + ", skipping");
-                    return; // Already processed
+                    Log.d(TAG, "⏭️ Daily summary already exists for " + date + ", skipping");
+                    if (onComplete != null) onComplete.run();
+                    return;
                 }
 
-                Log.d(TAG, "No existing daily summary found for " + date + ", creating new one");
+                Log.d(TAG, "📊 No existing daily summary found for " + date + ", creating new one");
 
                 // Get electricity rate for cost calculations
                 databaseRef.child("system_settings").child("electricity_rate_per_kwh")
@@ -345,30 +443,32 @@ public class DataProcessingManager {
                                 double electricityRate = 12.5; // Default
                                 if (rateSnapshot.exists()) {
                                     electricityRate = rateSnapshot.getValue(Double.class);
-                                    Log.d(TAG, "Using electricity rate: " + electricityRate);
+                                    Log.d(TAG, "📋 Using electricity rate: " + electricityRate);
                                 } else {
-                                    Log.d(TAG, "No electricity rate found, using default: " + electricityRate);
+                                    Log.d(TAG, "📋 No electricity rate found, using default: " + electricityRate);
                                 }
 
-                                processDailyData(date, hourlyDataSnapshot, electricityRate);
+                                processDailyDataWithCallback(date, hourlyDataSnapshot, electricityRate, onComplete);
                             }
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError error) {
-                                Log.e(TAG, "Failed to get electricity rate for daily summary: " + error.getMessage());
+                                Log.e(TAG, "❌ Failed to get electricity rate for daily summary: " + error.getMessage());
+                                if (onComplete != null) onComplete.run();
                             }
                         });
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to check existing daily summary: " + error.getMessage());
+                Log.e(TAG, "❌ Failed to check existing daily summary: " + error.getMessage());
+                if (onComplete != null) onComplete.run();
             }
         });
     }
 
-    private void processDailyData(String date, DataSnapshot hourlyDataSnapshot, double electricityRate) {
-        Log.d(TAG, "Processing daily data for " + date + " with rate " + electricityRate);
+    private void processDailyDataWithCallback(String date, DataSnapshot hourlyDataSnapshot, double electricityRate, Runnable onComplete) {
+        Log.d(TAG, "📊 Processing daily data for " + date + " with rate " + electricityRate);
 
         double totalKwh = 0;
         double totalCost = 0;
@@ -383,7 +483,7 @@ public class DataProcessingManager {
             Map<String, Object> hourData = (Map<String, Object>) hourSnapshot.getValue();
             if (hourData != null) {
                 String hourKey = hourSnapshot.getKey();
-                Log.d(TAG, "Processing hour " + hourKey + " data: " + hourData.toString());
+                Log.d(TAG, "📈 Processing hour " + hourKey + " data");
 
                 totalKwh += getDoubleValue(hourData, "total_kwh");
                 totalCost += getDoubleValue(hourData, "total_cost");
@@ -407,7 +507,7 @@ public class DataProcessingManager {
             }
         }
 
-        Log.d(TAG, "Daily summary calculations - Hours: " + hourCount + ", Total kWh: " + totalKwh + ", Total Cost: " + totalCost);
+        Log.d(TAG, "📊 Daily summary calculations - Hours: " + hourCount + ", Total kWh: " + totalKwh + ", Total Cost: " + totalCost);
 
         if (hourCount > 0) {
             double avgWatts = totalAvgWatts / hourCount;
@@ -433,7 +533,7 @@ public class DataProcessingManager {
             areaBreakdown.put("area2", area2Breakdown);
             areaBreakdown.put("area3", area3Breakdown);
 
-            // Create daily summary (no BV/CV averages as requested)
+            // Create daily summary
             Map<String, Object> dailySummary = new HashMap<>();
             dailySummary.put("total_kwh", Math.round(totalKwh * 1000.0) / 1000.0);
             dailySummary.put("total_cost", Math.round(totalCost * 100.0) / 100.0);
@@ -444,7 +544,7 @@ public class DataProcessingManager {
             dailySummary.put("area_breakdown", areaBreakdown);
             dailySummary.put("power_interruptions", 0); // Could be calculated from data gaps if needed
 
-            Log.d(TAG, "Saving daily summary for " + date + ": " + dailySummary.toString());
+            Log.d(TAG, "💾 Saving daily summary for " + date);
 
             // Make final variable for lambda expression
             final int finalHourCount = hourCount;
@@ -453,12 +553,28 @@ public class DataProcessingManager {
             databaseRef.child("daily_summaries").child(date).setValue(dailySummary)
                     .addOnSuccessListener(aVoid -> {
                         Log.d(TAG, "✅ Daily summary saved successfully for " + date + " (" + finalHourCount + " hours processed)");
+                        if (onComplete != null) onComplete.run();
                     })
                     .addOnFailureListener(e -> {
                         Log.e(TAG, "❌ Failed to save daily summary for " + date + ": " + e.getMessage());
+                        if (onComplete != null) onComplete.run();
                     });
         } else {
-            Log.w(TAG, "No hour data found for " + date + ", skipping daily summary");
+            Log.w(TAG, "⚠️ No hour data found for " + date + ", skipping daily summary");
+            if (onComplete != null) onComplete.run();
+        }
+    }
+
+    // Helper class for processing tasks
+    private static class ProcessingTask {
+        String date;
+        String hour;
+        List<Map<String, Object>> readings;
+
+        ProcessingTask(String date, String hour, List<Map<String, Object>> readings) {
+            this.date = date;
+            this.hour = hour;
+            this.readings = readings;
         }
     }
 
@@ -491,115 +607,7 @@ public class DataProcessingManager {
         String currentDateTime = dateTimeFormat.format(philippineTime.getTime());
         Log.d(TAG, "Current Philippine time: " + currentDateTime);
 
-        processUnprocessedHours();
-
-        // Add delay between operations
-        new android.os.Handler().postDelayed(() -> {
-            processDailySummaries();
-            Log.d(TAG, "🔧 FORCE processing completed");
-        }, 3000); // 3 second delay
-    }
-
-    // Method for testing specific date processing
-    public void forceProcessDate(String testDate) {
-        Log.d(TAG, "🔧 FORCE processing specific date: " + testDate);
-
-        databaseRef.child("system_settings").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot settingsSnapshot) {
-                double electricityRate = 12.5;
-                double voltageReference = 220.0;
-
-                if (settingsSnapshot.exists()) {
-                    if (settingsSnapshot.child("electricity_rate_per_kwh").exists()) {
-                        electricityRate = settingsSnapshot.child("electricity_rate_per_kwh").getValue(Double.class);
-                    }
-                    if (settingsSnapshot.child("voltage_reference").exists()) {
-                        voltageReference = settingsSnapshot.child("voltage_reference").getValue(Double.class);
-                    }
-                }
-
-                Log.d(TAG, "Using rates - Electricity: " + electricityRate + "/kWh, Voltage: " + voltageReference + "V");
-                forceProcessSpecificDate(testDate, electricityRate, voltageReference);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to get system settings for forced processing: " + error.getMessage());
-            }
-        });
-    }
-
-    private void forceProcessSpecificDate(String date, double electricityRate, double voltageReference) {
-        Log.d(TAG, "🔧 Processing all hours for date: " + date);
-
-        databaseRef.child("sensor_readings").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot readingsSnapshot) {
-                if (!readingsSnapshot.exists()) {
-                    Log.w(TAG, "No sensor readings found");
-                    return;
-                }
-
-                // Group readings by hour for the specific date
-                Map<String, List<Map<String, Object>>> hourlyReadings = new HashMap<>();
-
-                for (DataSnapshot readingSnapshot : readingsSnapshot.getChildren()) {
-                    Map<String, Object> reading = (Map<String, Object>) readingSnapshot.getValue();
-                    if (reading != null && reading.containsKey("datetime")) {
-                        try {
-                            String datetime = (String) reading.get("datetime");
-                            if (datetime != null && datetime.startsWith(date)) {
-                                String hour = datetime.substring(11, 13); // Extract hour (HH)
-                                hourlyReadings.computeIfAbsent(hour, k -> new ArrayList<>()).add(reading);
-                                Log.d(TAG, "📊 Found reading for " + date + " hour " + hour);
-                            }
-                        } catch (Exception e) {
-                            Log.w(TAG, "Invalid datetime format in reading: " + reading.get("datetime"));
-                        }
-                    }
-                }
-
-                Log.d(TAG, "📊 Total hours with data for " + date + ": " + hourlyReadings.size());
-
-                // Process each hour (ignoring current hour restriction for testing)
-                for (String hour : hourlyReadings.keySet()) {
-                    List<Map<String, Object>> readings = hourlyReadings.get(hour);
-                    Log.d(TAG, "🔧 FORCE processing " + date + " hour " + hour + " (" + readings.size() + " readings)");
-                    processHourlyData(date, hour, readings, electricityRate, voltageReference);
-                }
-
-                // Process daily summary after a delay
-                new android.os.Handler().postDelayed(() -> {
-                    Log.d(TAG, "🔧 FORCE processing daily summary for " + date);
-                    forceProcessDailySummaryForDate(date);
-                }, 5000); // 5 second delay
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to get sensor readings for forced processing: " + error.getMessage());
-            }
-        });
-    }
-
-    private void forceProcessDailySummaryForDate(String date) {
-        databaseRef.child("hourly_summaries").child(date).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot hourlySnapshot) {
-                if (hourlySnapshot.exists()) {
-                    Log.d(TAG, "🔧 FORCE generating daily summary for " + date);
-                    generateDailySummaryForDate(date, hourlySnapshot);
-                } else {
-                    Log.w(TAG, "❌ No hourly summaries found for " + date + " - cannot generate daily summary");
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to get hourly summaries for forced daily processing: " + error.getMessage());
-            }
-        });
+        processDataInForeground();
     }
 
     // Method to check system settings
