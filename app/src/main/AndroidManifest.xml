@@ -4,7 +4,6 @@
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-
     <application
         android:name=".IWattsApplication"
         android:allowBackup="true"
@@ -15,9 +14,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SampleIWATTS">
-
-
-
+        <activity
+            android:name=".H_TipsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".G_TipsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".F_TipsActivity"
+            android:exported="false" />
         <activity
             android:name=".RealTimeMonitoringActivity"
             android:exported="false" />

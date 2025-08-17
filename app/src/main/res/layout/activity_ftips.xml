@@ -5,8 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".B_TipsActivity">
-
+    tools:context=".F_TipsActivity">
     <ImageView
         android:id="@+id/ic_back"
         android:layout_width="30dp"
@@ -22,7 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="300dp"
-        android:text="@string/text74"
+        android:text="@string/text78"
         android:textColor="#863B17"
         android:textSize="30sp"
         app:layout_constraintTop_toTopOf="parent"
@@ -62,14 +61,14 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_b1"
+                    android:src="@drawable/img_f1"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
                 <ImageView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_b2"
+                    android:src="@drawable/img_f2"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
             </LinearLayout>
@@ -82,14 +81,14 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_b3"
+                    android:src="@drawable/img_f3"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
                 <ImageView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_b4"
+                    android:src="@drawable/img_f4"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
             </LinearLayout>
@@ -103,14 +102,14 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_b5"
+                    android:src="@drawable/img_f5"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
                 <ImageView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_b6"
+                    android:src="@drawable/img_f6"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
             </LinearLayout>
@@ -123,19 +122,18 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_b7"
+                    android:src="@drawable/img_f7"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
                 <ImageView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_b8"
+                    android:src="@drawable/img_f8"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
             </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
