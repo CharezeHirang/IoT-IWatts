@@ -15,10 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SampleIWATTS">
         <activity
-            android:name=".H_TipsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".G_TipsActivity"
+            android:name=".CostEstimationActivity"
             android:exported="false" />
         <activity
             android:name=".F_TipsActivity"

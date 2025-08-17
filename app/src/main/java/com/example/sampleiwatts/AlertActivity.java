@@ -3,6 +3,7 @@ package com.example.sampleiwatts;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Toast;
@@ -30,13 +31,25 @@ public class AlertActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_alert);
+
         etPowerValue = findViewById(R.id.etPowerValue);
         etBudgetValue = findViewById(R.id.etBudgetValue);
         switchVoltage = findViewById(R.id.switchVoltage);
         switchSystemUpdates = findViewById(R.id.switchSystemUpdates);
         switchPush = findViewById(R.id.switchPush);
         MaterialButton btnSave = findViewById(R.id.btnSave);
+        btnSave.setOnClickListener(v -> {
+            // ... your existing save logic ...
 
+            // Start the background service
+            Intent serviceIntent = new Intent(this, AlertService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
+        });
+        store = new AlertSettingsStore(this);
         store = new AlertSettingsStore(this);
         loadSaved();
 

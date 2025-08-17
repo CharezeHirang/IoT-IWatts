@@ -23,34 +23,30 @@ public class AlertNotifier {
         return granted && NotificationManagerCompat.from(ctx).areNotificationsEnabled();
     }
 
-    static void ensureChannel(Context ctx) {
+    public static void ensureChannel(Context ctx) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel ch = new NotificationChannel(
+            android.app.NotificationChannel channel = new android.app.NotificationChannel(
                     CHANNEL_ID,
-                    "Alerts",
-                    NotificationManager.IMPORTANCE_DEFAULT
+                    "Alert Notifications",
+                    android.app.NotificationManager.IMPORTANCE_HIGH
             );
-            ch.setDescription("Notifications for energy alerts");
-            NotificationManager nm = ctx.getSystemService(NotificationManager.class);
-            if (nm != null) nm.createNotificationChannel(ch);
+            channel.setDescription("Notifications for watts and budget alerts.");
+            android.app.NotificationManager nm = ctx.getSystemService(android.app.NotificationManager.class);
+            nm.createNotificationChannel(channel);
         }
     }
 
-    static void notifyIfAllowed(Context ctx, AlertSettings s, String title, String body) {
-        if (!s.pushEnabled || !canPostNotifications(ctx)) return;
-        ensureChannel(ctx);
-        try {
-            NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CHANNEL_ID)
-                    .setSmallIcon(android.R.drawable.ic_dialog_info)
-                    .setContentTitle(title)
-                    .setContentText(body)
-                    .setAutoCancel(true)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-            NotificationManagerCompat.from(ctx).notify(ID_GENERAL, b.build());
+    public static void notifyIfAllowed(Context ctx, AlertSettings settings, String title, String message) {
+        if (!settings.pushEnabled) return;
 
-            // ADDED: log “Settings Updated” (or whatever title/body you pass)
-            NotificationLogger.log(ctx, title, body, System.currentTimeMillis(), "System");
-        } catch (SecurityException ignored) { /* user denied notifications */ }
+        android.app.NotificationManager nm = (android.app.NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        android.app.Notification notification = new NotificationCompat.Builder(ctx, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setAutoCancel(true)
+                .build();
+        nm.notify((int) System.currentTimeMillis(), notification);
     }
 
     static void evaluateReadingAndNotify(Context ctx, AlertSettings s,
@@ -86,10 +82,6 @@ public class AlertNotifier {
                         .setAutoCancel(true)
                         .setPriority(NotificationCompat.PRIORITY_HIGH);
                 NotificationManagerCompat.from(ctx).notify(ID_THRESHOLD, b.build());
-
-                // ADDED: log the alert with a category for filtering in your NotificationActivity
-                String category = pickCategory(power, budget, voltage);
-                NotificationLogger.log(ctx, "Energy Alert", text, System.currentTimeMillis(), category);
             } catch (SecurityException ignored) {}
         }
     }

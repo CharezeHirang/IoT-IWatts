@@ -6,7 +6,10 @@ public class AlertSettings {
     final boolean alertVoltageFluctuations;
     final boolean alertSystemUpdates;
     final boolean pushEnabled;
+    public Double voltageMin;
 
+    public Double voltageMax ;
+    public Double monthlyBudgetPhp;
     AlertSettings(Double powerThresholdWatts,
                   Double budgetPhp,
                   boolean alertVoltageFluctuations,

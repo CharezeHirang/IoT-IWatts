@@ -5,6 +5,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -14,68 +16,103 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class NotificationActivity extends AppCompatActivity {
 
-    private NotificationAdapter adapter;
-    private List<NotificationLogEntry> all;
-    private ChipGroup chipGroup;
-    private TextView btnMarkAll, btnClearAll;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    private RecyclerView rv;
+    private AlertsAdapter adapter;
+
+    private DatabaseReference alertsMonthRef;
+    private ValueEventListener monthListener;
+
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_notification);
-        RecyclerView rv = findViewById(R.id.rvNotifications);
+        findViewById(R.id.btnMarkAll).setOnClickListener(v -> {
+            rv.post(() -> { for (int i=0;i<rv.getChildCount();i++) rv.getChildAt(i).findViewById(R.id.recycler).setBackgroundResource(R.drawable.bg_yellowish); });
+
+            alertsMonthRef.get().addOnSuccessListener(snap -> {
+                for (DataSnapshot c : snap.getChildren()) c.getRef().child("read").setValue(true);
+            });
+        });
+
+        findViewById(R.id.btnClearAll).setOnClickListener(v -> {
+            // WARNING: destructive
+            alertsMonthRef.removeValue();
+        });
+
+        rv = findViewById(R.id.recycler);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new NotificationAdapter();
+        adapter = new AlertsAdapter(this::onAlertTap);
         rv.setAdapter(adapter);
 
+        String uid = getUserId();
+        String yyyy = new SimpleDateFormat("yyyy", Locale.getDefault()).format(new Date());
+        String MM   = new SimpleDateFormat("MM",   Locale.getDefault()).format(new Date());
 
-        adapter.submit(NotificationLogger.getAll(this));
-        chipGroup = findViewById(R.id.chipGroup);
-        btnMarkAll = findViewById(R.id.btnMarkAll);
-        btnClearAll = findViewById(R.id.btnClearAll);
+        alertsMonthRef = FirebaseDatabase.getInstance()
+                .getReference("alerts").child(uid).child(yyyy).child(MM);
 
-        adapter.setListener(id -> {
-            NotificationLogger.removeById(this, id);
-            reload(true);
-        });
+        // Query latest N (e.g., 200) and keep it sorted by timestamp
+        Query q = alertsMonthRef.orderByChild("timestamp").limitToLast(200);
 
-        btnMarkAll.setOnClickListener(v -> {
-            NotificationLogger.setAllRead(this);
-            reload(false);
-        });
-
-        btnClearAll.setOnClickListener(v -> {
-            NotificationLogger.clear(this);
-            reload(false);
-        });
-
-        chipGroup.setOnCheckedStateChangeListener((group, ids) -> applyFilter());
+        monthListener = new ValueEventListener() {
+            @Override public void onDataChange(@NonNull DataSnapshot snap) {
+                List<AlertItem> list = new ArrayList<>();
+                for (DataSnapshot child : snap.getChildren()) {
+                    AlertItem a = child.getValue(AlertItem.class);
+                    if (a == null) continue;
+                    a.id = child.getKey();
+                    list.add(a);
+                }
+                // reverse so newest first (limitToLast returns ascending by timestamp)
+                Collections.sort(list, (a, b) -> Long.compare(b.timestamp, a.timestamp));
+                adapter.submit(list);
+            }
+            @Override public void onCancelled(@NonNull DatabaseError error) { /* show empty/error state if needed */ }
+        };
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        reload(false);
-    }
-
-    private void reload(boolean keepFilter) {
-        all = NotificationLogger.getAll(this);
-        if (keepFilter) applyFilter();
-        else adapter.submit(all);
-    }
-
-    private void applyFilter() {
-        String category = "All";
-        int id = chipGroup.getCheckedChipId();
-        if (id != View.NO_ID) {
-            Chip c = findViewById(id);
-            category = c.getText().toString();
+    @Override protected void onStart() {
+        super.onStart();
+        if (alertsMonthRef != null && monthListener != null) {
+            alertsMonthRef.orderByChild("timestamp").limitToLast(200).addValueEventListener(monthListener);
         }
-        adapter.submitFiltered(all, category);
+    }
+
+    @Override protected void onStop() {
+        super.onStop();
+        if (alertsMonthRef != null && monthListener != null) {
+            alertsMonthRef.removeEventListener(monthListener);
+        }
+    }
+
+    private void onAlertTap(AlertItem item) {
+        // Mark as read in Firebase + open details if you have a detail screen
+        alertsMonthRef.child(item.id).child("read").setValue(true);
+        // Optional: open a details dialog/activity
+        new AlertDialog.Builder(this)
+                .setTitle(item.title)
+                .setMessage(item.message)
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    private String getUserId() {
+        // Replace with FirebaseAuth if you use it
+        return "device-001";
     }
 }
