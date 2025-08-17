@@ -4,18 +4,9 @@
     android:viewportWidth="24"
     android:viewportHeight="24"
     android:tint="?attr/colorOnSurface">
+
+    <!-- Home icon -->
     <path
-        android:fillColor="@android:color/transparent"
-        android:pathData="M3,9 L12,2 L21,9 L21,20 C21,20.5304 20.7893,21.0391 20.4142,21.4142 C20.0391,21.7893 19.5304,22 19,22 L5,22 C4.4696,22 3.9609,21.7893 3.5858,21.4142 C3.2107,21.0391 3,20.5304 3,20 L3,9 Z"
-        android:strokeColor="@android:color/black"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"/>
-    <path
-        android:fillColor="@android:color/transparent"
-        android:pathData="M9,22 L9,12 L15,12 L15,22"
-        android:strokeColor="@android:color/black"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"/>
+        android:fillColor="@android:color/white"
+        android:pathData="M10,20v-6h4v6h5v-8h3L12,3 2,12h3v8z"/>
 </vector>

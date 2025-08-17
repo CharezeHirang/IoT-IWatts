@@ -4,30 +4,9 @@
     android:viewportWidth="24"
     android:viewportHeight="24"
     android:tint="?attr/colorOnSurface">
-    <circle
-        android:cx="12"
-        android:cy="12"
-        android:r="10"
-        android:fillColor="@android:color/transparent"
-        android:strokeColor="@android:color/black"
-        android:strokeWidth="2"/>
+
+    <!-- Dollar sign icon for cost estimation -->
     <path
-        android:fillColor="@android:color/transparent"
-        android:pathData="M12,6 L12,8"
-        android:strokeColor="@android:color/black"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"/>
-    <path
-        android:fillColor="@android:color/transparent"
-        android:pathData="M12,16 L12,18"
-        android:strokeColor="@android:color/black"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"/>
-    <path
-        android:fillColor="@android:color/transparent"
-        android:pathData="M9.5,8.5 C9.99445,8.16583 10.9736,8 12,8 C13.6569,8 15,8.8954 15,10 C15,11.1046 13.6569,12 12,12 C10.3431,12 9,12.8954 9,14 C9,15.1046 10.3431,16 12,16 C13.0264,16 14.0055,15.8342 14.5,15.5"
-        android:strokeColor="@android:color/black"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"/>
+        android:fillColor="@android:color/white"
+        android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM13.5,6L15,6v1.5h1.5L16.5,9L15,9v1.5c0.83,0 1.5,0.67 1.5,1.5s-0.67,1.5 -1.5,1.5L15,15v1.5h-1.5L13.5,15h-1.5v-1.5L9,13.5v-1.5h3L12,10.5L9,10.5L9,9h3L12,7.5c-0.83,0 -1.5,-0.67 -1.5,-1.5s0.67,-1.5 1.5,-1.5L12,6h1.5z"/>
 </vector>
