@@ -193,7 +193,7 @@
                 <TextView
                     android:layout_width="300dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/text85"
+                    android:text="@string/text86"
                     android:textSize="20sp"
                     android:textColor="#863B17"
                     android:textAlignment="center"
@@ -243,7 +243,7 @@
                 <TextView
                     android:layout_width="300dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/text86"
+                    android:text="@string/text85"
                     android:textSize="20sp"
                     android:textColor="#863B17"
                     android:textAlignment="center"
