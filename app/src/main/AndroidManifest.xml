@@ -15,6 +15,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SampleIWATTS">
         <activity
+            android:name=".DashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HistoricalDataActivity"
+            android:exported="false" />
+        <activity
             android:name=".CostEstimationActivity"
             android:exported="false" />
         <activity

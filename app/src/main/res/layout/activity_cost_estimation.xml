@@ -209,8 +209,7 @@
                         android:autofillHints="name"
                         android:textColor="#863B17"
                         android:textAlignment="center"
-                        android:textSize="17sp"
-                        android:background="@android:color/transparent"/>
+                        android:textSize="17sp"/>
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -393,7 +392,6 @@
                     android:layout_marginTop="45dp"
                     android:textSize="50sp"
                     android:textColor="#863B17"
-                    android:background="transparent"
                     />
                 <TextView
                     android:layout_width="wrap_content"
