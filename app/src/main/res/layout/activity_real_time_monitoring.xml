@@ -66,35 +66,35 @@
         android:weightSum="5">
 
         <ImageView
-            android:src="@drawable/ic_historical_analysis"
+            android:src="@drawable/ic_img_historical_analysis"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_weight="1"
             android:layout_margin="10dp"
             tools:ignore="ContentDescription" />
         <ImageView
-            android:src="@drawable/ic_realtime_monitoring"
+            android:src="@drawable/ic_img_realtime_monitoring"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_weight="1"
             android:layout_margin="10dp"
             tools:ignore="ContentDescription" />
         <ImageView
-            android:src="@drawable/ic_homepage"
+            android:src="@drawable/ic_img_homepage"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_weight="1"
             android:layout_margin="10dp"
             tools:ignore="ContentDescription" />
         <ImageView
-            android:src="@drawable/ic_cost_estimation"
+            android:src="@drawable/ic_img_cost_estimation"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_margin="10dp"
             android:layout_weight="1"
             tools:ignore="ContentDescription" />
         <ImageView
-            android:src="@drawable/ic_settings"
+            android:src="@drawable/ic_img_settings"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_margin="10dp"

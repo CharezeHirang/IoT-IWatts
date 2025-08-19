@@ -789,35 +789,35 @@
             android:layout_weight="1"
             android:layout_margin="10dp"
             tools:ignore="ContentDescription"
-            android:src="@drawable/ic_historical_analysis" />
+            android:src="@drawable/ic_img_historical_analysis" />
         <ImageView
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_weight="1"
             android:layout_margin="10dp"
             tools:ignore="ContentDescription"
-            android:src="@drawable/ic_realtime_monitoring" />
+            android:src="@drawable/ic_img_realtime_monitoring" />
         <ImageView
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_weight="1"
             android:layout_margin="10dp"
             tools:ignore="ContentDescription"
-            android:src="@drawable/ic_homepage" />
+            android:src="@drawable/ic_img_homepage" />
         <ImageView
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_margin="10dp"
             android:layout_weight="1"
             tools:ignore="ContentDescription"
-            android:src="@drawable/ic_cost_estimation" />
+            android:src="@drawable/ic_img_cost_estimation" />
         <ImageView
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_margin="10dp"
             android:layout_weight="1"
             tools:ignore="ContentDescription"
-            android:src="@drawable/ic_settings" />
+            android:src="@drawable/ic_img_settings" />
 
 
     </LinearLayout>
