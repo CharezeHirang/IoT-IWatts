@@ -489,6 +489,7 @@
         </FrameLayout>
     </LinearLayout>
     <LinearLayout
+        android:id="@+id/button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toStartOf="parent"
@@ -499,42 +500,51 @@
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="20dp"
         android:weightSum="5">
+
         <ImageView
+            android:id="@+id/img_historical_analysis"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_weight="1"
             android:layout_margin="10dp"
             tools:ignore="ContentDescription"
             android:src="@drawable/ic_img_historical_analysis" />
+
         <ImageView
+            android:id="@+id/img_realtime_monitoring"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_weight="1"
             android:layout_margin="10dp"
             tools:ignore="ContentDescription"
             android:src="@drawable/ic_img_realtime_monitoring" />
+
         <ImageView
+            android:id="@+id/img_homepage"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_weight="1"
             android:layout_margin="10dp"
             tools:ignore="ContentDescription"
             android:src="@drawable/ic_img_homepage" />
+
         <ImageView
+            android:id="@+id/img_cost_estimation"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_margin="10dp"
             android:layout_weight="1"
             tools:ignore="ContentDescription"
             android:src="@drawable/ic_img_cost_estimation" />
+
         <ImageView
+            android:id="@+id/img_settings"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_margin="10dp"
             android:layout_weight="1"
             tools:ignore="ContentDescription"
             android:src="@drawable/ic_img_settings" />
-
 
     </LinearLayout>
 

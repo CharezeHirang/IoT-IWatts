@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -74,7 +75,11 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_real_time_monitoring);
+// Get the button layout
+        LinearLayout buttonLayout = findViewById(R.id.button);
 
+        // Set up buttons using the utility class
+        ButtonNavigator.setupButtons(this, buttonLayout);
         Log.d(TAG, "RealTimeMonitoringActivity created");
 
         initializeViews();
