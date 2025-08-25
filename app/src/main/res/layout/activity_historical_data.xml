@@ -73,6 +73,7 @@
                 android:textSize="18sp"
                 android:textColor="#863B17"/>
             <EditText
+                android:id="@+id/startdate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:autofillHints="name"
@@ -101,6 +102,7 @@
                 android:textSize="18sp"
                 android:textColor="#863B17"/>
             <EditText
+                android:id="@+id/enddate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:autofillHints="name"
@@ -151,6 +153,7 @@
             android:textStyle="bold"
             android:textColor="#863B17" />
         <TextView
+            android:id="@+id/totalconsumption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/text34"
@@ -160,6 +163,7 @@
             android:textSize="20sp"
             android:textStyle="bold"/>
         <TextView
+            android:id="@+id/percentchangetotalconsumption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/text46"
@@ -169,12 +173,13 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/text38"
+            android:text="Peak Consumption"
             android:layout_marginTop="80dp"
             android:textAlignment="center"
             android:textStyle="bold"
             android:textColor="#863B17"/>
         <TextView
+            android:id="@+id/peakconsumption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/text34"
@@ -184,6 +189,7 @@
             android:textSize="20sp"
             android:textStyle="bold"/>
         <TextView
+            android:id="@+id/peakconsumptiontimestamp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/text30"
@@ -203,6 +209,7 @@
                 android:textStyle="bold"
                 android:textColor="#863B17"/>
             <TextView
+                android:id="@+id/dailyaverage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/text34"
@@ -212,6 +219,7 @@
                 android:textSize="20sp"
                 android:textStyle="bold"/>
             <TextView
+                android:id="@+id/percentchangedailyaverage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/text46"
@@ -228,6 +236,7 @@
                 android:textAlignment="center"
                 android:textColor="#863B17"/>
             <TextView
+                android:id="@+id/totalcost"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/text22"
@@ -238,6 +247,7 @@
                 android:textStyle="bold"
                 />
             <TextView
+                android:id="@+id/electricityrate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/text34"
@@ -290,6 +300,7 @@
                     android:textColor="#3BBC29"
                     android:textSize="16sp"/>
                 <TextView
+                    android:id="@+id/previousdaterange"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/text50"
@@ -298,6 +309,7 @@
                     android:textColor="#863B17"
                     tools:ignore="RtlSymmetry" />
                 <TextView
+                    android:id="@+id/previoustotalconsumption"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/text34"
@@ -307,6 +319,7 @@
                     android:textSize="20sp"
                     android:textStyle="bold"/>
                 <TextView
+                    android:id="@+id/previoustotalcost"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/text22"
@@ -331,6 +344,7 @@
                     android:textColor="#3BBC29"
                     android:textSize="16sp"/>
                 <TextView
+                    android:id="@+id/selecteddaterange"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/text50"
@@ -340,6 +354,7 @@
                     tools:ignore="RtlSymmetry" />
 
                 <TextView
+                    android:id="@+id/selecteddaterangetotalconsumption"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/text34"
@@ -349,6 +364,7 @@
                     android:textSize="20sp"
                     android:textStyle="bold"/>
                 <TextView
+                    android:id="@+id/selecteddaterangetotalcost"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/text22"
@@ -386,6 +402,26 @@
             android:layout_marginStart="20dp"
             android:textSize="15sp"
             android:textColor="#863B17"/>
+        <FrameLayout
+            android:id="@+id/selecteddaterange_chart_container"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="35dp"
+            android:background="#F0F0F0">
+
+            <!-- Placeholder for chart -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="24-Hour Usage Chart"
+                android:layout_gravity="center"
+                android:textColor="#666666"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+        </FrameLayout>
     </FrameLayout>
         <FrameLayout
             android:id="@+id/bg_areaConsumption"
