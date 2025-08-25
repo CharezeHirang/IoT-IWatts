@@ -60,7 +60,6 @@
                     android:textColor="#FFFFFF"
                     android:textSize="25sp" />
             </FrameLayout>
-
             <!-- Category 2 -->
             <FrameLayout
                 android:id="@+id/categoryLayout2"
@@ -161,7 +160,6 @@
                     android:textColor="#FFFFFF"
                     android:textSize="25sp" />
             </FrameLayout>
-
             <!-- Category 4 -->
             <FrameLayout
                 android:id="@+id/categoryLayout4"

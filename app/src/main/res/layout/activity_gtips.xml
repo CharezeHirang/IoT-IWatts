@@ -5,7 +5,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".E_TipsActivity">
+    tools:context=".G_TipsActivity">
+
     <ImageView
         android:id="@+id/ic_back"
         android:layout_width="30dp"
@@ -18,11 +19,11 @@
         tools:ignore="contentDescription"/>
     <TextView
         android:id="@+id/text"
-        android:layout_width="280dp"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="300dp"
         android:textAlignment="center"
-        android:text="@string/text77"
+        android:text="@string/text79"
         android:textColor="#863B17"
         android:textSize="30sp"
         app:layout_constraintTop_toTopOf="parent"
@@ -63,14 +64,14 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_e1"
+                    android:src="@drawable/img_g1"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
                 <ImageView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_e2"
+                    android:src="@drawable/img_g2"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
             </LinearLayout>
@@ -83,14 +84,14 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_e3"
+                    android:src="@drawable/img_g3"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
                 <ImageView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_e4"
+                    android:src="@drawable/img_g4"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
             </LinearLayout>
@@ -104,14 +105,14 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_e5"
+                    android:src="@drawable/img_g5"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
                 <ImageView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_e6"
+                    android:src="@drawable/img_g6"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
             </LinearLayout>
@@ -124,14 +125,14 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_e7"
+                    android:src="@drawable/img_g7"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
                 <ImageView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@drawable/img_e8"
+                    android:src="@drawable/img_g8"
                     android:padding="5dp"
                     tools:ignore="contentDescription"/>
             </LinearLayout>
