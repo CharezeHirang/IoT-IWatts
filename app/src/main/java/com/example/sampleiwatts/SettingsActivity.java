@@ -23,7 +23,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         icBack = findViewById(R.id.ic_back);
         icBack.setOnClickListener(v -> {
-            Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
+            Intent intent = new Intent(SettingsActivity.this, DashboardActivity.class);
             startActivity(intent);
             finish();
         });

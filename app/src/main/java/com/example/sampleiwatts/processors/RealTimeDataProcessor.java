@@ -91,19 +91,21 @@ public class RealTimeDataProcessor {
      */
     private void processHourlyDataWithCurrentHour(String date, double electricityRate, double voltageReference, DataProcessingCallback callback) {
         DatabaseReference hourlyRef = databaseRef.child("hourly_summaries").child(date);
-        DatabaseReference sensorRef = databaseRef.child("sensor_readings");
 
         // First get hourly summaries
         hourlyRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot hourlySnapshot) {
                 // Then get current hour sensor readings
-                getCurrentHourSensorData(sensorRef, date, voltageReference, new CurrentHourCallback() {
+                getCurrentHourSensorData(databaseRef.child("sensor_readings"), date, voltageReference, new CurrentHourCallback() {
                     @Override
                     public void onCurrentHourProcessed(CurrentHourData currentHourData) {
                         try {
                             RealTimeData realTimeData = buildCompleteRealTimeData(hourlySnapshot, currentHourData, electricityRate, date);
-                            callback.onDataProcessed(realTimeData);
+
+                            // NEW: Calculate real peaks from raw data (async)
+                            calculateRealAreaPeaksFromRawData(realTimeData, date, voltageReference, callback);
+
                         } catch (Exception e) {
                             Log.e(TAG, "Error processing complete real-time data: " + e.getMessage(), e);
                             callback.onError("Failed to process data: " + e.getMessage());
@@ -116,7 +118,10 @@ public class RealTimeDataProcessor {
                         try {
                             // Fallback to hourly data only
                             RealTimeData realTimeData = buildCompleteRealTimeData(hourlySnapshot, null, electricityRate, date);
-                            callback.onDataProcessed(realTimeData);
+
+                            // NEW: Still calculate real peaks from raw data (async)
+                            calculateRealAreaPeaksFromRawData(realTimeData, date, voltageReference, callback);
+
                         } catch (Exception e) {
                             Log.e(TAG, "Error processing hourly data: " + e.getMessage(), e);
                             callback.onError("Failed to process data: " + e.getMessage());
@@ -294,18 +299,14 @@ public class RealTimeDataProcessor {
             addCurrentHourToRealTimeData(currentHourData, realTimeData);
         }
 
-        // Calculate derived values (percentages, peaks, etc.)
-        calculateDerivedValues(realTimeData);
-
-        String currentHourStatus = currentHourData != null ? "with current hour" : "hourly only";
-        Log.d(TAG, String.format("Built complete real-time data (%s) - Total: %.2f kWh, Cost: ₱%.2f",
-                currentHourStatus, realTimeData.totalKwhToday, realTimeData.estimatedCostToday));
+        // Calculate basic derived values (percentages only, peaks handled separately)
+        calculateBasicDerivedValues(realTimeData);
 
         return realTimeData;
     }
 
     /**
-     * Process hourly data - FIXED chart consistency
+     * Process hourly summary data - FIXED to use consistent calculations
      */
     private void processHourlyData(DataSnapshot hourlySnapshot, RealTimeData realTimeData) {
         double dailyTotalKwh = 0.0;
@@ -315,18 +316,11 @@ public class RealTimeDataProcessor {
         double maxPeakWatts = 0.0;
         String peakTime = "";
 
-        if (!hourlySnapshot.exists()) {
-            Log.w(TAG, "No hourly data found for today");
-            return;
-        }
-
-        // Process each available hour
         for (DataSnapshot hourSnapshot : hourlySnapshot.getChildren()) {
             try {
                 int hour = Integer.parseInt(hourSnapshot.getKey());
-                if (hour >= 0 && hour < 24) {
-
-                    // Process total consumption for this hour
+                if (hour < 24) {
+                    // Process main hourly data
                     if (hourSnapshot.child("total_kwh").exists()) {
                         Double totalKwh = hourSnapshot.child("total_kwh").getValue(Double.class);
                         if (totalKwh != null) {
@@ -334,7 +328,6 @@ public class RealTimeDataProcessor {
                         }
                     }
 
-                    // FIXED: Use avg_watts for ALL charts (consistency)
                     if (hourSnapshot.child("avg_watts").exists()) {
                         Double avgWatts = hourSnapshot.child("avg_watts").getValue(Double.class);
                         if (avgWatts != null) {
@@ -442,9 +435,9 @@ public class RealTimeDataProcessor {
     }
 
     /**
-     * Calculate derived values like percentages and peak consumption for areas
+     * Calculate basic derived values (percentages only, peaks handled separately)
      */
-    private void calculateDerivedValues(RealTimeData realTimeData) {
+    private void calculateBasicDerivedValues(RealTimeData realTimeData) {
         double totalConsumption = realTimeData.totalKwhToday;
 
         // Calculate area percentages
@@ -457,34 +450,166 @@ public class RealTimeDataProcessor {
             realTimeData.area2Data.sharePercentage = 0.0;
             realTimeData.area3Data.sharePercentage = 0.0;
         }
-
-        // Calculate peak consumption for each area from hourly data
-        calculateAreaPeakConsumption(realTimeData.area1Data);
-        calculateAreaPeakConsumption(realTimeData.area2Data);
-        calculateAreaPeakConsumption(realTimeData.area3Data);
     }
 
     /**
-     * Calculate peak consumption for an area from its hourly data
+     * NEW: Enhanced method to calculate REAL area peaks from raw readings
      */
-    private void calculateAreaPeakConsumption(AreaData areaData) {
-        if (areaData.hourlyData != null && !areaData.hourlyData.isEmpty()) {
-            double maxValue = 0.0;
-            int peakHour = 0;
+    private void calculateRealAreaPeaksFromRawData(RealTimeData realTimeData, String date,
+                                                   double voltageReference, DataProcessingCallback callback) {
+        Log.d(TAG, "Calculating real area peaks from raw data for date: " + date);
 
-            for (int i = 0; i < areaData.hourlyData.size(); i++) {
-                double value = areaData.hourlyData.get(i);
-                if (value > maxValue) {
-                    maxValue = value;
-                    peakHour = i;
-                }
-            }
+        // Use sensor_readings path (based on your existing code structure)
+        DatabaseReference rawReadingsRef = databaseRef.child("sensor_readings");
 
-            areaData.peakConsumption = maxValue;
-            areaData.peakTime = String.format("%02d:00", peakHour);
+        // Get today's raw readings using the same datetime format as existing code
+        String startTime = date + "T00:00:00";
+        String endTime = date + "T23:59:59";
+
+        rawReadingsRef.orderByChild("datetime")
+                .startAt(startTime)
+                .endAt(endTime)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (!snapshot.exists()) {
+                            Log.w(TAG, "No raw readings found, using proportional fallback");
+                            useProportionalPeakDistribution(realTimeData);
+                            callback.onDataProcessed(realTimeData);
+                            return;
+                        }
+
+                        double maxArea1 = 0, maxArea2 = 0, maxArea3 = 0;
+                        String area1PeakTime = "--:--", area2PeakTime = "--:--", area3PeakTime = "--:--";
+                        int totalReadings = 0;
+
+                        for (DataSnapshot readingSnapshot : snapshot.getChildren()) {
+                            try {
+                                Map<String, Object> reading = (Map<String, Object>) readingSnapshot.getValue();
+                                if (reading != null && reading.containsKey("value") && reading.containsKey("datetime")) {
+                                    String value = (String) reading.get("value");
+                                    String datetime = (String) reading.get("datetime");
+
+                                    if (value != null && datetime != null && !value.trim().isEmpty()) {
+                                        // Parse sensor reading: "BV,CV,A1,A2,A3,IR"
+                                        String[] parts = value.split(",");
+                                        if (parts.length >= 5) {
+                                            double current1 = parseDouble(parts[2]); // A1
+                                            double current2 = parseDouble(parts[3]); // A2
+                                            double current3 = parseDouble(parts[4]); // A3
+
+                                            // Calculate power: P = V * I (same as DataProcessingManager)
+                                            double area1Power = voltageReference * current1;
+                                            double area2Power = voltageReference * current2;
+                                            double area3Power = voltageReference * current3;
+
+                                            String timeOnly = datetime.length() >= 16 ?
+                                                    datetime.substring(11, 16) : "--:--"; // Extract HH:MM
+
+                                            // Track individual area peaks
+                                            if (area1Power > maxArea1) {
+                                                maxArea1 = area1Power;
+                                                area1PeakTime = timeOnly;
+                                            }
+                                            if (area2Power > maxArea2) {
+                                                maxArea2 = area2Power;
+                                                area2PeakTime = timeOnly;
+                                            }
+                                            if (area3Power > maxArea3) {
+                                                maxArea3 = area3Power;
+                                                area3PeakTime = timeOnly;
+                                            }
+
+                                            totalReadings++;
+                                        }
+                                    }
+                                }
+                            } catch (Exception e) {
+                                // Skip invalid readings
+                                Log.w(TAG, "Skipping invalid reading: " + e.getMessage());
+                            }
+                        }
+
+                        Log.d(TAG, String.format("Processed %d raw readings for peak calculation", totalReadings));
+
+                        if (totalReadings > 0) {
+                            // Update area data with REAL instantaneous peaks
+                            realTimeData.area1Data.peakConsumption = maxArea1;
+                            realTimeData.area1Data.peakTime = area1PeakTime;
+
+                            realTimeData.area2Data.peakConsumption = maxArea2;
+                            realTimeData.area2Data.peakTime = area2PeakTime;
+
+                            realTimeData.area3Data.peakConsumption = maxArea3;
+                            realTimeData.area3Data.peakTime = area3PeakTime;
+
+                            // Verify the math matches the overall peak
+                            double calculatedTotal = maxArea1 + maxArea2 + maxArea3;
+                            Log.d(TAG, String.format("Peak validation - Overall: %.0fW, Areas: %.0f+%.0f+%.0f=%.0fW",
+                                    realTimeData.peakUsageValue, maxArea1, maxArea2, maxArea3, calculatedTotal));
+
+                            double difference = Math.abs(calculatedTotal - realTimeData.peakUsageValue);
+                            if (difference > 10) {
+                                Log.w(TAG, String.format("Peak mismatch: %.0fW difference - but using real instantaneous data", difference));
+                            } else {
+                                Log.d(TAG, "✅ Peak calculations validated!");
+                            }
+                        } else {
+                            Log.w(TAG, "No valid readings found, using proportional fallback");
+                            useProportionalPeakDistribution(realTimeData);
+                        }
+
+                        // Callback with corrected data
+                        callback.onDataProcessed(realTimeData);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e(TAG, "Failed to get raw readings: " + error.getMessage());
+                        Log.w(TAG, "Using fallback proportional peak distribution");
+                        useProportionalPeakDistribution(realTimeData);
+                        callback.onDataProcessed(realTimeData);
+                    }
+                });
+    }
+
+    /**
+     * NEW: Fallback method - Distribute total peak proportionally across areas
+     */
+    private void useProportionalPeakDistribution(RealTimeData realTimeData) {
+        double totalConsumption = realTimeData.totalKwhToday;
+
+        if (totalConsumption > 0 && realTimeData.peakUsageValue > 0) {
+            // Calculate area percentages
+            double area1Percentage = realTimeData.area1Data.totalConsumption / totalConsumption;
+            double area2Percentage = realTimeData.area2Data.totalConsumption / totalConsumption;
+            double area3Percentage = realTimeData.area3Data.totalConsumption / totalConsumption;
+
+            // Distribute peak proportionally (ensures they add up to total)
+            realTimeData.area1Data.peakConsumption = realTimeData.peakUsageValue * area1Percentage;
+            realTimeData.area2Data.peakConsumption = realTimeData.peakUsageValue * area2Percentage;
+            realTimeData.area3Data.peakConsumption = realTimeData.peakUsageValue * area3Percentage;
+
+            // All areas show same peak time as overall peak
+            realTimeData.area1Data.peakTime = realTimeData.peakUsageTime;
+            realTimeData.area2Data.peakTime = realTimeData.peakUsageTime;
+            realTimeData.area3Data.peakTime = realTimeData.peakUsageTime;
+
+            Log.d(TAG, String.format("Using proportional peaks: %.0f + %.0f + %.0f = %.0fW (✅ Perfect match)",
+                    realTimeData.area1Data.peakConsumption,
+                    realTimeData.area2Data.peakConsumption,
+                    realTimeData.area3Data.peakConsumption,
+                    realTimeData.peakUsageValue));
         } else {
-            areaData.peakConsumption = 0.0;
-            areaData.peakTime = "--:--";
+            // No data available, set to zero
+            realTimeData.area1Data.peakConsumption = 0.0;
+            realTimeData.area1Data.peakTime = "--:--";
+            realTimeData.area2Data.peakConsumption = 0.0;
+            realTimeData.area2Data.peakTime = "--:--";
+            realTimeData.area3Data.peakConsumption = 0.0;
+            realTimeData.area3Data.peakTime = "--:--";
+
+            Log.w(TAG, "No consumption data available for peak calculation");
         }
     }
 
@@ -515,14 +640,60 @@ public class RealTimeDataProcessor {
         return timeFormat.format(calendar.getTime());
     }
 
+    // Data classes
+    public static class RealTimeData {
+        public String date;
+        public String lastUpdateTime;
+        public double totalKwhToday;
+        public double estimatedCostToday;
+        public double peakUsageValue;
+        public String peakUsageTime;
+        public double electricityRate;
+
+        public AreaData area1Data;
+        public AreaData area2Data;
+        public AreaData area3Data;
+
+        public List<Double> hourlyChartData;
+    }
+
+    public static class AreaData {
+        public String name;
+        public double totalConsumption;
+        public double estimatedCost;
+        public double peakConsumption;
+        public String peakTime;
+        public double sharePercentage;
+        public List<Double> hourlyData;
+
+        public AreaData(String name) {
+            this.name = name;
+            this.totalConsumption = 0.0;
+            this.estimatedCost = 0.0;
+            this.peakConsumption = 0.0;
+            this.peakTime = "--:--";
+            this.sharePercentage = 0.0;
+            this.hourlyData = new ArrayList<>();
+        }
+    }
+
+    public static class CurrentHourData {
+        public String hour;
+        public double avgTotalWatts;
+        public double avgArea1Watts;
+        public double avgArea2Watts;
+        public double avgArea3Watts;
+        public double peakWatts;
+        public double partialKwh;
+        public double area1PartialKwh;
+        public double area2PartialKwh;
+        public double area3PartialKwh;
+        public int validReadings;
+    }
+
     // Callback interfaces
     public interface DataProcessingCallback {
         void onDataProcessed(RealTimeData realTimeData);
-        void onError(String error);
-    }
-
-    public interface CurrentHourCallback {
-        void onCurrentHourProcessed(CurrentHourData currentHourData);
         void onError(String error);
     }
 
@@ -531,48 +702,8 @@ public class RealTimeDataProcessor {
         void onError(String error);
     }
 
-    // Data classes
-    public class CurrentHourData {
-        public String hour = "";
-        public int validReadings = 0;
-        public double avgTotalWatts = 0.0;
-        public double avgArea1Watts = 0.0;
-        public double avgArea2Watts = 0.0;
-        public double avgArea3Watts = 0.0;
-        public double peakWatts = 0.0;
-        public double partialKwh = 0.0;
-        public double area1PartialKwh = 0.0;
-        public double area2PartialKwh = 0.0;
-        public double area3PartialKwh = 0.0;
-    }
-
-    public class RealTimeData {
-        public String lastUpdateTime = "";
-        public String date = "";
-        public double totalKwhToday = 0.0;
-        public double estimatedCostToday = 0.0;
-        public double peakUsageValue = 0.0;
-        public String peakUsageTime = "";
-        public double electricityRate = 12.5;
-
-        public AreaData area1Data;
-        public AreaData area2Data;
-        public AreaData area3Data;
-
-        public List<Double> hourlyChartData; // 24-hour chart data for overall consumption
-    }
-
-    public class AreaData {
-        public String name = "";
-        public double totalConsumption = 0.0;
-        public double estimatedCost = 0.0;
-        public double sharePercentage = 0.0;
-        public double peakConsumption = 0.0;
-        public String peakTime = "";
-        public List<Double> hourlyData; // 24-hour chart data for this area
-
-        public AreaData(String name) {
-            this.name = name;
-        }
+    public interface CurrentHourCallback {
+        void onCurrentHourProcessed(CurrentHourData currentHourData);
+        void onError(String error);
     }
 }
