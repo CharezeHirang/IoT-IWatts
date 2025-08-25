@@ -14,7 +14,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SampleIWATTS">
-
+        <activity
+            android:name=".AlertActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SampleIWATTS" />
         <activity
             android:name=".HistoricalDataActivity"
             android:exported="false" />
@@ -33,14 +36,6 @@
         <activity
             android:name=".NotificationActivity"
             android:exported="false" />
-        <activity
-            android:name=".AlertActivity"
-            android:exported="false" />
-
-        <receiver
-            android:name=".ReadingReceiver"
-            android:exported="false" />
-
         <activity
             android:name=".E_TipsActivity"
             android:exported="false" />

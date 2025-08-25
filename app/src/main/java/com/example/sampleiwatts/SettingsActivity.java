@@ -28,7 +28,18 @@ public class SettingsActivity extends AppCompatActivity {
             finish();
         });
         btnDeviceSettings = findViewById(R.id.btn_device_settings);
+        btnDeviceSettings. setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsActivity.this, DeviceSettingsActivity.class);
+            startActivity(intent);
+            finish();
+        });
         btnNotification = findViewById(R.id.btn_notification);
+        btnNotification. setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsActivity.this, NotificationActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
         btnAlert = findViewById(R.id.btn_alert);
         btnAlert. setOnClickListener(v -> {
             Intent intent = new Intent(SettingsActivity.this, AlertActivity.class);
@@ -42,6 +53,7 @@ public class SettingsActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+
         btnAboutUs = findViewById(R.id.btn_about);
 
     }

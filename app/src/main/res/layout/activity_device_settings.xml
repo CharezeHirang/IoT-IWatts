@@ -48,8 +48,9 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="500dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="20dp"
@@ -60,29 +61,32 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="500dp"
+            android:background="@drawable/bg_yellowish"
             android:orientation="vertical"
             android:padding="16dp">
             <TextView
+                android:gravity="center"
                 android:text="Device Information"
                 android:textColor="#863B17"
                 android:textStyle="bold"
-                android:textSize="20sp"
+                android:textSize="25sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp" />
             <!-- Signal and Battery info -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="#F3E787"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_button"
+                android:padding="10dp"
                 android:orientation="horizontal"
                 android:layout_marginTop="10dp"
                 android:gravity="center">
 
                 <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
                     android:padding="10dp"
                     tools:ignore="contentDescription"
                     android:src="@drawable/ic_signal" />
@@ -92,13 +96,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="88mbps"
-                    android:textColor="#444444"
-                    android:textSize="14sp"
+                    android:textColor="#863B17"
+                    android:textSize="18sp"
                     android:layout_marginStart="8dp" />
 
                 <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
                     tools:ignore="contentDescription"
                     android:src="@drawable/ic_battery"
                     android:padding="10dp"
@@ -109,85 +113,124 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="100%"
-                    android:textColor="#444444"
-                    android:textSize="14sp"
+                    android:textColor="#863B17"
+                    android:textSize="18sp"
                     android:layout_marginStart="8dp" />
             </LinearLayout>
 
             <!-- Device Information -->
             <TextView
+                android:gravity="center"
                 android:text="Basic Information"
                 android:textColor="#863B17"
                 android:textStyle="bold"
-                android:textSize="14sp"
+                android:textSize="20sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp" />
 
             <!-- Device Name -->
             <TextView
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:text="Device Name:"
-                android:textColor="#444444"
-                android:textSize="12sp"
+                android:textColor="#863B17"
+                android:textSize="16sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
 
-            <TextView
+            <EditText
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:id="@+id/deviceName"
-                android:text="IWATTS-2623F"
-                android:textColor="#3A2A12"
-                android:textSize="14sp"
+                android:hint="IWATTS-2623F"
+                android:textColorHint="#863B17"
+                android:textColor="#863B17"
+                android:textSize="18sp"
+                android:textStyle="bold"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp" />
 
             <!-- Device ID -->
             <TextView
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:text="Device ID:"
-                android:textColor="#444444"
-                android:textSize="12sp"
+                android:textColor="#863B17"
+                android:textSize="16sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
 
             <TextView
                 android:id="@+id/deviceId"
+                android:layout_marginEnd="20dp"
+                android:layout_marginStart="20dp"
                 android:text="IW2074963190"
-                android:textColor="#3A2A12"
-                android:textSize="14sp"
+                android:textColor="#863B17"
+                android:textSize="18sp"
+                android:textStyle="bold"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp" />
 
             <!-- Activation Time -->
             <TextView
-                android:text="Activation Time:"
-                android:textColor="#444444"
-                android:textSize="12sp"
+                android:text="Installation Date:"
+                android:layout_marginEnd="20dp"
+                android:layout_marginStart="20dp"
+                android:textColor="#863B17"
+                android:textSize="16sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
 
             <TextView
                 android:id="@+id/activationTime"
+                android:layout_marginEnd="20dp"
+                android:layout_marginStart="20dp"
                 android:text="2025-03-22 11:16:09"
-                android:textColor="#3A2A12"
-                android:textSize="14sp"
+                android:textColor="#863B17"
+                android:textSize="18sp"
+                android:textStyle="bold"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp" />
-
-            <!-- Disconnect Button -->
             <Button
-                android:id="@+id/btnDisconnect"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="DISCONNECT"
+                android:gravity="center"
+                android:id="@+id/btnSave"
+                android:layout_gravity="center"
+                android:layout_width="200dp"
+                android:layout_height="45dp"
+                android:text="SAVE"
                 android:textColor="#FFFFFF"
+                android:textSize="18sp"
                 android:layout_marginTop="16dp"
                 android:backgroundTint="#8B4513"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cardView"
                 android:textStyle="bold" />
+
         </LinearLayout>
+
     </androidx.cardview.widget.CardView>
+    <Button
+        android:gravity="center"
+        android:id="@+id/btnDisconnect"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:text="DISCONNECT"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#8B4513"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardView"
+        android:textStyle="bold" />
 </androidx.constraintlayout.widget.ConstraintLayout>
