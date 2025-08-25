@@ -15,6 +15,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SampleIWATTS">
         <activity
+            android:name=".J_TipsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".I_TipsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".H_TipsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".G_TipsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".G_TipaActivity"
+            android:exported="false" />
+        <activity
             android:name=".AlertActivity"
             android:exported="false"
             android:theme="@style/Theme.SampleIWATTS" />

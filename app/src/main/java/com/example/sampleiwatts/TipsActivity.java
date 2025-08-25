@@ -40,6 +40,70 @@ public class TipsActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+
+        btnCategory2 = findViewById(R.id.category2);
+        btnCategory2.setOnClickListener(v -> {
+            Intent intent = new Intent(TipsActivity.this, B_TipsActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
+        btnCategory3 = findViewById(R.id.category3);
+        btnCategory3.setOnClickListener(v -> {
+            Intent intent = new Intent(TipsActivity.this, C_TipsActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
+        btnCategory4 = findViewById(R.id.category4);
+        btnCategory4.setOnClickListener(v -> {
+            Intent intent = new Intent(TipsActivity.this, D_TipsActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
+        btnCategory5 = findViewById(R.id.category5);
+        btnCategory5.setOnClickListener(v -> {
+            Intent intent = new Intent(TipsActivity.this, E_TipsActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
+        btnCategory6 = findViewById(R.id.category6);
+        btnCategory6.setOnClickListener(v -> {
+            Intent intent = new Intent(TipsActivity.this, F_TipsActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
+        btnCategory7 = findViewById(R.id.category7);
+        btnCategory7.setOnClickListener(v -> {
+            Intent intent = new Intent(TipsActivity.this, G_TipsActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
+        btnCategory8 = findViewById(R.id.category8);
+        btnCategory8.setOnClickListener(v -> {
+            Intent intent = new Intent(TipsActivity.this, H_TipsActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
+        btnCategory9 = findViewById(R.id.category9);
+        btnCategory9.setOnClickListener(v -> {
+            Intent intent = new Intent(TipsActivity.this, I_TipsActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
+        btnCategory10 = findViewById(R.id.category10);
+        btnCategory10.setOnClickListener(v -> {
+            Intent intent = new Intent(TipsActivity.this, J_TipsActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
         categories = new FrameLayout[]{
                 findViewById(R.id.categoryLayout1),
                 findViewById(R.id.categoryLayout2),
