@@ -315,7 +315,7 @@ public class HistoricalDataActivity extends AppCompatActivity {
     }
 
     /**
-     * Load historical data from Firebase using Philippine timezone
+     * FIXED: Load historical data using correct query method
      */
     private void loadHistoricalData() {
         try {
@@ -325,25 +325,22 @@ public class HistoricalDataActivity extends AppCompatActivity {
             String startDateStr = firebaseFormat.format(startDate.getTime());
             String endDateStr = firebaseFormat.format(endDate.getTime());
 
-            Log.d(TAG, "Loading historical data from " + startDateStr + " to " + endDateStr +
-                    " (Philippine timezone)");
+            Log.d(TAG, "Loading historical data from " + startDateStr + " to " + endDateStr);
 
-            summariesRef.orderByChild("date")
-                    .startAt(startDateStr)
-                    .endAt(endDateStr)
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            processHistoricalData(dataSnapshot);
-                        }
+            // FIXED: Query all daily summaries, then filter by date range
+            summariesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    processHistoricalData(dataSnapshot, startDateStr, endDateStr);
+                }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            Log.e(TAG, "Failed to load historical data: " + error.getMessage());
-                            Toast.makeText(HistoricalDataActivity.this,
-                                    "Failed to load historical data", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e(TAG, "Failed to load historical data: " + error.getMessage());
+                    Toast.makeText(HistoricalDataActivity.this,
+                            "Failed to load historical data", Toast.LENGTH_SHORT).show();
+                }
+            });
 
         } catch (Exception e) {
             Log.e(TAG, "Error loading historical data", e);
@@ -351,9 +348,9 @@ public class HistoricalDataActivity extends AppCompatActivity {
     }
 
     /**
-     * Process historical data from Firebase
+     * FIXED: Process historical data with correct field names and date filtering
      */
-    private void processHistoricalData(DataSnapshot dataSnapshot) {
+    private void processHistoricalData(DataSnapshot dataSnapshot, String startDateStr, String endDateStr) {
         try {
             historicalData.clear();
 
@@ -361,12 +358,12 @@ public class HistoricalDataActivity extends AppCompatActivity {
             double totalCost = 0.0;
             String peakDay = "";
             double peakConsumption = 0.0;
+            double maxDailyPeak = 0.0;
             int dayCount = 0;
 
-            // Area totals
+            // Area totals and peaks
             double area1Total = 0.0, area2Total = 0.0, area3Total = 0.0;
-            double area1Peak = 0.0, area2Peak = 0.0, area3Peak = 0.0;
-            String area1PeakTime = "", area2PeakTime = "", area3PeakTime = "";
+            double area1MaxPeak = 0.0, area2MaxPeak = 0.0, area3MaxPeak = 0.0;
 
             // Daily data for charts
             List<Double> dailyConsumption = new ArrayList<>();
@@ -378,48 +375,86 @@ public class HistoricalDataActivity extends AppCompatActivity {
 
             for (DataSnapshot daySnapshot : dataSnapshot.getChildren()) {
                 try {
-                    Map<String, Object> dayData = (Map<String, Object>) daySnapshot.getValue();
-                    if (dayData == null) continue;
+                    String dateKey = daySnapshot.getKey();
 
-                    String date = (String) dayData.get("date");
-                    Double dayConsumption = getDoubleValue(dayData.get("total_energy_kwh"));
-                    Double dayCost = getDoubleValue(dayData.get("total_cost_php"));
+                    // FIXED: Filter by date range using string comparison
+                    if (dateKey != null && dateKey.compareTo(startDateStr) >= 0 && dateKey.compareTo(endDateStr) <= 0) {
 
-                    if (dayConsumption != null && dayCost != null) {
-                        totalConsumption += dayConsumption;
-                        totalCost += dayCost;
-                        dailyConsumption.add(dayConsumption);
-                        dateLabels.add(date);
-                        dayCount++;
+                        Map<String, Object> dayData = (Map<String, Object>) daySnapshot.getValue();
+                        if (dayData == null) continue;
 
-                        // Track peak day
-                        if (dayConsumption > peakConsumption) {
-                            peakConsumption = dayConsumption;
-                            peakDay = date;
+                        // FIXED: Use correct field names from your database structure
+                        Double dayConsumption = getDoubleValue(dayData.get("total_kwh"));     // NOT total_energy_kwh
+                        Double dayCost = getDoubleValue(dayData.get("total_cost"));          // NOT total_cost_php
+                        Double dayPeak = getDoubleValue(dayData.get("peak_watts"));
+
+                        if (dayConsumption != null) {
+                            totalConsumption += dayConsumption;
+                            dailyConsumption.add(dayConsumption);
+                            dateLabels.add(dateKey);
+                            dayCount++;
+
+                            // Track peak day by consumption
+                            if (dayConsumption > peakConsumption) {
+                                peakConsumption = dayConsumption;
+                                peakDay = dateKey;
+                            }
                         }
 
-                        // Process area data
-                        Map<String, Object> areaData = (Map<String, Object>) dayData.get("area_data");
-                        if (areaData != null) {
-                            processAreaData(areaData, "area1", area1Total, area1Peak, area1PeakTime, areaHourlyData);
-                            processAreaData(areaData, "area2", area2Total, area2Peak, area2PeakTime, areaHourlyData);
-                            processAreaData(areaData, "area3", area3Total, area3Peak, area3PeakTime, areaHourlyData);
+                        if (dayCost != null) {
+                            totalCost += dayCost;
+                        }
+
+                        // Track highest daily peak watts
+                        if (dayPeak != null && dayPeak > maxDailyPeak) {
+                            maxDailyPeak = dayPeak;
+                        }
+
+                        // FIXED: Process area data from area_breakdown (not area_data)
+                        Map<String, Object> areaBreakdown = (Map<String, Object>) dayData.get("area_breakdown");
+                        if (areaBreakdown != null) {
+                            // Get area consumption values
+                            double area1Kwh = getAreaConsumption(areaBreakdown, "area1");
+                            double area2Kwh = getAreaConsumption(areaBreakdown, "area2");
+                            double area3Kwh = getAreaConsumption(areaBreakdown, "area3");
+
+                            area1Total += area1Kwh;
+                            area2Total += area2Kwh;
+                            area3Total += area3Kwh;
+
+                            // FIXED: Calculate proportional peaks for this day
+                            if (dayPeak != null && dayConsumption != null && dayConsumption > 0) {
+                                double area1Peak = dayPeak * (area1Kwh / dayConsumption);
+                                double area2Peak = dayPeak * (area2Kwh / dayConsumption);
+                                double area3Peak = dayPeak * (area3Kwh / dayConsumption);
+
+                                // Track maximum peaks across all days
+                                area1MaxPeak = Math.max(area1MaxPeak, area1Peak);
+                                area2MaxPeak = Math.max(area2MaxPeak, area2Peak);
+                                area3MaxPeak = Math.max(area3MaxPeak, area3Peak);
+                            }
+
+                            // Process hourly data for charts
+                            processAreaHourlyData(areaHourlyData, "area1", area1Kwh);
+                            processAreaHourlyData(areaHourlyData, "area2", area2Kwh);
+                            processAreaHourlyData(areaHourlyData, "area3", area3Kwh);
                         }
                     }
                 } catch (Exception e) {
-                    Log.w(TAG, "Error processing day data: " + e.getMessage());
+                    Log.w(TAG, "Error processing day data for " + daySnapshot.getKey() + ": " + e.getMessage());
                 }
             }
 
+            Log.d(TAG, String.format("Processed %d days of historical data", dayCount));
+
             // Update UI with processed data
             updateSummaryDisplay(totalConsumption, totalCost, peakDay, dayCount);
-            updateAreaDisplays(area1Total, area2Total, area3Total, totalConsumption);
+            updateAreaDisplays(area1Total, area2Total, area3Total, totalConsumption,
+                    area1MaxPeak, area2MaxPeak, area3MaxPeak);
             updateCharts(dailyConsumption, dateLabels, areaHourlyData);
 
             // Load previous period for comparison
             loadPreviousPeriodData();
-
-            Log.d(TAG, "Historical data processed successfully");
 
         } catch (Exception e) {
             Log.e(TAG, "Error processing historical data", e);
@@ -427,32 +462,36 @@ public class HistoricalDataActivity extends AppCompatActivity {
     }
 
     /**
-     * Process area data from daily summary
+     * FIXED: Get area consumption with correct field names
      */
-    private double processAreaData(Map<String, Object> areaData, String areaKey,
-                                   double areaTotal, double areaPeak, String areaPeakTime,
-                                   Map<String, List<Double>> areaHourlyData) {
+    private double getAreaConsumption(Map<String, Object> areaBreakdown, String areaKey) {
         try {
-            Map<String, Object> area = (Map<String, Object>) areaData.get(areaKey);
-            if (area != null) {
-                Double consumption = getDoubleValue(area.get("total_energy_kwh"));
+            Map<String, Object> areaData = (Map<String, Object>) areaBreakdown.get(areaKey);
+            if (areaData != null) {
+                // FIXED: Use 'kwh' field (not 'total_energy_kwh')
+                Double consumption = getDoubleValue(areaData.get("kwh"));
                 if (consumption != null) {
-                    areaTotal += consumption;
-
-                    // Add to hourly data (simplified - using daily average across 24 hours)
-                    double hourlyAvg = consumption / 24.0;
-                    List<Double> hourlyList = areaHourlyData.get(areaKey);
-                    if (hourlyList != null) {
-                        for (int i = 0; i < 24; i++) {
-                            hourlyList.add(hourlyAvg + (Math.random() - 0.5) * hourlyAvg * 0.3); // Add some variation
-                        }
-                    }
+                    return consumption;
                 }
             }
         } catch (Exception e) {
-            Log.w(TAG, "Error processing area data for " + areaKey + ": " + e.getMessage());
+            Log.w(TAG, "Error getting area consumption for " + areaKey + ": " + e.getMessage());
         }
-        return areaTotal;
+        return 0.0;
+    }
+
+    /**
+     * Process area hourly data for charts
+     */
+    private void processAreaHourlyData(Map<String, List<Double>> areaHourlyData, String areaKey, double dailyConsumption) {
+        List<Double> hourlyList = areaHourlyData.get(areaKey);
+        if (hourlyList != null) {
+            // Create hourly pattern from daily consumption
+            double hourlyAvg = dailyConsumption / 24.0;
+            for (int i = 0; i < 24; i++) {
+                hourlyList.add(hourlyAvg + (Math.random() - 0.5) * hourlyAvg * 0.3);
+            }
+        }
     }
 
     /**
@@ -472,24 +511,20 @@ public class HistoricalDataActivity extends AppCompatActivity {
             String prevStartStr = firebaseFormat.format(prevStart.getTime());
             String prevEndStr = firebaseFormat.format(prevEnd.getTime());
 
-            Log.d(TAG, "Loading previous period data from " + prevStartStr + " to " + prevEndStr +
-                    " (Philippine timezone)");
+            Log.d(TAG, "Loading previous period: " + prevStartStr + " to " + prevEndStr);
 
             DatabaseReference summariesRef = FirebaseDatabase.getInstance().getReference("daily_summaries");
-            summariesRef.orderByChild("date")
-                    .startAt(prevStartStr)
-                    .endAt(prevEndStr)
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            processPreviousPeriodData(dataSnapshot);
-                        }
+            summariesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    processPreviousPeriodData(dataSnapshot, prevStartStr, prevEndStr);
+                }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            Log.w(TAG, "Failed to load previous period data: " + error.getMessage());
-                        }
-                    });
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.w(TAG, "Failed to load previous period data: " + error.getMessage());
+                }
+            });
 
         } catch (Exception e) {
             Log.e(TAG, "Error loading previous period data", e);
@@ -497,27 +532,33 @@ public class HistoricalDataActivity extends AppCompatActivity {
     }
 
     /**
-     * Process previous period data for comparison
+     * FIXED: Process previous period data with correct field names
      */
-    private void processPreviousPeriodData(DataSnapshot dataSnapshot) {
+    private void processPreviousPeriodData(DataSnapshot dataSnapshot, String prevStartStr, String prevEndStr) {
         try {
             double prevTotalConsumption = 0.0;
             double prevTotalCost = 0.0;
 
             for (DataSnapshot daySnapshot : dataSnapshot.getChildren()) {
-                Map<String, Object> dayData = (Map<String, Object>) daySnapshot.getValue();
-                if (dayData != null) {
-                    Double dayConsumption = getDoubleValue(dayData.get("total_energy_kwh"));
-                    Double dayCost = getDoubleValue(dayData.get("total_cost_php"));
+                String dateKey = daySnapshot.getKey();
 
-                    if (dayConsumption != null && dayCost != null) {
-                        prevTotalConsumption += dayConsumption;
-                        prevTotalCost += dayCost;
+                if (dateKey != null && dateKey.compareTo(prevStartStr) >= 0 && dateKey.compareTo(prevEndStr) <= 0) {
+                    Map<String, Object> dayData = (Map<String, Object>) daySnapshot.getValue();
+                    if (dayData != null) {
+                        // FIXED: Use correct field names
+                        Double dayConsumption = getDoubleValue(dayData.get("total_kwh"));
+                        Double dayCost = getDoubleValue(dayData.get("total_cost"));
+
+                        if (dayConsumption != null) {
+                            prevTotalConsumption += dayConsumption;
+                        }
+                        if (dayCost != null) {
+                            prevTotalCost += dayCost;
+                        }
                     }
                 }
             }
 
-            // Update comparison display
             updateComparisonDisplay(prevTotalConsumption, prevTotalCost);
 
         } catch (Exception e) {
@@ -556,9 +597,10 @@ public class HistoricalDataActivity extends AppCompatActivity {
     }
 
     /**
-     * Update area displays with consumption data
+     * FIXED: Update area displays with proper peak calculations
      */
-    private void updateAreaDisplays(double area1Total, double area2Total, double area3Total, double grandTotal) {
+    private void updateAreaDisplays(double area1Total, double area2Total, double area3Total,
+                                    double grandTotal, double area1Peak, double area2Peak, double area3Peak) {
         try {
             // Calculate percentages
             double area1Percentage = grandTotal > 0 ? (area1Total / grandTotal) * 100 : 0;
@@ -569,19 +611,24 @@ public class HistoricalDataActivity extends AppCompatActivity {
             area1TotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", area1Total));
             area1EstimatedCost.setText(String.format(Locale.getDefault(), "₱%.2f", area1Total * electricityRate));
             area1SharePercentage.setText(String.format(Locale.getDefault(), "%.1f%%", area1Percentage));
-            area1PeakConsumption.setText("Peak data N/A"); // Simplified for now
+            area1PeakConsumption.setText(String.format(Locale.getDefault(), "%.0f W", area1Peak));
 
             // Update Area 2
             area2TotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", area2Total));
             area2EstimatedCost.setText(String.format(Locale.getDefault(), "₱%.2f", area2Total * electricityRate));
             area2SharePercentage.setText(String.format(Locale.getDefault(), "%.1f%%", area2Percentage));
-            area2PeakConsumption.setText("Peak data N/A");
+            area2PeakConsumption.setText(String.format(Locale.getDefault(), "%.0f W", area2Peak));
 
             // Update Area 3
             area3TotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", area3Total));
             area3EstimatedCost.setText(String.format(Locale.getDefault(), "₱%.2f", area3Total * electricityRate));
             area3SharePercentage.setText(String.format(Locale.getDefault(), "%.1f%%", area3Percentage));
-            area3PeakConsumption.setText("Peak data N/A");
+            area3PeakConsumption.setText(String.format(Locale.getDefault(), "%.0f W", area3Peak));
+
+            // Verify peak calculations add up
+            double calculatedTotal = area1Peak + area2Peak + area3Peak;
+            Log.d(TAG, String.format("Historical area peaks: %.0f + %.0f + %.0f = %.0f W",
+                    area1Peak, area2Peak, area3Peak, calculatedTotal));
 
         } catch (Exception e) {
             Log.e(TAG, "Error updating area displays", e);
