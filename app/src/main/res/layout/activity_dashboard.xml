@@ -9,6 +9,7 @@
     tools:context=".DashboardActivity">
 
 <View
+    android:id="@+id/top"
     android:layout_width="wrap_content"
     android:layout_height="80dp"
     android:background="@drawable/bg_yellow_top"
@@ -25,270 +26,72 @@
     android:layout_marginStart="15dp"
     android:layout_marginTop="15dp"
     tools:ignore="contentDescription"/>
-
-    <FrameLayout
-        android:id="@+id/bg_mainConsumption"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/top"
+        app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="90dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp">
-
-        <!-- Background -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="160dp"
-            android:background="@drawable/bg_light_yellow"/>
-
-        <!-- TextView 1 -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/text12"
-            android:layout_marginTop="20dp"
-            android:layout_marginStart="30dp"
-            android:textSize="15sp"
-            android:textColor="#863B17"/>
-
-        <!-- TextView 2 -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/text13"
-            android:textStyle="bold"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="35dp"
-            android:textSize="50sp"
-            android:textColor="#863B17"/>
-
-        <!-- TextView 3 -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/text14"
-            android:textStyle="bold"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="100dp"
-            android:textSize="15sp"
-            android:textColor="#863B17"/>
-
-        <!-- TextView 4 -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/text15"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="125dp"
-            android:textSize="15sp"
-            android:textColor="#863B17"/>
-    </FrameLayout>
-
+        android:padding="5dp"
+        android:layout_marginTop="5dp"
+        >
 
     <LinearLayout
-        android:id="@+id/bg_areaConsumption"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:baselineAligned="false"
-        android:orientation="horizontal"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="10dp"
-        android:gravity="center"
-        android:weightSum="3"
-        android:layout_marginEnd="10dp"
-        app:layout_constraintTop_toBottomOf="@id/bg_mainConsumption"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="240dp">
-
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="180dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp">
-
-            <!-- Background box -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/bg_gray"/>
-
-            <!-- EditText over the background -->
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:hint="@string/text16"
-                android:autofillHints="name"
-                android:textColor="#863B17"
-                android:textAlignment="center"
-                android:textSize="17sp"
-                android:background="@android:color/transparent"
-                android:inputType="text"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:text="@string/text19"
-                android:textColor="#863B17"
-                android:textAlignment="center"
-                android:textStyle="bold"
-                android:textSize="30sp"
-                android:background="@android:color/transparent"
-                />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="70dp"
-                android:text="@string/text20"
-                android:textColor="#863B17"
-                android:textAlignment="center"
-                android:textSize="15sp"
-                android:background="@android:color/transparent"
-                />
-        </FrameLayout>
-
-        <!-- Second box -->
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="180dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp">
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/bg_gray"/>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:hint="@string/text17"
-                android:autofillHints="name"
-                android:textColor="#863B17"
-                android:textAlignment="center"
-                android:textSize="17sp"
-                android:background="@android:color/transparent"
-                android:inputType="text"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:text="@string/text19"
-                android:textColor="#863B17"
-                android:textAlignment="center"
-                android:textStyle="bold"
-                android:textSize="30sp"
-                android:background="@android:color/transparent"
-                />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="70dp"
-                android:text="@string/text20"
-                android:textColor="#863B17"
-                android:textAlignment="center"
-                android:textSize="15sp"
-                android:background="@android:color/transparent"
-                />
-        </FrameLayout>
-
-        <!-- Third box -->
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="180dp"
-            android:layout_weight="1">
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/bg_gray"/>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:autofillHints="name"
-                android:hint="@string/text18"
-                android:textColor="#863B17"
-                android:textAlignment="center"
-                android:textSize="17sp"
-                android:background="@android:color/transparent"
-                android:inputType="text"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:text="@string/text19"
-                android:textColor="#863B17"
-                android:textAlignment="center"
-                android:textStyle="bold"
-                android:textSize="30sp"
-                android:background="@android:color/transparent"
-                />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="70dp"
-                android:text="@string/text20"
-                android:textColor="#863B17"
-                android:textAlignment="center"
-                android:textSize="15sp"
-                android:background="@android:color/transparent"
-                />
-        </FrameLayout>
-    </LinearLayout>
-
+        android:orientation="vertical">
     <FrameLayout
         android:id="@+id/bg_estimatedCost"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/bg_areaConsumption"
+        app:layout_constraintTop_toBottomOf="@+id/top"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="40dp"
+        app:layout_constraintBottom_toTopOf="@+id/bg_mainConsumption"
+        android:layout_marginTop="10dp"
+        android:paddingTop="10dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="20dp"
+        android:background="@drawable/bg_light_yellow"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp">
 
-        <!-- Background -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="160dp"
-            android:background="@drawable/bg_light_yellow"/>
-
-        <!-- TextView 1 -->
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/text21"
-            android:layout_marginTop="20dp"
-            android:layout_marginStart="30dp"
-            android:textSize="15sp"
-            android:textColor="#863B17"/>
-
-        <!-- TextView 2 -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/text22"
-            android:textStyle="bold"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="45dp"
-            android:textSize="50sp"
-            android:textColor="#863B17"/>
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/tvTotalCost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/text22"
+                android:textStyle="bold"
+                android:textSize="60sp"
+                android:textColor="#863B17"
+                android:layout_marginEnd="5dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Estimated Total Cost"
+                android:textSize="15sp"
+                android:textColor="#863B17"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="5dp"/>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="110dp"
+            android:layout_marginTop="80dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:weightSum="4">
+            android:weightSum="2">
 
             <TextView
                 android:layout_width="0dp"
@@ -301,37 +104,260 @@
                 android:textColor="#863B17"/>
 
             <TextView
+                android:id="@+id/tvTotalKwh"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/text22"
                 android:textStyle="bold"
                 android:gravity="center"
-                android:textSize="15sp"
+                android:textSize="20sp"
                 android:textColor="#863B17"/>
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/text24"
-                android:textStyle="bold"
-                android:gravity="center"
-                android:textSize="15sp"
-                android:textColor="#863B17"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/text22"
-                android:textStyle="bold"
-                android:gravity="center"
-                android:textSize="15sp"
-                android:textColor="#863B17"/>
         </LinearLayout>
 
     </FrameLayout>
+    <FrameLayout
+        android:id="@+id/bg_mainConsumption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/bg_estimatedCost"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"
+        android:background="@drawable/bg_light_yellow"
+        android:padding="10dp"
+        android:layout_marginEnd="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/text12"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="20dp"
+            android:textSize="15sp"
+            android:textColor="#863B17"/>
+
+        <!-- TextView 2 -->
+        <TextView
+            android:id="@+id/tvTotalConsumption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/text13"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="35dp"
+            android:textSize="50sp"
+            android:textColor="#863B17"/>
+        <View
+            android:id="@+id/dividerTop"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_marginTop="110dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"
+            android:background="#863B17"/>
+        <TextView
+            android:id="@+id/tvTodayKwh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/text14"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="130dp"
+            android:textSize="15sp"
+            android:textColor="#863B17"/>
+
+        <!-- TextView 4 -->
+        <TextView
+            android:id="@+id/tvCurrentTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/text15"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="150dp"
+            android:textSize="15sp"
+            android:textColor="#863B17"/>
+    </FrameLayout>
+
+
+    <LinearLayout
+        android:id="@+id/bg_areaConsumption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"
+        android:gravity="center"
+        android:weightSum="3"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintTop_toBottomOf="@id/bg_mainConsumption"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="250dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_gray">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/area1"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_yellowish"
+                android:textColorHint="#863B17"
+                app:suffixTextColor="#863B17">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etArea1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:hint="@string/text16"
+                    android:inputType="text"
+                    android:textAlignment="center"
+                    android:textColor="#863B17"
+                    android:textSize="16sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <TextView
+                android:id="@+id/tvArea1Kwh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="60dp"
+                android:text="@string/text19"
+                android:textColor="#863B17"
+                android:textAlignment="center"
+                android:textStyle="bold"
+                android:textSize="30sp"
+                android:background="@android:color/transparent"
+                />
+            <TextView
+                android:id="@+id/tvArea1Percentage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="100dp"
+                android:text="@string/text20"
+                android:textColor="#863B17"
+                android:textAlignment="center"
+                android:textSize="15sp"
+                android:background="@android:color/transparent"
+                />
+        </FrameLayout>
+
+        <!-- Second box -->
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="250dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_gray">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/area2"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_yellowish"
+                android:textColorHint="#863B17"
+                app:suffixTextColor="#863B17">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etArea2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:textAlignment="center"
+                    android:inputType="text"
+                    android:textColor="#863B17"
+                    android:textSize="16sp"
+                    android:hint="@string/text17" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <TextView
+                android:id="@+id/tvArea2Kwh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="60dp"
+                android:text="@string/text19"
+                android:textColor="#863B17"
+                android:textAlignment="center"
+                android:textStyle="bold"
+                android:textSize="30sp"
+                android:background="@android:color/transparent"
+                />
+            <TextView
+                android:id="@+id/tvArea2Percentage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="100dp"
+                android:text="@string/text20"
+                android:textColor="#863B17"
+                android:textAlignment="center"
+                android:textSize="15sp"
+                android:background="@android:color/transparent"
+                />
+        </FrameLayout>
+
+        <!-- Third box -->
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="250dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_gray">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/area3"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_yellowish"
+                android:textColorHint="#863B17"
+                app:suffixTextColor="#863B17">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etArea3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:textAlignment="center"
+                    android:inputType="text"
+                    android:textColor="#863B17"
+                    android:textSize="16sp"
+                    android:hint="@string/text18" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <TextView
+                android:id="@+id/tvArea3Kwh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="60dp"
+                android:text="@string/text19"
+                android:textColor="#863B17"
+                android:textAlignment="center"
+                android:textStyle="bold"
+                android:textSize="30sp"
+                android:background="@android:color/transparent"
+                />
+            <TextView
+                android:id="@+id/tvArea3Percentage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="100dp"
+                android:text="@string/text20"
+                android:textColor="#863B17"
+                android:textAlignment="center"
+                android:textSize="15sp"
+                android:background="@android:color/transparent"
+                />
+        </FrameLayout>
+    </LinearLayout>
+
+
 
     <LinearLayout
         android:id="@+id/bg_moreInfo"
@@ -341,11 +367,10 @@
         android:orientation="horizontal"
         android:weightSum="2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bg_estimatedCost"
+        app:layout_constraintTop_toBottomOf="@+id/bg_areaConsumption"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp">
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        android:layout_margin="10dp">
 
         <FrameLayout
             android:layout_width="0dp"
@@ -369,33 +394,30 @@
                 android:layout_marginTop="60dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
+                android:weightSum="2"
                 android:baselineAligned="false">
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
                     <ImageView
-                        android:layout_width="100dp"
+                        android:id="@+id/ivBatteryImage"
+                        android:layout_width="0dp"
                         android:layout_height="50dp"
+                        android:layout_weight="1"
                         android:layout_margin="10dp"
-                        android:src="@drawable/ic_battery"
+                        android:src="@drawable/ic_battery1"
                         tools:ignore="contentDescription"/>
-                </FrameLayout>
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
+
                     <TextView
-                        android:layout_width="match_parent"
+                        android:id="@+id/tvBatteryLife"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:text="@string/text29"
+                        android:layout_weight="1"
                         android:layout_gravity="center"
                         android:textAlignment="center"
                         android:textColor="#863B17"
                         android:textStyle="bold"
                         android:layout_margin="10dp"
                         android:textSize="30sp"/>
-                </FrameLayout>
+
 
             </LinearLayout>
 
@@ -442,6 +464,7 @@
                         android:textColor="#863B17"
                         android:textSize="12sp"/>
                     <TextView
+                        android:id="@+id/tvPeakTime"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/text30"
@@ -472,6 +495,7 @@
                         android:textColor="#863B17"
                         android:textSize="12sp"/>
                     <TextView
+                        android:id="@+id/tvPeakValue"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/text19"
@@ -488,6 +512,8 @@
 
         </FrameLayout>
     </LinearLayout>
+    </LinearLayout>
+    </ScrollView>
     <LinearLayout
         android:id="@+id/button"
         android:layout_width="match_parent"
