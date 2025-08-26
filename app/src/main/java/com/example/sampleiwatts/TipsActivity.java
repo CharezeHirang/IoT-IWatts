@@ -25,7 +25,6 @@ public class TipsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_tips);
 
         icBack = findViewById(R.id.ic_back);
@@ -143,17 +142,6 @@ public class TipsActivity extends AppCompatActivity {
         });
 
 
-
-        btnCategory1 = findViewById(R.id.category1);
-        btnCategory2 = findViewById(R.id.category2);
-        btnCategory3 = findViewById(R.id.category3);
-        btnCategory4 = findViewById(R.id.category4);
-        btnCategory5 = findViewById(R.id.category5);
-        btnCategory6 = findViewById(R.id.category6);
-        btnCategory7 = findViewById(R.id.category7);
-        btnCategory8 = findViewById(R.id.category8);
-        btnCategory9 = findViewById(R.id.category9);
-        btnCategory10 = findViewById(R.id.category10);
 
     }
 
