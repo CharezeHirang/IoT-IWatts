@@ -368,10 +368,10 @@ public class HistoricalDataActivity extends AppCompatActivity {
             // Daily data for charts
             List<Double> dailyConsumption = new ArrayList<>();
             List<String> dateLabels = new ArrayList<>();
-            Map<String, List<Double>> areaHourlyData = new HashMap<>();
-            areaHourlyData.put("area1", new ArrayList<>());
-            areaHourlyData.put("area2", new ArrayList<>());
-            areaHourlyData.put("area3", new ArrayList<>());
+            Map<String, List<Double>> areaDailyData = new HashMap<>();
+            areaDailyData.put("area1", new ArrayList<>());
+            areaDailyData.put("area2", new ArrayList<>());
+            areaDailyData.put("area3", new ArrayList<>());
 
             for (DataSnapshot daySnapshot : dataSnapshot.getChildren()) {
                 try {
@@ -435,9 +435,9 @@ public class HistoricalDataActivity extends AppCompatActivity {
                             }
 
                             // Process hourly data for charts
-                            processAreaHourlyData(areaHourlyData, "area1", area1Kwh);
-                            processAreaHourlyData(areaHourlyData, "area2", area2Kwh);
-                            processAreaHourlyData(areaHourlyData, "area3", area3Kwh);
+                            processAreaDailyData(areaDailyData, "area1", area1Kwh);
+                            processAreaDailyData(areaDailyData, "area2", area2Kwh);
+                            processAreaDailyData(areaDailyData, "area3", area3Kwh);
                         }
                     }
                 } catch (Exception e) {
@@ -451,7 +451,7 @@ public class HistoricalDataActivity extends AppCompatActivity {
             updateSummaryDisplay(totalConsumption, totalCost, peakDay, dayCount);
             updateAreaDisplays(area1Total, area2Total, area3Total, totalConsumption,
                     area1MaxPeak, area2MaxPeak, area3MaxPeak);
-            updateCharts(dailyConsumption, dateLabels, areaHourlyData);
+            updateCharts(dailyConsumption, dateLabels, areaDailyData);
 
             // Load previous period for comparison
             loadPreviousPeriodData();
@@ -483,14 +483,10 @@ public class HistoricalDataActivity extends AppCompatActivity {
     /**
      * Process area hourly data for charts
      */
-    private void processAreaHourlyData(Map<String, List<Double>> areaHourlyData, String areaKey, double dailyConsumption) {
-        List<Double> hourlyList = areaHourlyData.get(areaKey);
-        if (hourlyList != null) {
-            // Create hourly pattern from daily consumption
-            double hourlyAvg = dailyConsumption / 24.0;
-            for (int i = 0; i < 24; i++) {
-                hourlyList.add(hourlyAvg + (Math.random() - 0.5) * hourlyAvg * 0.3);
-            }
+    private void processAreaDailyData(Map<String, List<Double>> areaDailyData, String areaKey, double dailyConsumption) {
+        List<Double> dailyList = areaDailyData.get(areaKey);
+        if (dailyList != null) {
+            dailyList.add(dailyConsumption);  // Simply add the daily consumption
         }
     }
 
@@ -651,7 +647,7 @@ public class HistoricalDataActivity extends AppCompatActivity {
      * Update all charts with historical data
      */
     private void updateCharts(List<Double> dailyConsumption, List<String> dateLabels,
-                              Map<String, List<Double>> areaHourlyData) {
+                              Map<String, List<Double>> areaDailyData) {
         try {
             // Update main consumption chart
             if (mainChart != null && !dailyConsumption.isEmpty()) {
@@ -660,23 +656,23 @@ public class HistoricalDataActivity extends AppCompatActivity {
 
             // Update area charts with 24-hour patterns
             if (area1Chart != null) {
-                List<Double> area1Data = areaHourlyData.get("area1");
+                List<Double> area1Data = areaDailyData.get("area1");  // ✅ Renamed
                 if (area1Data != null && !area1Data.isEmpty()) {
-                    setupHourlyChart(area1Chart, area1Data, "Area 1", Color.rgb(255, 193, 7));
+                    setupAreaDailyChart(area1Chart, area1Data, dateLabels, "Area 1", Color.rgb(255, 193, 7));  // ✅ Renamed method
                 }
             }
 
             if (area2Chart != null) {
-                List<Double> area2Data = areaHourlyData.get("area2");
+                List<Double> area2Data = areaDailyData.get("area2");  // ✅ Renamed
                 if (area2Data != null && !area2Data.isEmpty()) {
-                    setupHourlyChart(area2Chart, area2Data, "Area 2", Color.rgb(220, 53, 69));
+                    setupAreaDailyChart(area2Chart, area2Data, dateLabels, "Area 2", Color.rgb(220, 53, 69));  // ✅ Renamed method
                 }
             }
 
             if (area3Chart != null) {
-                List<Double> area3Data = areaHourlyData.get("area3");
+                List<Double> area3Data = areaDailyData.get("area3");  // ✅ Renamed
                 if (area3Data != null && !area3Data.isEmpty()) {
-                    setupHourlyChart(area3Chart, area3Data, "Area 3", Color.rgb(40, 167, 69));
+                    setupAreaDailyChart(area3Chart, area3Data, dateLabels, "Area 3", Color.rgb(40, 167, 69));  // ✅ Renamed method
                 }
             }
 
@@ -719,30 +715,15 @@ public class HistoricalDataActivity extends AppCompatActivity {
     /**
      * Setup 24-hour area chart
      */
-    private void setupHourlyChart(LineChart chart, List<Double> hourlyData, String areaName, int color) {
+    private void setupAreaDailyChart(LineChart chart, List<Double> dailyAreaData, List<String> dateLabels, String areaName, int color) {
         try {
-            // Take average of hourly data to create 24-hour pattern
+            // Create entries for each DAY
             List<Entry> entries = new ArrayList<>();
-            int hoursPerDataPoint = hourlyData.size() / 24;
-
-            for (int hour = 0; hour < 24; hour++) {
-                double hourlyAvg = 0.0;
-                int count = 0;
-
-                // Average data points for this hour
-                for (int i = hour * hoursPerDataPoint; i < (hour + 1) * hoursPerDataPoint && i < hourlyData.size(); i++) {
-                    hourlyAvg += hourlyData.get(i);
-                    count++;
-                }
-
-                if (count > 0) {
-                    hourlyAvg /= count;
-                }
-
-                entries.add(new Entry(hour, (float) hourlyAvg));
+            for (int day = 0; day < dailyAreaData.size(); day++) {
+                entries.add(new Entry(day, dailyAreaData.get(day).floatValue()));
             }
 
-            LineDataSet dataSet = new LineDataSet(entries, areaName + " Usage");
+            LineDataSet dataSet = new LineDataSet(entries, areaName + " Daily Usage");
             dataSet.setColor(color);
             dataSet.setCircleColor(color);
             dataSet.setLineWidth(2f);
@@ -756,16 +737,11 @@ public class HistoricalDataActivity extends AppCompatActivity {
             LineData lineData = new LineData(dataSet);
             chart.setData(lineData);
 
-            // Create hour labels
-            String[] hourLabels = new String[24];
-            for (int i = 0; i < 24; i++) {
-                hourLabels[i] = String.format(Locale.getDefault(), "%02d:00", i);
-            }
-
-            configureChart(chart, hourLabels);
+            // Use DATE labels, not hour labels
+            configureChart(chart, dateLabels.toArray(new String[0]));
 
         } catch (Exception e) {
-            Log.e(TAG, "Error setting up hourly chart", e);
+            Log.e(TAG, "Error setting up area daily chart", e);
         }
     }
 
