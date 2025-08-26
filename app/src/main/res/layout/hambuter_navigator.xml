@@ -8,7 +8,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:background="@drawable/bg_light_yellow"
+        android:background="@drawable/navigator"
         android:orientation="vertical"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -30,32 +30,104 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/text17"
+            android:text="Dashboard"
             android:drawableLeft="@drawable/ic_area2"
             android:layout_marginTop="50dp"
             android:textAlignment="center"
             android:textColor="#863B17"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:drawablePadding="10dp"
             android:gravity="center_vertical"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
             tools:ignore="RtlCompat"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/text18"
-            android:layout_marginTop="90dp"
+            android:text="Monitoring"
+            android:layout_marginTop="20dp"
             android:drawableLeft="@drawable/ic_area3"
             android:textAlignment="center"
             android:textColor="#863B17"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:drawablePadding="10dp"
+            android:gravity="center_vertical"
+            tools:ignore="RtlCompat"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Historical Data"
+            android:drawableLeft="@drawable/ic_area2"
+            android:layout_marginTop="20dp"
+            android:textAlignment="center"
+            android:textColor="#863B17"
+            android:textSize="20sp"
+            android:gravity="center_vertical"
+            tools:ignore="RtlCompat"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cost Estimation"
+            android:layout_marginTop="20dp"
+            android:drawableLeft="@drawable/ic_area3"
+            android:textAlignment="center"
+            android:textColor="#863B17"
+            android:textSize="20sp"
+            android:gravity="center_vertical"
+            tools:ignore="RtlCompat"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:drawableLeft="@drawable/ic_area2"
+            android:layout_marginTop="20dp"
+            android:textAlignment="center"
+            android:textColor="#863B17"
+            android:textSize="20sp"
+            android:gravity="center_vertical"
+            tools:ignore="RtlCompat"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Device Settings"
+            android:layout_marginTop="20dp"
+            android:drawableLeft="@drawable/ic_area3"
+            android:textAlignment="center"
+            android:textColor="#863B17"
+            android:textSize="20sp"
+            android:gravity="center_vertical"
+            tools:ignore="RtlCompat"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tips"
+            android:drawableLeft="@drawable/ic_area2"
+            android:layout_marginTop="20dp"
+            android:textAlignment="center"
+            android:textColor="#863B17"
+            android:textSize="20sp"
+            android:gravity="center_vertical"
+            tools:ignore="RtlCompat"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Alert"
+            android:layout_marginTop="20dp"
+            android:drawableLeft="@drawable/ic_area3"
+            android:textAlignment="center"
+            android:textColor="#863B17"
+            android:textSize="20sp"
+            android:gravity="center_vertical"
+            tools:ignore="RtlCompat"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="240dp"
+            android:drawableLeft="@drawable/ic_area3"
             android:gravity="center_vertical"
             android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            tools:ignore="RtlCompat"/>
+            android:background="@drawable/bg_yellowish"
+            android:text="Logout"
+            android:textAlignment="center"
+            android:textColor="#863B17"
+            android:textSize="20sp"
+            tools:ignore="RtlCompat" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -55,6 +55,11 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         btnAboutUs = findViewById(R.id.btn_about);
+        btnAboutUs.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsActivity.this, AboutUsActivity.class);
+            startActivity(intent);
+            finish();
+        });
 
     }
 }
