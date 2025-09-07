@@ -241,12 +241,12 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
      * Update overall summary section
      */
     private void updateOverallSummary(RealTimeDataProcessor.RealTimeData data) {
-        todaysTotalValue.setText(String.format("%.2f kWh", data.totalKwhToday));
+        todaysTotalValue.setText(String.format("%.2f", data.totalKwhToday));
         todaysTotalPercentage.setText("Updated: " + data.lastUpdateTime);
-        peakUsageValue.setText(String.format("%.0f W", data.peakUsageValue));
+        peakUsageValue.setText(String.format("%.0f", data.peakUsageValue));
         peakUsageTime.setText(data.peakUsageTime.isEmpty() ? "--:--" : data.peakUsageTime);
         estimatedCostValue.setText(String.format("₱%.2f", data.estimatedCostToday));
-        estimatedCostDetails.setText(String.format("Rate: ₱%.2f/kWh", data.electricityRate));
+        estimatedCostDetails.setText(String.format("BATELEC II Rate: ₱%.2f/kWh", data.electricityRate));
     }
 
     /**

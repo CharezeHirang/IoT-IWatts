@@ -1,7 +1,10 @@
 package com.example.sampleiwatts;
 
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -15,6 +18,13 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.sampleiwatts.managers.DataProcessingManager;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -23,6 +33,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -31,6 +42,8 @@ public class DashboardActivity extends AppCompatActivity {
     private TextView tvTotalCost, tvElectricityRate, tvBatteryLife,tvTotalConsumption,tvTodayKwh, tvCurrentTime;
     private TextView tvArea1Kwh, tvArea2Kwh, tvArea3Kwh,  tvArea1Percentage, tvArea2Percentage, tvArea3Percentage, tvPeakTime, tvPeakValue;
     private ImageView ivBatteryImage;
+    private LineChart lineChart1, lineChart2, lineChart3;
+
     private DatabaseReference db;
     private EditText etArea1, etArea2, etArea3;
     private DataProcessingManager processingManager;
@@ -40,6 +53,9 @@ public class DashboardActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_dashboard);
 
+        lineChart1 = findViewById(R.id.area1_chart);
+        lineChart2 = findViewById(R.id.area2_chart);
+        lineChart3 = findViewById(R.id.area3_chart);
         db = FirebaseDatabase.getInstance().getReference();
         tvArea1Kwh = findViewById(R.id.tvArea1Kwh);
         tvArea2Kwh = findViewById(R.id.tvArea2Kwh);
@@ -71,6 +87,9 @@ public class DashboardActivity extends AppCompatActivity {
         fetchAreaNames();
         fetchAreaKwh();
         fetchPeakWatts();
+        fetchArea1();
+        fetchArea2();
+        fetchArea3();
         LinearLayout buttonLayout = findViewById(R.id.button);
 
         ButtonNavigator.setupButtons(this, buttonLayout);
@@ -79,6 +98,7 @@ public class DashboardActivity extends AppCompatActivity {
         processingManager = app.getProcessingManager();
 
         Log.d(TAG, "MainActivity created");
+
 
     }
     @Override
@@ -90,7 +110,6 @@ public class DashboardActivity extends AppCompatActivity {
         DataProcessingManager manager = ((IWattsApplication) getApplication()).getProcessingManager();
         manager.processDataInForeground();
     }
-
     private void fetchTotalCost() {
         DatabaseReference costFilterDateRef = db.child("cost_filter_date");
 
@@ -309,10 +328,15 @@ public class DashboardActivity extends AppCompatActivity {
                                 }
                             }
 
-                            // Format and display the total kWh value
                             String formattedKwh = String.format("%.3f", cumulativeKwh);
                             Log.d("KwhTotal", "Total KWh: " + formattedKwh);
-                            tvTotalConsumption.setText(formattedKwh + " kwh");
+
+                            String totalKwhText = formattedKwh + " kwh";
+                            SpannableString spannableString = new SpannableString(totalKwhText);
+                            spannableString.setSpan(new android.text.style.AbsoluteSizeSpan(50, true), 0, formattedKwh.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            spannableString.setSpan(new android.text.style.AbsoluteSizeSpan(20, true), formattedKwh.length() + 1, totalKwhText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            tvTotalConsumption.setText(spannableString);
+
                         }
 
                         @Override
@@ -683,6 +707,327 @@ public class DashboardActivity extends AppCompatActivity {
             }
         });
     }
+    private void fetchArea1() {
+        DatabaseReference costFilterDateRef = db.child("cost_filter_date");
+
+        costFilterDateRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String startingDateString = dataSnapshot.child("starting_date").getValue(String.class);
+                String endingDateString = dataSnapshot.child("ending_date").getValue(String.class);
+
+                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                try {
+                    Date startingDate = dateFormatter.parse(startingDateString);
+                    Date endingDate = dateFormatter.parse(endingDateString);
+
+                    db.child("hourly_summaries").orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            ArrayList<Entry> entries = new ArrayList<>();
+                            ArrayList<String> dateLabels = new ArrayList<>();
+                            int index = 0;
+
+                            for (DataSnapshot dateSnapshot : dataSnapshot.getChildren()) {
+                                String dateKey = dateSnapshot.getKey();
+                                Date currentDate = null;
+                                try {
+                                    currentDate = dateFormatter.parse(dateKey);
+                                } catch (ParseException e) {
+                                    Log.e("CostEstimation", "Error parsing date: " + dateKey);
+                                }
+
+                                if ((currentDate.equals(startingDate) || currentDate.after(startingDate)) &&
+                                        (currentDate.equals(endingDate) || currentDate.before(endingDate))) {
+                                    double totalArea1Kwh = 0.0;
+
+                                    for (DataSnapshot hourSnapshot : dateSnapshot.getChildren()) {
+                                        Double area1Kwh = hourSnapshot.child("area1_kwh").getValue(Double.class);
+
+                                        if (area1Kwh != null) {
+                                            totalArea1Kwh += area1Kwh;
+                                        }
+                                    }
+
+                                    entries.add(new Entry(index, (float) totalArea1Kwh));
+                                    dateLabels.add(new SimpleDateFormat("MM-dd", Locale.getDefault()).format(currentDate));
+                                    index++;
+                                }
+                            }
+
+                            if (!entries.isEmpty()) {
+                                LineDataSet dataSet = new LineDataSet(entries, "Area 1 Consumption (kWh)");
+                                LineData lineData = new LineData(dataSet);
+
+                                dataSet.setColor(getResources().getColor(R.color.brown));
+                                dataSet.setValueTextColor(getResources().getColor(R.color.brown));
+                                dataSet.setDrawFilled(true);
+                                dataSet.setLineWidth(2f);
+                                dataSet.setDrawCircles(true);
+
+                                lineChart1.setData(lineData);
+                                lineChart1.getAxisRight().setEnabled(false);
+                                lineChart1.getAxisLeft().setGridColor(getResources().getColor(R.color.brown));
+                                lineChart1.getAxisLeft().setTextColor(getResources().getColor(R.color.brown));
+                                lineChart1.getXAxis().setGridColor(getResources().getColor(R.color.brown));
+                                lineChart1.getAxisRight().setGridColor(getResources().getColor(R.color.brown));
+                                lineChart1.getLegend().setTextColor(getResources().getColor(R.color.brown));
+
+
+                                XAxis xAxis = lineChart1.getXAxis();
+                                xAxis.setValueFormatter(new IndexAxisValueFormatter(dateLabels));
+                                xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                                xAxis.setGranularity(1f);
+                                xAxis.setTextColor(getResources().getColor(R.color.brown));
+                                lineChart1.getDescription().setEnabled(false);
+                                lineChart1.setExtraBottomOffset(10f);
+                                xAxis.setDrawLabels(true);
+
+
+                                Legend legend = lineChart1.getLegend();
+                                legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+                                legend.setForm(Legend.LegendForm.LINE);
+                                legend.setTextColor(getResources().getColor(R.color.brown));
+
+                                lineChart1.invalidate();
+                            } else {
+                                Log.d("CostEstimation", "No data available for the selected date range.");
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Log.e("FirebaseError", "Error fetching hourly summaries: " + databaseError.getMessage());
+                        }
+                    });
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    Log.e("CostEstimation", "Error parsing dates: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("FirebaseError", "Error fetching cost filter data: " + databaseError.getMessage());
+            }
+        });
+    }
+    private void fetchArea2() {
+        DatabaseReference costFilterDateRef = db.child("cost_filter_date");
+
+        costFilterDateRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String startingDateString = dataSnapshot.child("starting_date").getValue(String.class);
+                String endingDateString = dataSnapshot.child("ending_date").getValue(String.class);
+
+                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                try {
+                    Date startingDate = dateFormatter.parse(startingDateString);
+                    Date endingDate = dateFormatter.parse(endingDateString);
+
+                    db.child("hourly_summaries").orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            ArrayList<Entry> entries = new ArrayList<>();
+                            ArrayList<String> dateLabels = new ArrayList<>();
+                            int index = 0;
+
+                            for (DataSnapshot dateSnapshot : dataSnapshot.getChildren()) {
+                                String dateKey = dateSnapshot.getKey();
+                                Date currentDate = null;
+                                try {
+                                    currentDate = dateFormatter.parse(dateKey);
+                                } catch (ParseException e) {
+                                    Log.e("CostEstimation", "Error parsing date: " + dateKey);
+                                }
+
+                                if ((currentDate.equals(startingDate) || currentDate.after(startingDate)) &&
+                                        (currentDate.equals(endingDate) || currentDate.before(endingDate))) {
+                                    double totalArea2Kwh = 0.0;
+
+                                    for (DataSnapshot hourSnapshot : dateSnapshot.getChildren()) {
+                                        Double area2Kwh = hourSnapshot.child("area2_kwh").getValue(Double.class);
+
+                                        if (area2Kwh != null) {
+                                            totalArea2Kwh += area2Kwh;
+                                        }
+                                    }
+
+                                    entries.add(new Entry(index, (float) totalArea2Kwh));
+                                    dateLabels.add(new SimpleDateFormat("MM-dd", Locale.getDefault()).format(currentDate));
+                                    index++;
+                                }
+                            }
+
+                            if (!entries.isEmpty()) {
+                                LineDataSet dataSet = new LineDataSet(entries, "Area 2 Consumption (kWh)");
+                                LineData lineData = new LineData(dataSet);
+
+                                dataSet.setColor(getResources().getColor(R.color.brown));
+                                dataSet.setValueTextColor(getResources().getColor(R.color.brown));
+                                dataSet.setDrawFilled(true);
+                                dataSet.setLineWidth(2f);
+                                dataSet.setDrawCircles(true);
+
+                                lineChart2.setData(lineData);
+                                lineChart2.getAxisRight().setEnabled(false);
+                                lineChart2.getAxisLeft().setGridColor(getResources().getColor(R.color.brown));
+                                lineChart2.getAxisLeft().setTextColor(getResources().getColor(R.color.brown));
+                                lineChart2.getXAxis().setGridColor(getResources().getColor(R.color.brown));
+                                lineChart2.getAxisRight().setGridColor(getResources().getColor(R.color.brown));
+                                lineChart2.getLegend().setTextColor(getResources().getColor(R.color.brown));
+
+
+                                XAxis xAxis = lineChart2.getXAxis();
+                                xAxis.setValueFormatter(new IndexAxisValueFormatter(dateLabels));
+                                xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                                xAxis.setGranularity(1f);
+                                xAxis.setTextColor(getResources().getColor(R.color.brown));
+                                lineChart2.getDescription().setEnabled(false);
+                                lineChart2.setExtraBottomOffset(10f);
+                                xAxis.setDrawLabels(true);
+
+
+                                Legend legend = lineChart2.getLegend();
+                                legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+                                legend.setForm(Legend.LegendForm.LINE);
+                                legend.setTextColor(getResources().getColor(R.color.brown));
+
+                                lineChart2.invalidate();
+                            } else {
+                                Log.d("CostEstimation", "No data available for the selected date range.");
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Log.e("FirebaseError", "Error fetching hourly summaries: " + databaseError.getMessage());
+                        }
+                    });
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    Log.e("CostEstimation", "Error parsing dates: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("FirebaseError", "Error fetching cost filter data: " + databaseError.getMessage());
+            }
+        });
+    }
+    private void fetchArea3() {
+        DatabaseReference costFilterDateRef = db.child("cost_filter_date");
+
+        costFilterDateRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String startingDateString = dataSnapshot.child("starting_date").getValue(String.class);
+                String endingDateString = dataSnapshot.child("ending_date").getValue(String.class);
+
+                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                try {
+                    Date startingDate = dateFormatter.parse(startingDateString);
+                    Date endingDate = dateFormatter.parse(endingDateString);
+
+                    db.child("hourly_summaries").orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            ArrayList<Entry> entries = new ArrayList<>();
+                            ArrayList<String> dateLabels = new ArrayList<>();
+                            int index = 0;
+
+                            for (DataSnapshot dateSnapshot : dataSnapshot.getChildren()) {
+                                String dateKey = dateSnapshot.getKey();
+                                Date currentDate = null;
+                                try {
+                                    currentDate = dateFormatter.parse(dateKey);
+                                } catch (ParseException e) {
+                                    Log.e("CostEstimation", "Error parsing date: " + dateKey);
+                                }
+
+                                if ((currentDate.equals(startingDate) || currentDate.after(startingDate)) &&
+                                        (currentDate.equals(endingDate) || currentDate.before(endingDate))) {
+                                    double totalArea3Kwh = 0.0;
+
+                                    for (DataSnapshot hourSnapshot : dateSnapshot.getChildren()) {
+                                        Double area3Kwh = hourSnapshot.child("area3_kwh").getValue(Double.class);
+
+                                        if (area3Kwh != null) {
+                                            totalArea3Kwh += area3Kwh;
+                                        }
+                                    }
+
+                                    entries.add(new Entry(index, (float) totalArea3Kwh));
+                                    dateLabels.add(new SimpleDateFormat("MM-dd", Locale.getDefault()).format(currentDate));
+                                    index++;
+                                }
+                            }
+
+                            if (!entries.isEmpty()) {
+                                LineDataSet dataSet = new LineDataSet(entries, "Area 3 Consumption (kWh)");
+                                LineData lineData = new LineData(dataSet);
+
+                                dataSet.setColor(getResources().getColor(R.color.brown));
+                                dataSet.setValueTextColor(getResources().getColor(R.color.brown));
+                                dataSet.setDrawFilled(true);
+                                dataSet.setLineWidth(2f);
+                                dataSet.setDrawCircles(true);
+
+                                lineChart3.setData(lineData);
+                                lineChart3.getAxisRight().setEnabled(false);
+                                lineChart3.getAxisLeft().setGridColor(getResources().getColor(R.color.brown));
+                                lineChart3.getAxisLeft().setTextColor(getResources().getColor(R.color.brown));
+                                lineChart3.getXAxis().setGridColor(getResources().getColor(R.color.brown));
+                                lineChart3.getAxisRight().setGridColor(getResources().getColor(R.color.brown));
+                                lineChart3.getLegend().setTextColor(getResources().getColor(R.color.brown));
+
+
+                                XAxis xAxis = lineChart3.getXAxis();
+                                xAxis.setValueFormatter(new IndexAxisValueFormatter(dateLabels));
+                                xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                                xAxis.setGranularity(1f);
+                                xAxis.setTextColor(getResources().getColor(R.color.brown));
+                                lineChart3.getDescription().setEnabled(false);
+                                lineChart3.setExtraBottomOffset(10f);
+                                xAxis.setDrawLabels(true);
+
+
+                                Legend legend = lineChart3.getLegend();
+                                legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+                                legend.setForm(Legend.LegendForm.LINE);
+                                legend.setTextColor(getResources().getColor(R.color.brown));
+
+                                lineChart3.invalidate();
+                            } else {
+                                Log.d("CostEstimation", "No data available for the selected date range.");
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Log.e("FirebaseError", "Error fetching hourly summaries: " + databaseError.getMessage());
+                        }
+                    });
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    Log.e("CostEstimation", "Error parsing dates: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("FirebaseError", "Error fetching cost filter data: " + databaseError.getMessage());
+            }
+        });
+    }
+
+
+
+
+
+
 
 
 
