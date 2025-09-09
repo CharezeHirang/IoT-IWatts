@@ -20,8 +20,12 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.example.sampleiwatts.processors.RealTimeDataProcessor;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class RealTimeMonitoringActivity extends AppCompatActivity {
     private static final String TAG = "RealTimeMonitoring";
@@ -75,7 +79,8 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_real_time_monitoring);
-// Get the button layout
+
+        // Get the button layout
         LinearLayout buttonLayout = findViewById(R.id.button);
 
         // Set up buttons using the utility class
@@ -85,8 +90,8 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
         initializeViews();
         setupRefreshTimer();
 
-        // Initialize data processor
-        dataProcessor = new RealTimeDataProcessor(this);
+        // Initialize data processor - UPDATED: No context parameter needed
+        dataProcessor = new RealTimeDataProcessor();
 
         // Load initial data
         loadRealTimeData();
@@ -125,16 +130,14 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
         area3PeakConsumption = findViewById(R.id.area3_peak_consumption);
         area3SharePercentage = findViewById(R.id.area3_share_percentage);
 
-        // Create LineChart instances and add them to containers
+        // Setup chart containers
         setupChartContainers();
 
-
-
-        Log.d(TAG, "Views initialized successfully");
+        Log.d(TAG, "All views initialized successfully");
     }
 
     /**
-     * Setup LineChart instances in FrameLayout containers
+     * Setup chart containers with LineChart instances
      */
     private void setupChartContainers() {
         try {
@@ -166,7 +169,6 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
         }
     }
 
-
     /**
      * Setup automatic refresh timer
      */
@@ -184,12 +186,14 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
     }
 
     /**
-     * Load real-time data from processor
+     * Load real-time data from processor - UPDATED for new logs-based processor
      */
     private void loadRealTimeData() {
         Log.d(TAG, "Loading real-time data...");
 
-        dataProcessor.processTodaysData(new RealTimeDataProcessor.DataProcessingCallback() {
+        // UPDATED: Use new method signature with date parameter
+        String todayDate = getCurrentDate();
+        dataProcessor.processRealTimeData(todayDate, new RealTimeDataProcessor.DataProcessingCallback() {
             @Override
             public void onDataProcessed(RealTimeDataProcessor.RealTimeData realTimeData) {
                 runOnUiThread(() -> {
@@ -201,36 +205,36 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
             @Override
             public void onError(String error) {
                 runOnUiThread(() -> {
+                    Log.e(TAG, "Error loading real-time data: " + error);
                     Toast.makeText(RealTimeMonitoringActivity.this,
-                            "Error loading data: " + error, Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "Data processing error: " + error);
+                            "Failed to load real-time data: " + error, Toast.LENGTH_SHORT).show();
                 });
             }
         });
     }
 
     /**
-     * Update UI with processed data
+     * UPDATED: Helper method to get current date in Philippine timezone
      */
-    private void updateUI(RealTimeDataProcessor.RealTimeData data) {
+    private String getCurrentDate() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Manila"));
+        return dateFormat.format(new Date());
+    }
+
+    /**
+     * Update UI with real-time data
+     */
+    private void updateUI(RealTimeDataProcessor.RealTimeData realTimeData) {
         try {
             // Update overall summary
-            updateOverallSummary(data);
+            updateOverallSummary(realTimeData);
 
             // Update area data
-            updateAreaData(data.area1Data, area1Chart, area1TotalConsumption,
-                    area1EstimatedCost, area1PeakConsumption, area1SharePercentage,
-                    Color.parseColor("#FFD700")); // Gold color for area 1
+            updateAreaData(realTimeData);
 
-            updateAreaData(data.area2Data, area2Chart, area2TotalConsumption,
-                    area2EstimatedCost, area2PeakConsumption, area2SharePercentage,
-                    Color.parseColor("#FF6B6B")); // Red color for area 2
-
-            updateAreaData(data.area3Data, area3Chart, area3TotalConsumption,
-                    area3EstimatedCost, area3PeakConsumption, area3SharePercentage,
-                    Color.parseColor("#4ECDC4")); // Teal color for area 3
-
-            Log.d(TAG, "All UI components updated successfully");
+            // Update charts
+            updateCharts(realTimeData);
 
         } catch (Exception e) {
             Log.e(TAG, "Error updating UI: " + e.getMessage(), e);
@@ -240,126 +244,196 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
     /**
      * Update overall summary section
      */
-    private void updateOverallSummary(RealTimeDataProcessor.RealTimeData data) {
-        todaysTotalValue.setText(String.format("%.2f", data.totalKwhToday));
-        todaysTotalPercentage.setText("Updated: " + data.lastUpdateTime);
-        peakUsageValue.setText(String.format("%.0f", data.peakUsageValue));
-        peakUsageTime.setText(data.peakUsageTime.isEmpty() ? "--:--" : data.peakUsageTime);
-        estimatedCostValue.setText(String.format("₱%.2f", data.estimatedCostToday));
-        estimatedCostDetails.setText(String.format("BATELEC II Rate: ₱%.2f/kWh", data.electricityRate));
+    private void updateOverallSummary(RealTimeDataProcessor.RealTimeData realTimeData) {
+        if (todaysTotalValue != null) {
+            todaysTotalValue.setText(String.format(Locale.getDefault(), "%.2f kWh", realTimeData.totalConsumption));
+        }
+
+        if (peakUsageValue != null) {
+            peakUsageValue.setText(String.format(Locale.getDefault(), "%.0f W", realTimeData.peakWatts));
+        }
+
+        if (peakUsageTime != null) {
+            peakUsageTime.setText(realTimeData.peakTime != null ? realTimeData.peakTime : "--:--");
+        }
+
+        if (estimatedCostValue != null) {
+            estimatedCostValue.setText(String.format(Locale.getDefault(), "₱%.2f", realTimeData.totalCost));
+        }
+
+        // Calculate percentage change (placeholder logic - you can implement based on your needs)
+        if (todaysTotalPercentage != null) {
+            todaysTotalPercentage.setText("-- %");
+        }
+
+        if (estimatedCostDetails != null) {
+            estimatedCostDetails.setText("Today's estimated cost");
+        }
     }
 
     /**
-     * Update area-specific data and chart
+     * Update area-specific data
      */
-    private void updateAreaData(RealTimeDataProcessor.AreaData areaData, LineChart chart,
-                                TextView totalConsumption, TextView estimatedCost,
-                                TextView peakConsumption, TextView sharePercentage, int color) {
+    private void updateAreaData(RealTimeDataProcessor.RealTimeData realTimeData) {
+        // Area 1
+        updateSingleAreaData(realTimeData.area1Data,
+                area1TotalConsumption, area1EstimatedCost,
+                area1PeakConsumption, area1SharePercentage);
 
-        // Update text views
-        totalConsumption.setText(String.format("%.2f kWh", areaData.totalConsumption));
-        estimatedCost.setText(String.format("₱%.2f", areaData.estimatedCost));
-        peakConsumption.setText(String.format("%.0f W at %s",
-                areaData.peakConsumption,
-                areaData.peakTime.isEmpty() ? "--:--" : areaData.peakTime));
-        sharePercentage.setText(String.format("%.1f%%", areaData.sharePercentage));
+        // Area 2
+        updateSingleAreaData(realTimeData.area2Data,
+                area2TotalConsumption, area2EstimatedCost,
+                area2PeakConsumption, area2SharePercentage);
 
-        // Update chart
-        setupLineChart(chart, areaData.hourlyData, color, areaData.name);
+        // Area 3
+        updateSingleAreaData(realTimeData.area3Data,
+                area3TotalConsumption, area3EstimatedCost,
+                area3PeakConsumption, area3SharePercentage);
     }
 
     /**
-     * Setup line chart for area consumption
+     * Update single area data
      */
-    private void setupLineChart(LineChart chart, List<Double> hourlyData, int color, String areaName) {
-        if (hourlyData == null || hourlyData.isEmpty()) {
-            chart.clear();
-            return;
+    private void updateSingleAreaData(RealTimeDataProcessor.RealTimeData.AreaData areaData,
+                                      TextView consumptionView, TextView costView,
+                                      TextView peakView, TextView shareView) {
+        if (consumptionView != null) {
+            consumptionView.setText(String.format(Locale.getDefault(), "%.3f kWh", areaData.consumption));
         }
 
-        // Prepare data entries
-        List<Entry> entries = new ArrayList<>();
-        for (int i = 0; i < hourlyData.size(); i++) {
-            entries.add(new Entry(i, hourlyData.get(i).floatValue()));
+        if (costView != null) {
+            costView.setText(String.format(Locale.getDefault(), "₱%.2f", areaData.cost));
         }
 
-        // Create dataset
-        LineDataSet dataSet = new LineDataSet(entries, areaName + " Usage");
-        dataSet.setColor(color);
-        dataSet.setCircleColor(color);
-        dataSet.setLineWidth(2f);
-        dataSet.setCircleRadius(3f);
-        dataSet.setDrawCircleHole(false);
-        dataSet.setValueTextSize(0f); // Hide values on points
-        dataSet.setDrawFilled(true);
-        dataSet.setFillColor(color);
-        dataSet.setFillAlpha(50);
-
-        // Create line data
-        LineData lineData = new LineData(dataSet);
-        chart.setData(lineData);
-
-        // Configure chart appearance
-        chart.getDescription().setEnabled(false);
-        chart.setTouchEnabled(true);
-        chart.setDragEnabled(true);
-        chart.setScaleEnabled(false);
-        chart.setPinchZoom(false);
-        chart.setDrawGridBackground(false);
-        chart.setDrawBorders(false);
-        chart.getLegend().setEnabled(false);
-
-        // Configure X-axis (hours)
-        XAxis xAxis = chart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawGridLines(true);
-        xAxis.setGridColor(Color.LTGRAY);
-        xAxis.setTextColor(Color.GRAY);
-        xAxis.setTextSize(8f);
-        xAxis.setLabelCount(6); // Show every 4th hour (0, 4, 8, 12, 16, 20)
-
-        // Set hour labels
-        String[] hourLabels = new String[24];
-        for (int i = 0; i < 24; i++) {
-            hourLabels[i] = String.format("%02d:00", i);
+        if (peakView != null) {
+            peakView.setText(String.format(Locale.getDefault(), "%.0f W", areaData.peakWatts));
         }
-        xAxis.setValueFormatter(new IndexAxisValueFormatter(hourLabels));
 
-        // Configure Y-axis (left)
-        YAxis leftAxis = chart.getAxisLeft();
-        leftAxis.setDrawGridLines(true);
-        leftAxis.setGridColor(Color.LTGRAY);
-        leftAxis.setTextColor(Color.GRAY);
-        leftAxis.setTextSize(8f);
-        leftAxis.setAxisMinimum(0f);
+        if (shareView != null) {
+            shareView.setText(String.format(Locale.getDefault(), "%.1f%%", areaData.sharePercentage));
+        }
+    }
 
-        // Disable right Y-axis
-        chart.getAxisRight().setEnabled(false);
+    /**
+     * Update charts with hourly data
+     */
+    private void updateCharts(RealTimeDataProcessor.RealTimeData realTimeData) {
+        try {
+            // Create hourly labels
+            List<String> hourLabels = new ArrayList<>();
+            for (int i = 0; i < 24; i++) {
+                hourLabels.add(String.format("%02d:00", i));
+            }
 
-        // Refresh chart
-        chart.invalidate();
+            // Update charts for each area
+            if (area1Chart != null) {
+                setupAreaChart(area1Chart, realTimeData.hourlyData, hourLabels, "Area 1", Color.rgb(255, 193, 7));
+            }
 
-        Log.d(TAG, "Chart setup completed for " + areaName);
+            if (area2Chart != null) {
+                setupAreaChart(area2Chart, realTimeData.hourlyData, hourLabels, "Area 2", Color.rgb(220, 53, 69));
+            }
+
+            if (area3Chart != null) {
+                setupAreaChart(area3Chart, realTimeData.hourlyData, hourLabels, "Area 3", Color.rgb(40, 167, 69));
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating charts: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Setup individual area chart
+     */
+    private void setupAreaChart(LineChart chart, List<RealTimeDataProcessor.HourlyData> hourlyData,
+                                List<String> labels, String chartName, int color) {
+        try {
+            List<Entry> entries = new ArrayList<>();
+
+            // Create entries from hourly data
+            for (int i = 0; i < 24; i++) {
+                float value = 0f;
+
+                // Find matching hourly data
+                for (RealTimeDataProcessor.HourlyData data : hourlyData) {
+                    if (data.hour.equals(String.format("%02d", i))) {
+                        value = (float) data.consumption;
+                        break;
+                    }
+                }
+
+                entries.add(new Entry(i, value));
+            }
+
+            // Create dataset
+            LineDataSet dataSet = new LineDataSet(entries, chartName);
+            dataSet.setColor(color);
+            dataSet.setCircleColor(color);
+            dataSet.setLineWidth(2f);
+            dataSet.setCircleRadius(3f);
+            dataSet.setDrawCircleHole(false);
+            dataSet.setDrawValues(false);
+            dataSet.setDrawFilled(true);
+            dataSet.setFillColor(color);
+            dataSet.setFillAlpha(50);
+
+            // Setup chart
+            LineData lineData = new LineData(dataSet);
+            chart.setData(lineData);
+
+            // Customize chart appearance
+            chart.getDescription().setEnabled(false);
+            chart.setTouchEnabled(false);
+            chart.setDragEnabled(false);
+            chart.setScaleEnabled(false);
+            chart.setPinchZoom(false);
+            chart.setDrawGridBackground(false);
+
+            // X-axis
+            XAxis xAxis = chart.getXAxis();
+            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+            xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+            xAxis.setGranularity(1f);
+            xAxis.setGranularityEnabled(true);
+            xAxis.setTextColor(Color.GRAY);
+            xAxis.setTextSize(8f);
+
+            // Y-axis
+            YAxis leftAxis = chart.getAxisLeft();
+            leftAxis.setTextColor(Color.GRAY);
+            leftAxis.setTextSize(8f);
+            leftAxis.setAxisMinimum(0f);
+
+            YAxis rightAxis = chart.getAxisRight();
+            rightAxis.setEnabled(false);
+
+            // Legend
+            chart.getLegend().setEnabled(false);
+
+            // Refresh chart
+            chart.invalidate();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up area chart: " + e.getMessage(), e);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "Activity resumed, starting refresh timer");
-
         // Start refresh timer
-        refreshHandler.postDelayed(refreshRunnable, REFRESH_INTERVAL);
-
-        // Load data immediately
+        if (refreshHandler != null && refreshRunnable != null) {
+            refreshHandler.post(refreshRunnable);
+        }
+        // Load fresh data
         loadRealTimeData();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "Activity paused, stopping refresh timer");
-
-        // Stop refresh timer to save battery
+        // Stop refresh timer
         if (refreshHandler != null && refreshRunnable != null) {
             refreshHandler.removeCallbacks(refreshRunnable);
         }
@@ -368,19 +442,9 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "Activity destroyed");
-
-        // Clean up resources
+        // Clean up
         if (refreshHandler != null && refreshRunnable != null) {
             refreshHandler.removeCallbacks(refreshRunnable);
         }
-    }
-
-    /**
-     * Manual refresh method (can be called by swipe-to-refresh or button)
-     */
-    public void refreshData(View view) {
-        Log.d(TAG, "Manual refresh triggered");
-        loadRealTimeData();
     }
 }
