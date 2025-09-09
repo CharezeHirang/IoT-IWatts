@@ -1,6 +1,7 @@
 package com.example.sampleiwatts;
 
 import android.app.DatePickerDialog;
+import android.graphics.Color;
 import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +16,14 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,13 +34,18 @@ import org.w3c.dom.Text;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 public class CostEstimationActivity extends AppCompatActivity {
     EditText etStartingDate, etEndingDate, etBatelecRate;
     TextView tvCostView, tvKwhView, tvElectricityRate, tvTotalUsage, tvDailyCost, tvArea1,tvArea2,tvArea3, tvProjectedText, tvProjectedCost;
+    BarChart barChart, areaChart;
     private DatabaseReference db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +53,8 @@ public class CostEstimationActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_cost_estimation);
         LinearLayout buttonLayout = findViewById(R.id.button);
+        barChart = findViewById(R.id.dailyCost_chart);
+        areaChart = findViewById(R.id.area_chart);
 
         tvProjectedCost = findViewById(R.id.tvProjectedCost);
         tvProjectedText = findViewById(R.id.tvProjectedText);
@@ -71,6 +87,7 @@ public class CostEstimationActivity extends AppCompatActivity {
         fetchTotalCostForDay();
         calculateCostForAllAreas();
         calculateProjectedMonthlyCost();
+        loadDailyCostChart();
     }
     private void startingDate() {
         final Calendar calendar = Calendar.getInstance();
@@ -79,9 +96,9 @@ public class CostEstimationActivity extends AppCompatActivity {
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(
-                this, // or getContext() if in Fragment
+                this,
                 (view, selectedYear, selectedMonth, selectedDay) -> {
-                    // Format date (dd/MM/yyyy)
+                    // Format date (yyyy-MM-dd)
                     String date = selectedYear + "-" + (selectedMonth + 1) + "-" + selectedDay;
                     etStartingDate.setText(date);
 
@@ -98,20 +115,58 @@ public class CostEstimationActivity extends AppCompatActivity {
                 year, month, day
         );
 
+        // Default max date is today
+        long maxDate = System.currentTimeMillis();
+
+        // If ending date is already selected, make sure start date <= ending date
+        String endingDateStr = etEndingDate.getText().toString().trim();
+        if (!endingDateStr.isEmpty()) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                Date endingDate = sdf.parse(endingDateStr);
+                if (endingDate != null && endingDate.getTime() < maxDate) {
+                    maxDate = endingDate.getTime();
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        datePickerDialog.getDatePicker().setMaxDate(maxDate);
         datePickerDialog.show();
     }
-    private void endingDate(){
+    private void endingDate() {
         final Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(
-                this, // or getContext() if in Fragment
+                this,
                 (view, selectedYear, selectedMonth, selectedDay) -> {
-                    // Format date
-                    String date = selectedYear + "-" + (selectedMonth + 1) + "-" + selectedDay;
+                    // Format date (yyyy-MM-dd with leading zeros)
+                    String date = String.format(Locale.getDefault(), "%04d-%02d-%02d",
+                            selectedYear, selectedMonth + 1, selectedDay);
+
+                    // Validate against starting date
+                    String startingDateStr = etStartingDate.getText().toString().trim();
+                    if (!startingDateStr.isEmpty()) {
+                        try {
+                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                            Date startingDate = sdf.parse(startingDateStr);
+                            Date pickedDate = sdf.parse(date);
+
+                            if (startingDate != null && pickedDate != null && pickedDate.before(startingDate)) {
+                                Toast.makeText(CostEstimationActivity.this, "Ending date cannot be earlier than starting date", Toast.LENGTH_SHORT).show();
+                                return; // invalid → don’t save
+                            }
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                     etEndingDate.setText(date);
+
                     // Save to Firebase
                     DatabaseReference costFilterRef = db.child("cost_filter_date");
                     costFilterRef.child("ending_date").setValue(date)
@@ -121,7 +176,26 @@ public class CostEstimationActivity extends AppCompatActivity {
                             .addOnFailureListener(e -> {
                                 Toast.makeText(CostEstimationActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             });
-                }, year, month, day);
+                },
+                year, month, day
+        );
+
+        // 🚀 Ending date must be today or later
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
+
+        // If starting date exists, force ending_date ≥ starting_date
+        String startingDateStr = etStartingDate.getText().toString().trim();
+        if (!startingDateStr.isEmpty()) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                Date startingDate = sdf.parse(startingDateStr);
+                if (startingDate != null) {
+                    datePickerDialog.getDatePicker().setMinDate(startingDate.getTime());
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
 
         datePickerDialog.show();
     }
@@ -299,7 +373,7 @@ public class CostEstimationActivity extends AppCompatActivity {
                             String formattedKwh = String.format("%.3f", cumulativeKwh);
                             Log.d("KwhTotal", "Total KWh: " + formattedKwh);
                             tvKwhView.setText(formattedKwh + " kwh");
-                            tvTotalUsage.setText(formattedKwh + " kwh");
+                            tvTotalUsage.setText(formattedKwh);
                         }
 
                         @Override
@@ -395,7 +469,7 @@ public class CostEstimationActivity extends AppCompatActivity {
                         totalCost += ((Number) value).doubleValue();
                     }
                 }
-                tvDailyCost.setText("₱ " + String.format("%.2f", totalCost));
+                tvDailyCost.setText(String.format("%.2f", totalCost));
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -406,77 +480,103 @@ public class CostEstimationActivity extends AppCompatActivity {
     private void calculateCostForAllAreas() {
         DatabaseReference systemSettingsRef = db.child("system_settings");
         DatabaseReference hourlySummariesRef = db.child("hourly_summaries");
+        DatabaseReference costFilterDateRef = db.child("cost_filter_date");
 
-        // Fetch the electricity rate from system_settings
-        systemSettingsRef.child("electricity_rate_per_kwh").addListenerForSingleValueEvent(new ValueEventListener() {
+        // First, fetch the date filter (starting & ending)
+        costFilterDateRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // Get the electricity rate per kWh
-                Double electricityRatePerKwh = dataSnapshot.getValue(Double.class);
+                String startingDateString = dataSnapshot.child("starting_date").getValue(String.class);
+                String endingDateString = dataSnapshot.child("ending_date").getValue(String.class);
 
-                // Check if the electricity rate is null
-                if (electricityRatePerKwh == null) {
-                    Toast.makeText(CostEstimationActivity.this, "Electricity rate is not available", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                try {
+                    Date startingDate = dateFormatter.parse(startingDateString);
+                    Date endingDate = dateFormatter.parse(endingDateString);
 
-                final double[] totalArea1Kwh = {0};
-                final double[] totalArea2Kwh = {0};
-                final double[] totalArea3Kwh = {0};
+                    // Fetch the electricity rate from system_settings
+                    systemSettingsRef.child("electricity_rate_per_kwh").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Double electricityRatePerKwh = dataSnapshot.getValue(Double.class);
 
-                // Iterate over all dates in the hourly_summaries collection
-                hourlySummariesRef.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Loop through all the dates
-                        for (DataSnapshot dateSnapshot : dataSnapshot.getChildren()) {
-                            // Loop through hourly data for each date
-                            for (DataSnapshot hourlySnapshot : dateSnapshot.getChildren()) {
-                                // Get kWh values for each area
-                                Double area1Kwh = hourlySnapshot.child("area1_kwh").getValue(Double.class);
-                                Double area2Kwh = hourlySnapshot.child("area2_kwh").getValue(Double.class);
-                                Double area3Kwh = hourlySnapshot.child("area3_kwh").getValue(Double.class);
-
-                                // If the kWh values are null, treat them as 0
-                                area1Kwh = (area1Kwh == null) ? 0 : area1Kwh;
-                                area2Kwh = (area2Kwh == null) ? 0 : area2Kwh;
-                                area3Kwh = (area3Kwh == null) ? 0 : area3Kwh;
-
-                                totalArea1Kwh[0] += area1Kwh;
-                                totalArea2Kwh[0] += area2Kwh;
-                                totalArea3Kwh[0] += area3Kwh;
+                            if (electricityRatePerKwh == null) {
+                                Toast.makeText(CostEstimationActivity.this, "Electricity rate is not available", Toast.LENGTH_SHORT).show();
+                                return;
                             }
+
+                            final double[] totalArea1Kwh = {0};
+                            final double[] totalArea2Kwh = {0};
+                            final double[] totalArea3Kwh = {0};
+
+                            hourlySummariesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    for (DataSnapshot dateSnapshot : dataSnapshot.getChildren()) {
+                                        String dateKey = dateSnapshot.getKey();
+                                        Date currentDate = null;
+                                        try {
+                                            currentDate = dateFormatter.parse(dateKey);
+                                        } catch (ParseException e) {
+                                            Log.e("CostEstimation", "Error parsing date: " + dateKey);
+                                        }
+
+                                        // ✅ Only process if within starting & ending range
+                                        if (currentDate != null &&
+                                                (currentDate.equals(startingDate) || currentDate.after(startingDate)) &&
+                                                (currentDate.equals(endingDate) || currentDate.before(endingDate))) {
+
+                                            for (DataSnapshot hourlySnapshot : dateSnapshot.getChildren()) {
+                                                Double area1Kwh = hourlySnapshot.child("area1_kwh").getValue(Double.class);
+                                                Double area2Kwh = hourlySnapshot.child("area2_kwh").getValue(Double.class);
+                                                Double area3Kwh = hourlySnapshot.child("area3_kwh").getValue(Double.class);
+
+                                                area1Kwh = (area1Kwh == null) ? 0 : area1Kwh;
+                                                area2Kwh = (area2Kwh == null) ? 0 : area2Kwh;
+                                                area3Kwh = (area3Kwh == null) ? 0 : area3Kwh;
+
+                                                totalArea1Kwh[0] += area1Kwh;
+                                                totalArea2Kwh[0] += area2Kwh;
+                                                totalArea3Kwh[0] += area3Kwh;
+                                            }
+                                        }
+                                    }
+
+                                    double totalConsumption = totalArea1Kwh[0] + totalArea2Kwh[0] + totalArea3Kwh[0];
+
+                                    double percentageArea1 = (totalConsumption == 0) ? 0 : (totalArea1Kwh[0] / totalConsumption) * 100;
+                                    double percentageArea2 = (totalConsumption == 0) ? 0 : (totalArea2Kwh[0] / totalConsumption) * 100;
+                                    double percentageArea3 = (totalConsumption == 0) ? 0 : (totalArea3Kwh[0] / totalConsumption) * 100;
+
+                                    double totalCostArea1 = totalArea1Kwh[0] * electricityRatePerKwh;
+                                    double totalCostArea2 = totalArea2Kwh[0] * electricityRatePerKwh;
+                                    double totalCostArea3 = totalArea3Kwh[0] * electricityRatePerKwh;
+
+                                    tvArea1.setText("₱ " + String.format("%.2f", totalCostArea1) + " (" + String.format("%.2f", percentageArea1) + "%)");
+                                    tvArea2.setText("₱ " + String.format("%.2f", totalCostArea2) + " (" + String.format("%.2f", percentageArea2) + "%)");
+                                    tvArea3.setText("₱ " + String.format("%.2f", totalCostArea3) + " (" + String.format("%.2f", percentageArea3) + "%)");
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+                                    Toast.makeText(CostEstimationActivity.this, "Error fetching hourly data", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                         }
 
-                        // Calculate total consumption for all areas
-                        double totalConsumption = totalArea1Kwh[0] + totalArea2Kwh[0] + totalArea3Kwh[0];
-
-                        // Calculate the percentage of each area
-                        double percentageArea1 = (totalConsumption == 0) ? 0 : (totalArea1Kwh[0] / totalConsumption) * 100;
-                        double percentageArea2 = (totalConsumption == 0) ? 0 : (totalArea2Kwh[0] / totalConsumption) * 100;
-                        double percentageArea3 = (totalConsumption == 0) ? 0 : (totalArea3Kwh[0] / totalConsumption) * 100;
-
-                        // Calculate the total cost for each area
-                        double totalCostArea1 = totalArea1Kwh[0] * electricityRatePerKwh;
-                        double totalCostArea2 = totalArea2Kwh[0] * electricityRatePerKwh;
-                        double totalCostArea3 = totalArea3Kwh[0] * electricityRatePerKwh;
-
-                        // Update the TextViews to display the total cost and percentage for each area
-                        tvArea1.setText("₱ " + String.format("%.2f", totalCostArea1) + " (" + String.format("%.2f", percentageArea1) + "%)");
-                        tvArea2.setText("₱ " + String.format("%.2f", totalCostArea2) + " (" + String.format("%.2f", percentageArea2) + "%)");
-                        tvArea3.setText("₱ " + String.format("%.2f", totalCostArea3) + " (" + String.format("%.2f", percentageArea3) + "%)");
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Toast.makeText(CostEstimationActivity.this, "Error fetching hourly data", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Toast.makeText(CostEstimationActivity.this, "Error fetching electricity rate", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } catch (ParseException e) {
+                    Log.e("CostEstimation", "Error parsing dates: " + e.getMessage());
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(CostEstimationActivity.this, "Error fetching electricity rate", Toast.LENGTH_SHORT).show();
+                Log.e("FirebaseError", "Error fetching cost filter data: " + databaseError.getMessage());
             }
         });
     }
@@ -562,6 +662,150 @@ public class CostEstimationActivity extends AppCompatActivity {
             }
         });
     }
+    private void loadDailyCostChart() {
+        DatabaseReference costFilterDateRef = db.child("cost_filter_date");
+        DatabaseReference dailySummariesRef = db.child("daily_summaries");
+        DatabaseReference systemSettingsRef = db.child("system_settings"); // Reference to system_settings
+
+        costFilterDateRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                String startingDateString = snapshot.child("starting_date").getValue(String.class);
+                String endingDateString   = snapshot.child("ending_date").getValue(String.class);
+
+                final SimpleDateFormat keyFormatter   = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                final SimpleDateFormat labelFormatter = new SimpleDateFormat("MM-dd", Locale.getDefault());
+
+                try {
+                    final Date startingDate = keyFormatter.parse(startingDateString);
+                    final Date endingDate   = keyFormatter.parse(endingDateString);
+
+                    // Fetch area names from system_settings
+                    systemSettingsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot settingsSnapshot) {
+                            // Get area names dynamically from the system settings and make them effectively final
+                            final String area1Name = settingsSnapshot.child("area1_name").getValue(String.class);
+                            final String area2Name = settingsSnapshot.child("area2_name").getValue(String.class);
+                            final String area3Name = settingsSnapshot.child("area3_name").getValue(String.class);
+
+                            // Default values if not found
+                            final String finalArea1Name = (area1Name != null) ? area1Name : "Area 1";
+                            final String finalArea2Name = (area2Name != null) ? area2Name : "Area 2";
+                            final String finalArea3Name = (area3Name != null) ? area3Name : "Area 3";
+
+                            dailySummariesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    TreeMap<Long, float[]> perDayCosts = new TreeMap<>();
+
+                                    for (DataSnapshot dateSnapshot : dataSnapshot.getChildren()) {
+                                        String dateKey = dateSnapshot.getKey();
+                                        Date currentDate;
+                                        try {
+                                            currentDate = keyFormatter.parse(dateKey);
+                                        } catch (ParseException e) { continue; }
+                                        if (currentDate == null) continue;
+
+                                        boolean inRange =
+                                                (currentDate.equals(startingDate) || currentDate.after(startingDate)) &&
+                                                        (currentDate.equals(endingDate)   || currentDate.before(endingDate));
+                                        if (!inRange) continue;
+
+                                        Double c1 = dateSnapshot.child("area_breakdown/area1/cost").getValue(Double.class);
+                                        Double c2 = dateSnapshot.child("area_breakdown/area2/cost").getValue(Double.class);
+                                        Double c3 = dateSnapshot.child("area_breakdown/area3/cost").getValue(Double.class);
+
+                                        float cost1 = c1 != null ? c1.floatValue() : 0f;
+                                        float cost2 = c2 != null ? c2.floatValue() : 0f;
+                                        float cost3 = c3 != null ? c3.floatValue() : 0f;
+
+                                        if (cost1 == 0f && cost2 == 0f && cost3 == 0f) continue;
+
+                                        perDayCosts.put(currentDate.getTime(), new float[]{cost1, cost2, cost3});
+                                    }
+
+                                    List<BarEntry> entries = new ArrayList<>();
+                                    List<String> xLabels = new ArrayList<>();
+                                    int i = 0;
+                                    for (Map.Entry<Long, float[]> e : perDayCosts.entrySet()) {
+                                        entries.add(new BarEntry(i, e.getValue()));
+                                        xLabels.add(labelFormatter.format(new Date(e.getKey())));
+                                        i++;
+                                    }
+
+                                    // Pass an empty string to remove the label from the dataset
+                                    BarDataSet dataSet = new BarDataSet(entries, "");
+                                    dataSet.setColors(new int[]{
+                                            Color.YELLOW,                 // Area 1
+                                            Color.RED,                    // Area 2
+                                            Color.rgb(255, 215, 0)        // Area 3 (gold)
+                                    });
+                                    // Use dynamic area names for stack labels
+                                    dataSet.setStackLabels(new String[]{finalArea1Name, finalArea2Name, finalArea3Name});
+
+                                    // Display data values on top of bars
+                                    dataSet.setDrawValues(true);
+                                    dataSet.setValueTextSize(10f);
+                                    dataSet.setValueTextColor(getResources().getColor(R.color.brown));
+
+                                    BarData barData = new BarData(dataSet);
+                                    barData.setBarWidth(0.35f); // Reduced bar width for better spacing
+
+                                    barChart.setData(barData);
+
+                                    // X-Axis customization
+                                    XAxis xAxis = barChart.getXAxis();
+                                    xAxis.setValueFormatter(new IndexAxisValueFormatter(xLabels));
+                                    xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                                    xAxis.setGranularity(1f);
+                                    xAxis.setLabelRotationAngle(-45); // Tilt labels for better readability
+                                    xAxis.setLabelCount(xLabels.size(), false);
+
+                                    // Add grid lines to improve readability
+                                    xAxis.setDrawGridLines(true);
+                                    barChart.getAxisLeft().setDrawGridLines(true);
+
+                                    // Y-Axis customization
+                                    barChart.getAxisLeft().setAxisMinimum(0f); // Ensure Y-Axis starts at 0
+
+                                    // Chart description and legend styling
+                                    barChart.getDescription().setEnabled(true);
+                                    barChart.getDescription().setText("Daily Cost Breakdown");
+                                    barChart.getAxisRight().setEnabled(false);
+
+                                    // Set up legend
+                                    Legend legend = barChart.getLegend();
+                                    legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+                                    legend.setForm(Legend.LegendForm.LINE);
+                                    legend.setTextColor(getResources().getColor(R.color.brown));
+
+                                    // Animate and invalidate the chart to refresh it
+                                    barChart.animateY(800);
+                                    barChart.invalidate();
+                                }
+
+                                @Override public void onCancelled(DatabaseError error) { }
+                            });
+                        }
+
+                        @Override public void onCancelled(DatabaseError error) { }
+                    });
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override public void onCancelled(DatabaseError error) { }
+        });
+    }
+
+
+
+
+
+
+
 
 
 
