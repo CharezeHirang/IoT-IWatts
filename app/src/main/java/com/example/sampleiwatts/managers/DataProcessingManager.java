@@ -23,6 +23,9 @@ public class DataProcessingManager {
     private SimpleDateFormat timeFormat;
     private SimpleDateFormat dateTimeFormat;
 
+    private boolean isProcessingInProgress = false;
+    private Set<String> processedDates = new HashSet<>();
+
     public DataProcessingManager(Context context) {
         this.context = context.getApplicationContext();
         this.prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -49,11 +52,20 @@ public class DataProcessingManager {
         return true;
     }
 
-    public void processDataInForeground() {
+    public synchronized void processDataInForeground() {
+        // 🆕 ADD THIS CHECK AT THE START:
+        if (isProcessingInProgress) {
+            Log.w(TAG, "⚠️ Processing already in progress, skipping duplicate call");
+            return;
+        }
+
+        isProcessingInProgress = true;
+        processedDates.clear();
+
         // Always process when called (app resume/start)
         long currentTime = System.currentTimeMillis();
 
-        Log.d(TAG, "🚀 Starting complete data processing on app resume/start...");
+        Log.d(TAG, "🚀 Starting complete data processing with status tracking...");
 
         // Step 1: Process hourly summaries first, then daily summaries
         processUnprocessedHoursSequential(() -> {
@@ -63,9 +75,10 @@ public class DataProcessingManager {
             // Wait a bit for Firebase to settle, then process daily
             new android.os.Handler().postDelayed(() -> {
                 processDailySummariesSequential(() -> {
-                    // Step 3: Mark completion
+                    // 🆕 MARK PROCESSING AS COMPLETE:
+                    isProcessingInProgress = false;
                     prefs.edit().putLong(KEY_LAST_PROCESSING_TIME, currentTime).apply();
-                    Log.d(TAG, "✅ Complete data processing finished successfully!");
+                    Log.d(TAG, "✅ Complete data processing finished! Processed dates: " + processedDates.size());
                 });
             }, 2000);
         });

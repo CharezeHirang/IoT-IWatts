@@ -96,6 +96,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         IWattsApplication app = (IWattsApplication) getApplication();
         processingManager = app.getProcessingManager();
+        initializeAppWithProperSequencing();
 
         Log.d(TAG, "MainActivity created");
 
@@ -110,6 +111,24 @@ public class DashboardActivity extends AppCompatActivity {
         DataProcessingManager manager = ((IWattsApplication) getApplication()).getProcessingManager();
         manager.processDataInForeground();
     }
+
+    private void initializeAppWithProperSequencing() {
+        Log.d(TAG, "🚀 Starting app initialization with proper data sequencing...");
+
+        // Initialize the processing manager if not already done
+        if (processingManager == null) {
+            processingManager = new DataProcessingManager(this);
+        }
+
+        // Start background data processing
+        processingManager.processDataInForeground();
+
+        // Show user that processing is happening
+        Toast.makeText(this, "Initializing data...", Toast.LENGTH_SHORT).show();
+
+        Log.d(TAG, "✅ Background processing started, dashboard ready");
+    }
+
     private void fetchTotalCost() {
         DatabaseReference costFilterDateRef = db.child("cost_filter_date");
 

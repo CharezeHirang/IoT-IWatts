@@ -63,13 +63,6 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
     private TextView area3PeakConsumption;
     private TextView area3SharePercentage;
 
-    // Navigation
-    private ImageView navBarChart;
-    private ImageView navHistory;
-    private ImageView navHome;
-    private ImageView navTrends;
-    private ImageView navSettings;
-
     // Data processor and refresh handler
     private RealTimeDataProcessor dataProcessor;
     private Handler refreshHandler;
@@ -94,7 +87,21 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
         dataProcessor = new RealTimeDataProcessor();
 
         // Load initial data
-        loadRealTimeData();
+        new Handler().postDelayed(() -> {
+            Log.d(TAG, "🔄 Starting delayed real-time data load...");
+            loadRealTimeData();
+        }, 5000); // 5 second delay to let processing complete
+    }
+
+    private void showProcessingStatus(boolean isProcessing) {
+        runOnUiThread(() -> {
+            if (isProcessing) {
+                Toast.makeText(this, "Processing data...", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "📊 Data processing in progress...");
+            } else {
+                Log.d(TAG, "✅ Data processing completed");
+            }
+        });
     }
 
     /**
@@ -191,30 +198,74 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
     private void loadRealTimeData() {
         Log.d(TAG, "Loading real-time data...");
 
+        // 🆕 SHOW PROCESSING STATUS:
+        showProcessingStatus(true);
+
         // UPDATED: Use new method signature with date parameter
         String todayDate = getCurrentDate();
         dataProcessor.processRealTimeData(todayDate, new RealTimeDataProcessor.DataProcessingCallback() {
             @Override
             public void onDataProcessed(RealTimeDataProcessor.RealTimeData realTimeData) {
+                // 🆕 HIDE PROCESSING STATUS:
+                showProcessingStatus(false);
+
                 runOnUiThread(() -> {
-                    updateUI(realTimeData);
-                    Log.d(TAG, "UI updated successfully");
+                    // 🆕 VALIDATE DATA BEFORE UPDATING UI:
+                    if (validateRealTimeData(realTimeData)) {
+                        updateUI(realTimeData);
+                        Log.d(TAG, "✅ UI updated successfully with valid data");
+                    } else {
+                        Log.w(TAG, "⚠️ Invalid data received, not updating UI");
+                        Toast.makeText(RealTimeMonitoringActivity.this,
+                                "Data incomplete - please wait and try again", Toast.LENGTH_SHORT).show();
+                    }
                 });
+            }
+
+            private boolean validateRealTimeData(RealTimeDataProcessor.RealTimeData data) {
+                if (data == null) {
+                    Log.e(TAG, "❌ Data is null");
+                    return false;
+                }
+
+                if (data.totalConsumption < 0) {
+                    Log.e(TAG, "❌ Negative total consumption: " + data.totalConsumption);
+                    return false;
+                }
+
+                if (data.hourlyData == null || data.hourlyData.isEmpty()) {
+                    Log.e(TAG, "❌ No hourly data available");
+                    return false;
+                }
+
+                if (data.area1Data == null || data.area2Data == null || data.area3Data == null) {
+                    Log.e(TAG, "❌ Missing area data");
+                    return false;
+                }
+
+                Log.d(TAG, "✅ Data validation passed");
+                return true;
             }
 
             @Override
             public void onError(String error) {
+                showProcessingStatus(false);
                 runOnUiThread(() -> {
                     Log.e(TAG, "Error loading real-time data: " + error);
                     Toast.makeText(RealTimeMonitoringActivity.this,
-                            "Failed to load real-time data: " + error, Toast.LENGTH_SHORT).show();
+                            "Failed to load data: " + error, Toast.LENGTH_SHORT).show();
                 });
+            }
+
+            @Override
+            public void onSettingsLoaded(double electricityRate, double voltageReference) {
+                Log.d(TAG, "Settings loaded - Rate: " + electricityRate + "/kWh, Voltage: " + voltageReference + "V");
             }
         });
     }
 
     /**
-     * UPDATED: Helper method to get current date in Philippine timezone
+     * Helper method to get current date in Philippine timezone
      */
     private String getCurrentDate() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -294,7 +345,7 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
     /**
      * Update single area data
      */
-    private void updateSingleAreaData(RealTimeDataProcessor.RealTimeData.AreaData areaData,
+    private void updateSingleAreaData(RealTimeDataProcessor.AreaData areaData,
                                       TextView consumptionView, TextView costView,
                                       TextView peakView, TextView shareView) {
         if (consumptionView != null) {
