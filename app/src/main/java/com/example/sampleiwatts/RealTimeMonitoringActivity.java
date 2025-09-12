@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -402,8 +403,9 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
         try {
             List<Entry> entries = new ArrayList<>();
 
-            // Create entries from hourly data
-            for (int i = 0; i < 24; i++) {
+            // Show only every 4 hours to avoid crowding (0, 4, 8, 12, 16, 20)
+            List<String> reducedLabels = new ArrayList<>();
+            for (int i = 0; i < 24; i += 4) {
                 float value = 0f;
 
                 // Find matching hourly data
@@ -414,60 +416,79 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
                     }
                 }
 
-                entries.add(new Entry(i, value));
+                entries.add(new Entry(i/4, value)); // Scale down x-axis
+                reducedLabels.add(String.format("%02d:00", i));
             }
 
-            // Create dataset
+            // Create dataset with dashboard-style formatting
             LineDataSet dataSet = new LineDataSet(entries, chartName);
-            dataSet.setColor(color);
-            dataSet.setCircleColor(color);
+            dataSet.setColor(getResources().getColor(R.color.brown)); // Match dashboard color
+            dataSet.setCircleColor(getResources().getColor(R.color.brown));
             dataSet.setLineWidth(2f);
-            dataSet.setCircleRadius(3f);
+            dataSet.setCircleRadius(4f);
             dataSet.setDrawCircleHole(false);
             dataSet.setDrawValues(false);
             dataSet.setDrawFilled(true);
             dataSet.setFillColor(color);
             dataSet.setFillAlpha(50);
 
-            // Setup chart
+            // Setup chart data
             LineData lineData = new LineData(dataSet);
             chart.setData(lineData);
 
-            // Customize chart appearance
-            chart.getDescription().setEnabled(false);
-            chart.setTouchEnabled(false);
-            chart.setDragEnabled(false);
-            chart.setScaleEnabled(false);
-            chart.setPinchZoom(false);
-            chart.setDrawGridBackground(false);
-
-            // X-axis
-            XAxis xAxis = chart.getXAxis();
-            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-            xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
-            xAxis.setGranularity(1f);
-            xAxis.setGranularityEnabled(true);
-            xAxis.setTextColor(Color.GRAY);
-            xAxis.setTextSize(8f);
-
-            // Y-axis
-            YAxis leftAxis = chart.getAxisLeft();
-            leftAxis.setTextColor(Color.GRAY);
-            leftAxis.setTextSize(8f);
-            leftAxis.setAxisMinimum(0f);
-
-            YAxis rightAxis = chart.getAxisRight();
-            rightAxis.setEnabled(false);
-
-            // Legend
-            chart.getLegend().setEnabled(false);
-
-            // Refresh chart
-            chart.invalidate();
+            // Apply dashboard-style formatting
+            configureDashboardStyleChart(chart, reducedLabels);
 
         } catch (Exception e) {
             Log.e(TAG, "Error setting up area chart: " + e.getMessage(), e);
         }
+    }
+
+    // New method to apply dashboard-style formatting
+    private void configureDashboardStyleChart(LineChart chart, List<String> labels) {
+        // Basic chart settings (match dashboard)
+        chart.getDescription().setEnabled(false);
+        chart.setTouchEnabled(true);
+        chart.setDragEnabled(true);
+        chart.setScaleEnabled(false);
+        chart.setPinchZoom(false);
+        chart.setDrawGridBackground(false);
+        chart.setDrawBorders(false);
+
+        // Disable right Y-axis (match dashboard)
+        chart.getAxisRight().setEnabled(false);
+
+        // Configure X-axis (match dashboard style)
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+        xAxis.setGranularity(1f);
+        xAxis.setTextColor(getResources().getColor(R.color.brown)); // Match dashboard
+        xAxis.setTextSize(10f); // Bigger text for readability
+        xAxis.setDrawGridLines(true);
+        xAxis.setGridColor(getResources().getColor(R.color.brown));
+        xAxis.setDrawLabels(true);
+        xAxis.setLabelCount(labels.size(), false);
+
+        // Configure Y-axis (left) - match dashboard
+        chart.getAxisLeft().setTextColor(getResources().getColor(R.color.brown));
+        chart.getAxisLeft().setTextSize(10f);
+        chart.getAxisLeft().setGridColor(getResources().getColor(R.color.brown));
+        chart.getAxisLeft().setDrawGridLines(true);
+        chart.getAxisLeft().setAxisMinimum(0f);
+
+        // Add bottom offset for better label visibility (match dashboard)
+        chart.setExtraBottomOffset(10f);
+
+        // Configure legend (match dashboard)
+        Legend legend = chart.getLegend();
+        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+        legend.setForm(Legend.LegendForm.LINE);
+        legend.setTextColor(getResources().getColor(R.color.brown));
+        legend.setEnabled(true);
+
+        // Refresh chart
+        chart.invalidate();
     }
 
     @Override

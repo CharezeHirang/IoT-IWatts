@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -686,14 +687,31 @@ public class HistoricalDataActivity extends AppCompatActivity {
      */
     private void setupDailyChart(LineChart chart, List<Double> data, List<String> labels, String chartName, int color) {
         try {
+            // Reduce data points if too many (show every 2nd or 3rd day if more than 10 days)
             List<Entry> entries = new ArrayList<>();
-            for (int i = 0; i < data.size(); i++) {
-                entries.add(new Entry(i, data.get(i).floatValue()));
+            List<String> reducedLabels = new ArrayList<>();
+
+            int step = 1;
+            if (data.size() > 10) {
+                step = Math.max(1, data.size() / 8); // Show maximum 8 points
             }
 
+            int entryIndex = 0;
+            for (int i = 0; i < data.size(); i += step) {
+                entries.add(new Entry(entryIndex, data.get(i).floatValue()));
+
+                // Format date labels to be shorter (e.g., "Mar 5" instead of "2025-03-05")
+                String originalLabel = labels.get(i);
+                String shortLabel = formatDateLabel(originalLabel);
+                reducedLabels.add(shortLabel);
+
+                entryIndex++;
+            }
+
+            // Create dataset with dashboard-style formatting
             LineDataSet dataSet = new LineDataSet(entries, chartName);
-            dataSet.setColor(color);
-            dataSet.setCircleColor(color);
+            dataSet.setColor(getResources().getColor(R.color.brown));
+            dataSet.setCircleColor(getResources().getColor(R.color.brown));
             dataSet.setLineWidth(2f);
             dataSet.setCircleRadius(4f);
             dataSet.setDrawCircleHole(false);
@@ -705,10 +723,74 @@ public class HistoricalDataActivity extends AppCompatActivity {
             LineData lineData = new LineData(dataSet);
             chart.setData(lineData);
 
-            configureChart(chart, labels.toArray(new String[0]));
+            // Apply dashboard-style configuration
+            configureHistoricalChart(chart, reducedLabels);
 
         } catch (Exception e) {
             Log.e(TAG, "Error setting up daily chart", e);
+        }
+    }
+
+    // New method for historical chart configuration
+    private void configureHistoricalChart(LineChart chart, List<String> labels) {
+        // Match dashboard style
+        chart.getDescription().setEnabled(false);
+        chart.setTouchEnabled(true);
+        chart.setDragEnabled(true);
+        chart.setScaleEnabled(false);
+        chart.setPinchZoom(false);
+        chart.setDrawGridBackground(false);
+        chart.setDrawBorders(false);
+
+        // Disable right Y-axis
+        chart.getAxisRight().setEnabled(false);
+
+        // Configure X-axis with better readability
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+        xAxis.setTextColor(getResources().getColor(R.color.brown));
+        xAxis.setTextSize(9f); // Readable size
+        xAxis.setDrawGridLines(true);
+        xAxis.setGridColor(Color.LTGRAY);
+        xAxis.setGranularity(1f);
+        xAxis.setLabelRotationAngle(-45f); // Tilt labels to prevent overlap
+        xAxis.setLabelCount(Math.min(labels.size(), 6), false); // Max 6 labels
+
+        // Configure Y-axis (left)
+        chart.getAxisLeft().setTextColor(getResources().getColor(R.color.brown));
+        chart.getAxisLeft().setTextSize(9f);
+        chart.getAxisLeft().setDrawGridLines(true);
+        chart.getAxisLeft().setGridColor(Color.LTGRAY);
+        chart.getAxisLeft().setAxisMinimum(0f);
+
+        // Add extra space for rotated labels
+        chart.setExtraBottomOffset(20f);
+        chart.setExtraRightOffset(10f);
+
+        // Configure legend
+        Legend legend = chart.getLegend();
+        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+        legend.setForm(Legend.LegendForm.LINE);
+        legend.setTextColor(getResources().getColor(R.color.brown));
+        legend.setEnabled(true);
+
+        chart.invalidate();
+    }
+
+    // Helper method to format date labels (e.g., "2025-03-05" -> "Mar 5")
+    private String formatDateLabel(String dateString) {
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            SimpleDateFormat outputFormat = new SimpleDateFormat("MMM d", Locale.getDefault());
+            Date date = inputFormat.parse(dateString);
+            return outputFormat.format(date);
+        } catch (Exception e) {
+            // If parsing fails, return last 5 characters (MM-dd)
+            if (dateString.length() >= 5) {
+                return dateString.substring(dateString.length() - 5);
+            }
+            return dateString;
         }
     }
 
@@ -717,12 +799,23 @@ public class HistoricalDataActivity extends AppCompatActivity {
      */
     private void setupAreaDailyChart(LineChart chart, List<Double> dailyAreaData, List<String> dateLabels, String areaName, int color) {
         try {
-            // Create entries for each DAY
+            // Apply same data reduction as main chart
             List<Entry> entries = new ArrayList<>();
-            for (int day = 0; day < dailyAreaData.size(); day++) {
-                entries.add(new Entry(day, dailyAreaData.get(day).floatValue()));
+            List<String> reducedLabels = new ArrayList<>();
+
+            int step = 1;
+            if (dailyAreaData.size() > 10) {
+                step = Math.max(1, dailyAreaData.size() / 8);
             }
 
+            int entryIndex = 0;
+            for (int i = 0; i < dailyAreaData.size(); i += step) {
+                entries.add(new Entry(entryIndex, dailyAreaData.get(i).floatValue()));
+                reducedLabels.add(formatDateLabel(dateLabels.get(i)));
+                entryIndex++;
+            }
+
+            // Create dataset with area-specific color
             LineDataSet dataSet = new LineDataSet(entries, areaName + " Daily Usage");
             dataSet.setColor(color);
             dataSet.setCircleColor(color);
@@ -737,8 +830,8 @@ public class HistoricalDataActivity extends AppCompatActivity {
             LineData lineData = new LineData(dataSet);
             chart.setData(lineData);
 
-            // Use DATE labels, not hour labels
-            configureChart(chart, dateLabels.toArray(new String[0]));
+            // Use the same configuration as main historical chart
+            configureHistoricalChart(chart, reducedLabels);
 
         } catch (Exception e) {
             Log.e(TAG, "Error setting up area daily chart", e);
