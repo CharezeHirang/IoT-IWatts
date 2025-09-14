@@ -636,31 +636,37 @@ public class HistoricalDataActivity extends AppCompatActivity {
                         Double area2Kwh = getDoubleValue(areaBreakdown.child("area2").child("kwh"));
                         Double area3Kwh = getDoubleValue(areaBreakdown.child("area3").child("kwh"));
 
+                        // AREA 1 - Track both peak consumption and peak day
                         if (area1Kwh != null && area1Kwh > 0) {
                             totalArea1Consumption += area1Kwh;
                             area1ChartEntries.add(new Entry(dayCount, area1Kwh.floatValue()));
                             if (area1Kwh > area1PeakWatts) {
                                 area1PeakWatts = area1Kwh;
+                                area1PeakDay = dateKey; // FIX: Capture the peak day
                             }
                         } else {
                             area1ChartEntries.add(new Entry(dayCount, 0f));
                         }
 
+                        // AREA 2 - Track both peak consumption and peak day
                         if (area2Kwh != null && area2Kwh > 0) {
                             totalArea2Consumption += area2Kwh;
                             area2ChartEntries.add(new Entry(dayCount, area2Kwh.floatValue()));
                             if (area2Kwh > area2PeakWatts) {
                                 area2PeakWatts = area2Kwh;
+                                area2PeakDay = dateKey; // FIX: Capture the peak day
                             }
                         } else {
                             area2ChartEntries.add(new Entry(dayCount, 0f));
                         }
 
+                        // AREA 3 - Track both peak consumption and peak day
                         if (area3Kwh != null && area3Kwh > 0) {
                             totalArea3Consumption += area3Kwh;
                             area3ChartEntries.add(new Entry(dayCount, area3Kwh.floatValue()));
                             if (area3Kwh > area3PeakWatts) {
                                 area3PeakWatts = area3Kwh;
+                                area3PeakDay = dateKey; // FIX: Capture the peak day
                             }
                         } else {
                             area3ChartEntries.add(new Entry(dayCount, 0f));
