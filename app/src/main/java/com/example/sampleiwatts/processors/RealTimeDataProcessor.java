@@ -176,7 +176,7 @@ public class RealTimeDataProcessor {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (!snapshot.exists()) {
-                            Log.d(TAG, "No current hour log data found");
+                            Log.d(TAG, " urrent hour log data found");
                             callback.onError("No current hour data available");
                             return;
                         }

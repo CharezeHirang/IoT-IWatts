@@ -88,22 +88,10 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
         dataProcessor = new RealTimeDataProcessor();
 
         // Load initial data
-        new Handler().postDelayed(() -> {
-            Log.d(TAG, "🔄 Starting delayed real-time data load...");
-            loadRealTimeData();
-        }, 5000); // 5 second delay to let processing complete
+        loadRealTimeData();
     }
 
-    private void showProcessingStatus(boolean isProcessing) {
-        runOnUiThread(() -> {
-            if (isProcessing) {
-                Toast.makeText(this, "Processing data...", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "📊 Data processing in progress...");
-            } else {
-                Log.d(TAG, "✅ Data processing completed");
-            }
-        });
-    }
+
 
     /**
      * Initialize all UI components
@@ -199,16 +187,15 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
     private void loadRealTimeData() {
         Log.d(TAG, "Loading real-time data...");
 
-        // 🆕 SHOW PROCESSING STATUS:
-        showProcessingStatus(true);
+
 
         // UPDATED: Use new method signature with date parameter
         String todayDate = getCurrentDate();
         dataProcessor.processRealTimeData(todayDate, new RealTimeDataProcessor.DataProcessingCallback() {
             @Override
             public void onDataProcessed(RealTimeDataProcessor.RealTimeData realTimeData) {
-                // 🆕 HIDE PROCESSING STATUS:
-                showProcessingStatus(false);
+
+
 
                 runOnUiThread(() -> {
                     // 🆕 VALIDATE DATA BEFORE UPDATING UI:
@@ -250,7 +237,7 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
 
             @Override
             public void onError(String error) {
-                showProcessingStatus(false);
+
                 runOnUiThread(() -> {
                     Log.e(TAG, "Error loading real-time data: " + error);
                     Toast.makeText(RealTimeMonitoringActivity.this,

@@ -4,20 +4,14 @@ import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.util.Log;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.example.sampleiwatts.managers.DataProcessingManager;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
@@ -46,7 +40,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     private DatabaseReference db;
     private EditText etArea1, etArea2, etArea3;
-    private DataProcessingManager processingManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,40 +88,16 @@ public class DashboardActivity extends AppCompatActivity {
 
         ButtonNavigator.setupButtons(this, buttonLayout);
 
-        IWattsApplication app = (IWattsApplication) getApplication();
-        processingManager = app.getProcessingManager();
-        initializeAppWithProperSequencing();
+
 
         Log.d(TAG, "MainActivity created");
 
 
     }
-    @Override
-    protected void onResume() {
-        super.onResume();
 
-        Log.d(TAG, "MainActivity resumed - processing data");
 
-        DataProcessingManager manager = ((IWattsApplication) getApplication()).getProcessingManager();
-        manager.processDataInForeground();
-    }
 
-    private void initializeAppWithProperSequencing() {
-        Log.d(TAG, "🚀 Starting app initialization with proper data sequencing...");
 
-        // Initialize the processing manager if not already done
-        if (processingManager == null) {
-            processingManager = new DataProcessingManager(this);
-        }
-
-        // Start background data processing
-        processingManager.processDataInForeground();
-
-        // Show user that processing is happening
-        Toast.makeText(this, "Initializing data...", Toast.LENGTH_SHORT).show();
-
-        Log.d(TAG, "✅ Background processing started, dashboard ready");
-    }
 
     private void fetchTotalCost() {
         DatabaseReference costFilterDateRef = db.child("cost_filter_date");
