@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -21,6 +23,12 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.example.sampleiwatts.processors.RealTimeDataProcessor;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -358,59 +366,212 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
      */
     private void updateCharts(RealTimeDataProcessor.RealTimeData realTimeData) {
         try {
-            // Create hourly labels
-            List<String> hourLabels = new ArrayList<>();
-            for (int i = 0; i < 24; i++) {
-                hourLabels.add(String.format("%02d:00", i));
-            }
+            // Fetch area names from database and then update charts
+            DatabaseReference systemSettingsRef = FirebaseDatabase.getInstance()
+                    .getReference("system_settings");
 
-            // Update charts for each area
-            if (area1Chart != null) {
-                setupAreaChart(area1Chart, realTimeData.hourlyData, hourLabels, "Area 1", Color.rgb(255, 193, 7));
-            }
+            systemSettingsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    // Get area names from database
+                    String area1Name = snapshot.child("area1_name").getValue(String.class);
+                    String area2Name = snapshot.child("area2_name").getValue(String.class);
+                    String area3Name = snapshot.child("area3_name").getValue(String.class);
 
-            if (area2Chart != null) {
-                setupAreaChart(area2Chart, realTimeData.hourlyData, hourLabels, "Area 2", Color.rgb(220, 53, 69));
-            }
+                    // Use defaults if not found
+                    if (area1Name == null) area1Name = "Area 1";
+                    if (area2Name == null) area2Name = "Area 2";
+                    if (area3Name == null) area3Name = "Area 3";
 
-            if (area3Chart != null) {
-                setupAreaChart(area3Chart, realTimeData.hourlyData, hourLabels, "Area 3", Color.rgb(40, 167, 69));
-            }
+                    // Create hourly labels
+                    List<String> hourLabels = new ArrayList<>();
+                    for (int i = 0; i < 24; i++) {
+                        hourLabels.add(String.format("%02d:00", i));
+                    }
+
+                    // CORRECTED: Pass realTimeData to setupAreaChart for percentage calculations
+                    if (area1Chart != null) {
+                        setupAreaChart(area1Chart, realTimeData.hourlyData, hourLabels,
+                                area1Name, getResources().getColor(R.color.brown), realTimeData);
+                    }
+
+                    if (area2Chart != null) {
+                        setupAreaChart(area2Chart, realTimeData.hourlyData, hourLabels,
+                                area2Name, getResources().getColor(R.color.brown), realTimeData);
+                    }
+
+                    if (area3Chart != null) {
+                        setupAreaChart(area3Chart, realTimeData.hourlyData, hourLabels,
+                                area3Name, getResources().getColor(R.color.brown), realTimeData);
+                    }
+
+                    // Update area labels in UI
+                    updateAreaLabels(area1Name, area2Name, area3Name);
+
+                    Log.d(TAG, "Charts updated with area distribution - Area1: " +
+                            String.format("%.1f%%", realTimeData.area1Data.sharePercentage) +
+                            ", Area2: " + String.format("%.1f%%", realTimeData.area2Data.sharePercentage) +
+                            ", Area3: " + String.format("%.1f%%", realTimeData.area3Data.sharePercentage));
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e(TAG, "Error fetching area names: " + error.getMessage());
+                    // Use defaults if database fetch fails
+                    updateChartsWithDefaults(realTimeData);
+                }
+            });
 
         } catch (Exception e) {
             Log.e(TAG, "Error updating charts: " + e.getMessage(), e);
         }
     }
 
+    private void updateAreaLabels(String area1Name, String area2Name, String area3Name) {
+        runOnUiThread(() -> {
+            TextView area1Label = findViewById(R.id.area1_label);
+            TextView area2Label = findViewById(R.id.area2_label);
+            TextView area3Label = findViewById(R.id.area3_label);
+
+            if (area1Label != null) area1Label.setText(area1Name);
+            if (area2Label != null) area2Label.setText(area2Name);
+            if (area3Label != null) area3Label.setText(area3Name);
+        });
+    }
+
+
+
+    private void createEmptyChart(LineChart chart, String chartName, int color) {
+        try {
+            List<Entry> emptyEntries = new ArrayList<>();
+            List<String> emptyLabels = new ArrayList<>();
+
+            for (int i = 0; i < 24; i += 6) {
+                emptyEntries.add(new Entry(i, 0f));
+                emptyLabels.add(String.format("%02d:00", i));
+            }
+
+            LineDataSet dataSet = new LineDataSet(emptyEntries, chartName + " (No Data)");
+            dataSet.setColor(Color.GRAY);
+            dataSet.setLineWidth(1f);
+            dataSet.setDrawCircles(false);
+            dataSet.setDrawFilled(false);
+
+            LineData lineData = new LineData(dataSet);
+            chart.setData(lineData);
+
+            configureDashboardStyleChart(chart, emptyLabels);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating empty chart: " + e.getMessage());
+        }
+    }
+
+    private void updateChartsWithDefaults(RealTimeDataProcessor.RealTimeData realTimeData) {
+        List<String> hourLabels = new ArrayList<>();
+        for (int i = 0; i < 24; i++) {
+            hourLabels.add(String.format("%02d:00", i));
+        }
+
+        if (area1Chart != null) {
+            setupAreaChart(area1Chart, realTimeData.hourlyData, hourLabels,
+                    "Area 1", getResources().getColor(R.color.brown), realTimeData);
+        }
+
+        if (area2Chart != null) {
+            setupAreaChart(area2Chart, realTimeData.hourlyData, hourLabels,
+                    "Area 2", getResources().getColor(R.color.brown), realTimeData);
+        }
+
+        if (area3Chart != null) {
+            setupAreaChart(area3Chart, realTimeData.hourlyData, hourLabels,
+                    "Area 3", getResources().getColor(R.color.brown), realTimeData);
+        }
+    }
+
+
     /**
      * Setup individual area chart
      */
     private void setupAreaChart(LineChart chart, List<RealTimeDataProcessor.HourlyData> hourlyData,
-                                List<String> labels, String chartName, int color) {
+                                List<String> labels, String chartName, int color,
+                                RealTimeDataProcessor.RealTimeData realTimeData) {
+        if (chart == null) {
+            Log.w(TAG, "Chart is null for " + chartName);
+            return;
+        }
+
         try {
             List<Entry> entries = new ArrayList<>();
+            List<String> usedLabels = new ArrayList<>();
 
-            // Show only every 4 hours to avoid crowding (0, 4, 8, 12, 16, 20)
-            List<String> reducedLabels = new ArrayList<>();
-            for (int i = 0; i < 24; i += 4) {
+            Log.d(TAG, "Setting up " + chartName + " with " + hourlyData.size() + " hourly data points");
+
+            // FIXED: For area charts, we need to use a different approach since HourlyData only has total consumption
+            // We'll create a proportional distribution based on area data percentages
+
+            double area1Percentage = 0.0;
+            double area2Percentage = 0.0;
+            double area3Percentage = 0.0;
+
+            // Get area percentages from the real-time data
+            if (realTimeData != null) {
+                double totalAreaConsumption = realTimeData.area1Data.consumption +
+                        realTimeData.area2Data.consumption +
+                        realTimeData.area3Data.consumption;
+
+                if (totalAreaConsumption > 0) {
+                    area1Percentage = realTimeData.area1Data.consumption / totalAreaConsumption;
+                    area2Percentage = realTimeData.area2Data.consumption / totalAreaConsumption;
+                    area3Percentage = realTimeData.area3Data.consumption / totalAreaConsumption;
+                } else {
+                    // Default equal distribution if no data
+                    area1Percentage = area2Percentage = area3Percentage = 1.0 / 3.0;
+                }
+            }
+
+            // Process all 24 hours
+            for (int hour = 0; hour < 24; hour++) {
                 float value = 0f;
 
                 // Find matching hourly data
                 for (RealTimeDataProcessor.HourlyData data : hourlyData) {
-                    if (data.hour.equals(String.format("%02d", i))) {
-                        value = (float) data.consumption;
+                    if (data.hour.equals(String.format("%02d", hour))) {
+                        // CORRECTED: Use total consumption and distribute by area percentage
+                        if (chartName.contains("Area 1") || chartName.contains("Bedroom")) {
+                            value = (float) (data.consumption * area1Percentage);
+                        } else if (chartName.contains("Area 2") || chartName.contains("Living")) {
+                            value = (float) (data.consumption * area2Percentage);
+                        } else if (chartName.contains("Area 3") || chartName.contains("Kitchen")) {
+                            value = (float) (data.consumption * area3Percentage);
+                        } else {
+                            // For total consumption chart
+                            value = (float) data.consumption;
+                        }
                         break;
                     }
                 }
 
-                entries.add(new Entry(i/4, value)); // Scale down x-axis
-                reducedLabels.add(String.format("%02d:00", i));
+                entries.add(new Entry(hour, Math.max(0f, value)));
+                usedLabels.add(String.format("%02d:00", hour));
+
+                if (value > 0) {
+                    Log.d(TAG, chartName + " - Hour " + hour + ": " + value + " kWh");
+                }
+            }
+
+            if (entries.isEmpty()) {
+                Log.w(TAG, "No entries created for " + chartName + ", creating default entries");
+                for (int i = 0; i < 24; i += 4) {
+                    entries.add(new Entry(i, 0f));
+                    usedLabels.add(String.format("%02d:00", i));
+                }
             }
 
             // Create dataset with dashboard-style formatting
             LineDataSet dataSet = new LineDataSet(entries, chartName);
-            dataSet.setColor(getResources().getColor(R.color.brown)); // Match dashboard color
-            dataSet.setCircleColor(getResources().getColor(R.color.brown));
+            dataSet.setColor(color);
+            dataSet.setCircleColor(color);
             dataSet.setLineWidth(2f);
             dataSet.setCircleRadius(4f);
             dataSet.setDrawCircleHole(false);
@@ -419,63 +580,86 @@ public class RealTimeMonitoringActivity extends AppCompatActivity {
             dataSet.setFillColor(color);
             dataSet.setFillAlpha(50);
 
-            // Setup chart data
+            // CORRECTED: Use only available methods
+            dataSet.setMode(LineDataSet.Mode.LINEAR);
+
             LineData lineData = new LineData(dataSet);
             chart.setData(lineData);
 
-            // Apply dashboard-style formatting
-            configureDashboardStyleChart(chart, reducedLabels);
+            configureDashboardStyleChart(chart, usedLabels);
+
+            Log.d(TAG, chartName + " updated successfully with " + entries.size() + " entries");
 
         } catch (Exception e) {
-            Log.e(TAG, "Error setting up area chart: " + e.getMessage(), e);
+            Log.e(TAG, "Error setting up area chart " + chartName + ": " + e.getMessage(), e);
+            createEmptyChart(chart, chartName, color);
         }
     }
 
+
     // New method to apply dashboard-style formatting
     private void configureDashboardStyleChart(LineChart chart, List<String> labels) {
-        // Basic chart settings (match dashboard)
-        chart.getDescription().setEnabled(false);
-        chart.setTouchEnabled(true);
-        chart.setDragEnabled(true);
-        chart.setScaleEnabled(false);
-        chart.setPinchZoom(false);
-        chart.setDrawGridBackground(false);
-        chart.setDrawBorders(false);
+        if (chart == null) return;
 
-        // Disable right Y-axis (match dashboard)
-        chart.getAxisRight().setEnabled(false);
+        try {
+            chart.getDescription().setEnabled(false);
+            chart.setTouchEnabled(true);
+            chart.setDragEnabled(true);
+            chart.setScaleEnabled(false);
+            chart.setPinchZoom(false);
+            chart.setDrawGridBackground(false);
+            chart.setDrawBorders(false);
 
-        // Configure X-axis (match dashboard style)
-        XAxis xAxis = chart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
-        xAxis.setGranularity(1f);
-        xAxis.setTextColor(getResources().getColor(R.color.brown)); // Match dashboard
-        xAxis.setTextSize(10f); // Bigger text for readability
-        xAxis.setDrawGridLines(true);
-        xAxis.setGridColor(getResources().getColor(R.color.brown));
-        xAxis.setDrawLabels(true);
-        xAxis.setLabelCount(labels.size(), false);
+            chart.getAxisRight().setEnabled(false);
 
-        // Configure Y-axis (left) - match dashboard
-        chart.getAxisLeft().setTextColor(getResources().getColor(R.color.brown));
-        chart.getAxisLeft().setTextSize(10f);
-        chart.getAxisLeft().setGridColor(getResources().getColor(R.color.brown));
-        chart.getAxisLeft().setDrawGridLines(true);
-        chart.getAxisLeft().setAxisMinimum(0f);
+            XAxis xAxis = chart.getXAxis();
+            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
 
-        // Add bottom offset for better label visibility (match dashboard)
-        chart.setExtraBottomOffset(10f);
+            if (labels != null && !labels.isEmpty()) {
+                List<String> reducedLabels = new ArrayList<>();
+                for (int i = 0; i < 24; i += 4) {
+                    if (i < labels.size()) {
+                        reducedLabels.add(labels.get(i));
+                    } else {
+                        reducedLabels.add(String.format("%02d:00", i));
+                    }
+                }
+                xAxis.setValueFormatter(new IndexAxisValueFormatter(reducedLabels));
+                xAxis.setLabelCount(reducedLabels.size(), true);
+                xAxis.setGranularity(4f);
+            }
 
-        // Configure legend (match dashboard)
-        Legend legend = chart.getLegend();
-        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-        legend.setForm(Legend.LegendForm.LINE);
-        legend.setTextColor(getResources().getColor(R.color.brown));
-        legend.setEnabled(true);
+            xAxis.setTextColor(getResources().getColor(R.color.brown));
+            xAxis.setTextSize(10f);
+            xAxis.setDrawGridLines(true);
+            xAxis.setGridColor(getResources().getColor(R.color.brown));
+            xAxis.setDrawLabels(true);
 
-        // Refresh chart
-        chart.invalidate();
+            YAxis leftAxis = chart.getAxisLeft();
+            leftAxis.setTextColor(getResources().getColor(R.color.brown));
+            leftAxis.setTextSize(10f);
+            leftAxis.setGridColor(getResources().getColor(R.color.brown));
+            leftAxis.setDrawGridLines(true);
+            leftAxis.setAxisMinimum(0f);
+            leftAxis.setGranularityEnabled(true);
+            leftAxis.setGranularity(0.1f);
+
+            chart.setExtraBottomOffset(10f);
+
+            Legend legend = chart.getLegend();
+            legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+            legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
+            legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+            legend.setForm(Legend.LegendForm.LINE);
+            legend.setTextColor(getResources().getColor(R.color.brown));
+            legend.setEnabled(true);
+
+            chart.notifyDataSetChanged();
+            chart.invalidate();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error configuring dashboard-style chart: " + e.getMessage());
+        }
     }
 
     @Override

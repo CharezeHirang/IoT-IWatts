@@ -125,6 +125,8 @@ public class HistoricalDataActivity extends AppCompatActivity {
         Log.d(TAG, "HistoricalDataActivity initialized successfully");
     }
 
+
+
     /**
      * Initialize date-related components and formatters
      */
@@ -489,34 +491,44 @@ public class HistoricalDataActivity extends AppCompatActivity {
     private void setupChart(LineChart chart, String description) {
         if (chart == null) return;
 
+        // Basic chart settings (match dashboard)
         chart.setDescription(null);
         chart.setTouchEnabled(true);
         chart.setDragEnabled(true);
-        chart.setScaleEnabled(true);
-        chart.setPinchZoom(true);
+        chart.setScaleEnabled(false);  // Disable scaling like dashboard
+        chart.setPinchZoom(false);     // Disable pinch zoom like dashboard
         chart.setDrawGridBackground(false);
+        chart.setDrawBorders(false);
+        chart.setExtraBottomOffset(10f); // Match dashboard
 
-        // Configure X-axis
+        // Configure X-axis (match dashboard style)
         XAxis xAxis = chart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setDrawGridLines(true);
+        xAxis.setGridColor(getResources().getColor(R.color.brown)); // Match dashboard
+        xAxis.setTextColor(getResources().getColor(R.color.brown)); // Match dashboard
         xAxis.setGranularity(1f);
-        xAxis.setLabelCount(7);
+        xAxis.setDrawLabels(true);
 
-        // Configure Y-axis
+        // Configure left Y-axis (match dashboard)
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setDrawGridLines(true);
+        leftAxis.setGridColor(getResources().getColor(R.color.brown)); // Match dashboard
+        leftAxis.setTextColor(getResources().getColor(R.color.brown)); // Match dashboard
         leftAxis.setGranularityEnabled(true);
 
+        // Disable right Y-axis (match dashboard)
         YAxis rightAxis = chart.getAxisRight();
         rightAxis.setEnabled(false);
 
-        // Configure legend
+        // Configure legend (match dashboard)
         Legend legend = chart.getLegend();
         legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
-        legend.setOrientation(Legend.LegendOrientation.VERTICAL);
+        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
+        legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
         legend.setDrawInside(false);
+        legend.setForm(Legend.LegendForm.LINE); // Match dashboard
+        legend.setTextColor(getResources().getColor(R.color.brown)); // Match dashboard
     }
 
     /**
@@ -527,10 +539,8 @@ public class HistoricalDataActivity extends AppCompatActivity {
                 firebaseFormat.format(startDate.getTime()) + " to " +
                 firebaseFormat.format(endDate.getTime()));
 
-        // Show loading indicator
-        showLoadingIndicator(true);
+        // NO MORE TOAST - REMOVED showLoadingIndicator(true);
 
-        // Query daily summaries for the selected date range
         DatabaseReference dailySummariesRef = FirebaseDatabase.getInstance()
                 .getReference("daily_summaries");
 
@@ -544,14 +554,14 @@ public class HistoricalDataActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         processHistoricalData(snapshot);
-                        showLoadingIndicator(false);
+                        // NO MORE TOAST - REMOVED showLoadingIndicator(false);
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         Log.e(TAG, "Error loading historical data: " + error.getMessage());
                         showValidationError("Failed to load historical data");
-                        showLoadingIndicator(false);
+                        // NO MORE TOAST - REMOVED showLoadingIndicator(false);
                     }
                 });
     }
@@ -567,36 +577,48 @@ public class HistoricalDataActivity extends AppCompatActivity {
         }
 
         try {
-            // Variables to track totals
             double totalConsumption = 0.0;
             double totalCost = 0.0;
             double totalArea1Consumption = 0.0;
             double totalArea2Consumption = 0.0;
             double totalArea3Consumption = 0.0;
+
             double maxPeakWatts = 0.0;
+            String peakUsageDay = "";
+            double area1PeakWatts = 0.0;
+            String area1PeakDay = "";           // ← This one
+            double area2PeakWatts = 0.0;
+            String area2PeakDay = "";           // ← This one causing error
+            double area3PeakWatts = 0.0;
+            String area3PeakDay = "";
+
             int dayCount = 0;
 
-            // Lists for chart data
             List<Entry> mainChartEntries = new ArrayList<>();
             List<Entry> area1ChartEntries = new ArrayList<>();
             List<Entry> area2ChartEntries = new ArrayList<>();
             List<Entry> area3ChartEntries = new ArrayList<>();
             List<String> dateLabels = new ArrayList<>();
 
-            // Process each day's data
+            List<String> sortedDates = new ArrayList<>();
             for (DataSnapshot daySnapshot : snapshot.getChildren()) {
-                String dateKey = daySnapshot.getKey();
-                DataSnapshot dayData = daySnapshot;
+                sortedDates.add(daySnapshot.getKey());
+            }
+            sortedDates.sort(String::compareTo);
+
+            for (String dateKey : sortedDates) {
+                DataSnapshot dayData = snapshot.child(dateKey);
 
                 if (dayData.exists()) {
-                    // Get daily totals
                     Double dailyKwh = getDoubleValue(dayData.child("total_kwh"));
                     Double dailyCost = getDoubleValue(dayData.child("total_cost"));
                     Double peakWatts = getDoubleValue(dayData.child("peak_watts"));
 
-                    if (dailyKwh != null) {
+                    if (dailyKwh != null && dailyKwh > 0) {
                         totalConsumption += dailyKwh;
                         mainChartEntries.add(new Entry(dayCount, dailyKwh.floatValue()));
+                    } else {
+                        mainChartEntries.add(new Entry(dayCount, 0f));
                     }
 
                     if (dailyCost != null) {
@@ -605,58 +627,128 @@ public class HistoricalDataActivity extends AppCompatActivity {
 
                     if (peakWatts != null && peakWatts > maxPeakWatts) {
                         maxPeakWatts = peakWatts;
+                        peakUsageDay = dateKey;
                     }
 
-                    // Get area breakdown
                     DataSnapshot areaBreakdown = dayData.child("area_breakdown");
                     if (areaBreakdown.exists()) {
                         Double area1Kwh = getDoubleValue(areaBreakdown.child("area1").child("kwh"));
                         Double area2Kwh = getDoubleValue(areaBreakdown.child("area2").child("kwh"));
                         Double area3Kwh = getDoubleValue(areaBreakdown.child("area3").child("kwh"));
 
-                        if (area1Kwh != null) {
+                        if (area1Kwh != null && area1Kwh > 0) {
                             totalArea1Consumption += area1Kwh;
                             area1ChartEntries.add(new Entry(dayCount, area1Kwh.floatValue()));
+                            if (area1Kwh > area1PeakWatts) {
+                                area1PeakWatts = area1Kwh;
+                            }
+                        } else {
+                            area1ChartEntries.add(new Entry(dayCount, 0f));
                         }
 
-                        if (area2Kwh != null) {
+                        if (area2Kwh != null && area2Kwh > 0) {
                             totalArea2Consumption += area2Kwh;
                             area2ChartEntries.add(new Entry(dayCount, area2Kwh.floatValue()));
+                            if (area2Kwh > area2PeakWatts) {
+                                area2PeakWatts = area2Kwh;
+                            }
+                        } else {
+                            area2ChartEntries.add(new Entry(dayCount, 0f));
                         }
 
-                        if (area3Kwh != null) {
+                        if (area3Kwh != null && area3Kwh > 0) {
                             totalArea3Consumption += area3Kwh;
                             area3ChartEntries.add(new Entry(dayCount, area3Kwh.floatValue()));
+                            if (area3Kwh > area3PeakWatts) {
+                                area3PeakWatts = area3Kwh;
+                            }
+                        } else {
+                            area3ChartEntries.add(new Entry(dayCount, 0f));
                         }
+                    } else {
+                        area1ChartEntries.add(new Entry(dayCount, 0f));
+                        area2ChartEntries.add(new Entry(dayCount, 0f));
+                        area3ChartEntries.add(new Entry(dayCount, 0f));
                     }
 
-                    // Add date label
                     try {
                         Date date = firebaseFormat.parse(dateKey);
                         SimpleDateFormat chartLabelFormat = new SimpleDateFormat("MM/dd", Locale.getDefault());
                         dateLabels.add(chartLabelFormat.format(date));
                     } catch (Exception e) {
-                        dateLabels.add(dateKey);
+                        String shortDate = dateKey.substring(5);
+                        dateLabels.add(shortDate.replace("-", "/"));
                     }
 
                     dayCount++;
                 }
             }
 
-            // Update UI with processed data
-            updateSummaryDisplays(totalConsumption, totalCost, totalArea1Consumption,
-                    totalArea2Consumption, totalArea3Consumption, maxPeakWatts, dayCount);
+            if (dayCount == 0) {
+                showValidationError("No valid data found in the selected date range");
+                clearDisplays();
+                return;
+            }
 
-            // Update charts
-            updateCharts(mainChartEntries, area1ChartEntries, area2ChartEntries, area3ChartEntries, dateLabels);
+            // Update displays with all data
+            updateSummaryDisplaysWithPeaksAndDays(totalConsumption, totalCost, totalArea1Consumption,
+                    totalArea2Consumption, totalArea3Consumption,
+                    maxPeakWatts, peakUsageDay,
+                    area1PeakWatts, area1PeakDay,
+                    area2PeakWatts, area2PeakDay,
+                    area3PeakWatts, area3PeakDay, dayCount);
+
+            // Update charts with area names from database
+            updateChartsWithAreaNames(mainChartEntries, area1ChartEntries, area2ChartEntries, area3ChartEntries, dateLabels);
 
             Log.d(TAG, "Historical data processed successfully for " + dayCount + " days");
 
         } catch (Exception e) {
             Log.e(TAG, "Error processing historical data: " + e.getMessage());
             showValidationError("Error processing historical data");
+            clearDisplays();
         }
     }
+
+    private void updateChartsWithAreaNames(List<Entry> mainEntries, List<Entry> area1Entries,
+                                           List<Entry> area2Entries, List<Entry> area3Entries, List<String> dateLabels) {
+
+        // Fetch area names from database
+        DatabaseReference systemSettingsRef = FirebaseDatabase.getInstance()
+                .getReference("system_settings");
+
+        systemSettingsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                final String area1Name = snapshot.child("area1_name").getValue(String.class) != null
+                        ? snapshot.child("area1_name").getValue(String.class) : "Area 1";
+                final String area2Name = snapshot.child("area2_name").getValue(String.class) != null
+                        ? snapshot.child("area2_name").getValue(String.class) : "Area 2";
+                final String area3Name = snapshot.child("area3_name").getValue(String.class) != null
+                        ? snapshot.child("area3_name").getValue(String.class) : "Area 3";
+
+                // Update charts with proper names
+                runOnUiThread(() -> {
+                    updateCharts(mainEntries, area1Entries, area2Entries, area3Entries, dateLabels,
+                            area1Name, area2Name, area3Name);
+
+                    // Update area labels in UI
+                    updateHistoricalAreaLabels(area1Name, area2Name, area3Name);
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Error fetching area names: " + error.getMessage());
+                // Use defaults
+                runOnUiThread(() -> {
+                    updateCharts(mainEntries, area1Entries, area2Entries, area3Entries, dateLabels,
+                            "Area 1", "Area 2", "Area 3");
+                });
+            }
+        });
+    }
+
 
     /**
      * Helper method to safely get double values from Firebase
@@ -674,50 +766,174 @@ public class HistoricalDataActivity extends AppCompatActivity {
     /**
      * Update summary displays with calculated data
      */
-    private void updateSummaryDisplays(double totalConsumption, double totalCost,
-                                       double area1Consumption, double area2Consumption, double area3Consumption,
-                                       double maxPeakWatts, int dayCount) {
+    private void updateSummaryDisplaysWithPeaksAndDays(double totalConsumption, double totalCost,
+                                                       double area1Consumption, double area2Consumption, double area3Consumption,
+                                                       double maxPeakWatts, String peakUsageDay,
+                                                       double area1PeakWatts, String area1PeakDay,
+                                                       double area2PeakWatts, String area2PeakDay,
+                                                       double area3PeakWatts, String area3PeakDay,
+                                                       int dayCount) {
 
         runOnUiThread(() -> {
-            // Update selected period summary
-            if (selectedTotalConsumption != null) {
-                selectedTotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", totalConsumption));
-            }
+            try {
+                // FIXED: Display 2 decimal places for total consumption
+                if (selectedTotalConsumption != null) {
+                    selectedTotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", totalConsumption));
+                }
 
-            if (selectedTotalCost != null) {
-                selectedTotalCost.setText(String.format(Locale.getDefault(), "₱%.2f", totalCost));
-            }
+                if (selectedTotalCost != null) {
+                    selectedTotalCost.setText(String.format(Locale.getDefault(), "₱%.2f", totalCost));
+                }
 
-            if (selectedDailyAverage != null && dayCount > 0) {
-                double dailyAverage = totalConsumption / dayCount;
-                selectedDailyAverage.setText(String.format(Locale.getDefault(), "%.2f kWh", dailyAverage));
-            }
+                if (selectedDailyAverage != null && dayCount > 0) {
+                    double dailyAverage = totalConsumption / dayCount;
+                    selectedDailyAverage.setText(String.format(Locale.getDefault(), "%.2f kWh", dailyAverage));
+                }
 
-            // Update area displays
-            double totalForPercentage = area1Consumption + area2Consumption + area3Consumption;
+                // FIXED: Display peak usage day
+                TextView selectedPeakDay = findViewById(R.id.selected_peak_day);
+                if (selectedPeakDay != null && !peakUsageDay.isEmpty()) {
+                    try {
+                        Date date = firebaseFormat.parse(peakUsageDay);
+                        SimpleDateFormat displayFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+                        selectedPeakDay.setText(displayFormat.format(date));
+                    } catch (Exception e) {
+                        selectedPeakDay.setText(peakUsageDay);
+                    }
+                }
 
-            if (area1TotalConsumption != null) {
-                area1TotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", area1Consumption));
-            }
-            if (area1SharePercentage != null && totalForPercentage > 0) {
-                double area1Percentage = (area1Consumption / totalForPercentage) * 100;
-                area1SharePercentage.setText(String.format(Locale.getDefault(), "%.1f%%", area1Percentage));
-            }
+                TextView selectedDateRangeTotalCost = findViewById(R.id.selecteddaterangetotalcost);
+                if (selectedDateRangeTotalCost != null) {
+                    selectedDateRangeTotalCost.setText(String.format(Locale.getDefault(), "₱%.2f", totalCost));
+                }
 
-            if (area2TotalConsumption != null) {
-                area2TotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", area2Consumption));
-            }
-            if (area2SharePercentage != null && totalForPercentage > 0) {
-                double area2Percentage = (area2Consumption / totalForPercentage) * 100;
-                area2SharePercentage.setText(String.format(Locale.getDefault(), "%.1f%%", area2Percentage));
-            }
+                // Get electricity rate for cost calculations
+                getElectricityRate(rate -> {
+                    runOnUiThread(() -> {
+                        // AREA 1 with peak day information
+                        if (area1TotalConsumption != null) {
+                            area1TotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", area1Consumption));
+                        }
+                        if (area1EstimatedCost != null) {
+                            double area1Cost = area1Consumption * rate;
+                            area1EstimatedCost.setText(String.format(Locale.getDefault(), "₱%.2f", area1Cost));
+                        }
+                        // FIXED: Show peak consumption with day
+                        if (area1PeakConsumption != null) {
+                            if (area1PeakWatts > 0) {
+                                String peakText = String.format(Locale.getDefault(), "%.2f kWh", area1PeakWatts);
+                                if (!area1PeakDay.isEmpty()) {
+                                    try {
+                                        Date date = firebaseFormat.parse(area1PeakDay);
+                                        SimpleDateFormat shortFormat = new SimpleDateFormat("MM/dd", Locale.getDefault());
+                                        peakText += " on " + shortFormat.format(date);
+                                    } catch (Exception e) {
+                                        peakText += " on " + area1PeakDay.substring(5).replace("-", "/");
+                                    }
+                                }
+                                area1PeakConsumption.setText(peakText);
+                            } else {
+                                area1PeakConsumption.setText("0.00 kWh");
+                            }
+                        }
+                        if (area1SharePercentage != null) {
+                            double totalForPercentage = area1Consumption + area2Consumption + area3Consumption;
+                            if (totalForPercentage > 0) {
+                                double area1Percentage = (area1Consumption / totalForPercentage) * 100;
+                                area1SharePercentage.setText(String.format(Locale.getDefault(), "%.1f%%", area1Percentage));
+                            }
+                        }
 
-            if (area3TotalConsumption != null) {
-                area3TotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", area3Consumption));
-            }
-            if (area3SharePercentage != null && totalForPercentage > 0) {
-                double area3Percentage = (area3Consumption / totalForPercentage) * 100;
-                area3SharePercentage.setText(String.format(Locale.getDefault(), "%.1f%%", area3Percentage));
+                        // AREA 2 with peak day information
+                        if (area2PeakConsumption != null) {
+                            if (area2PeakWatts > 0) {
+                                String peakText = String.format(Locale.getDefault(), "%.2f kWh", area2PeakWatts);
+                                if (!area2PeakDay.isEmpty()) {
+                                    try {
+                                        Date date = firebaseFormat.parse(area2PeakDay);
+                                        SimpleDateFormat shortFormat = new SimpleDateFormat("MM/dd", Locale.getDefault());
+                                        peakText += " on " + shortFormat.format(date);
+                                    } catch (Exception e) {
+                                        peakText += " on " + area2PeakDay.substring(5).replace("-", "/");
+                                    }
+                                }
+                                area2PeakConsumption.setText(peakText);
+                            } else {
+                                area2PeakConsumption.setText("0.00 kWh");
+                            }
+                        }
+                        if (area2SharePercentage != null) {
+                            double totalForPercentage = area1Consumption + area2Consumption + area3Consumption;
+                            if (totalForPercentage > 0) {
+                                double area2Percentage = (area2Consumption / totalForPercentage) * 100;
+                                area2SharePercentage.setText(String.format(Locale.getDefault(), "%.1f%%", area2Percentage));
+                            }
+                        }
+
+                        // AREA 3 with peak day information
+                        if (area3TotalConsumption != null) {
+                            area3TotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", area3Consumption));
+                        }
+                        if (area3EstimatedCost != null) {
+                            double area3Cost = area3Consumption * rate;
+                            area3EstimatedCost.setText(String.format(Locale.getDefault(), "₱%.2f", area3Cost));
+                        }
+                        // FIXED: Show peak consumption with day
+                        if (area3PeakConsumption != null) {
+                            if (area3PeakWatts > 0) {
+                                String peakText = String.format(Locale.getDefault(), "%.2f kWh", area3PeakWatts);
+                                if (!area3PeakDay.isEmpty()) {
+                                    try {
+                                        Date date = firebaseFormat.parse(area3PeakDay);
+                                        SimpleDateFormat shortFormat = new SimpleDateFormat("MM/dd", Locale.getDefault());
+                                        peakText += " on " + shortFormat.format(date);
+                                    } catch (Exception e) {
+                                        peakText += " on " + area3PeakDay.substring(5).replace("-", "/");
+                                    }
+                                }
+                                area3PeakConsumption.setText(peakText);
+                            } else {
+                                area3PeakConsumption.setText("0.00 kWh");
+                            }
+                        }
+                        if (area3SharePercentage != null) {
+                            double totalForPercentage = area1Consumption + area2Consumption + area3Consumption;
+                            if (totalForPercentage > 0) {
+                                double area3Percentage = (area3Consumption / totalForPercentage) * 100;
+                                area3SharePercentage.setText(String.format(Locale.getDefault(), "%.1f%%", area3Percentage));
+                            }
+                        }
+
+                        // FIXED: Update previous period consumption with 2 decimal places
+                        TextView previousTotalConsumption = findViewById(R.id.previoustotalconsumption);
+                        if (previousTotalConsumption != null) {
+                            // Calculate and display previous period data (you may need to implement this based on your requirements)
+                            // For now, just ensure it shows 2 decimal places when updated
+                            String currentText = previousTotalConsumption.getText().toString();
+                            if (currentText.contains("kWh")) {
+                                // Extract number and reformat to 2 decimal places
+                                try {
+                                    String[] parts = currentText.split(" ");
+                                    if (parts.length > 0) {
+                                        double value = Double.parseDouble(parts[0]);
+                                        previousTotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", value));
+                                    }
+                                } catch (Exception e) {
+                                    Log.w(TAG, "Could not reformat previous total consumption");
+                                }
+                            }
+                        }
+
+                        // FIXED: Update selected date range total consumption with 2 decimal places
+                        TextView selectedDateRangeTotalConsumption = findViewById(R.id.selecteddaterangetotalconsumption);
+                        if (selectedDateRangeTotalConsumption != null) {
+                            selectedDateRangeTotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", totalConsumption));
+                        }
+                    });
+                });
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error updating summary displays: " + e.getMessage());
             }
         });
     }
@@ -726,28 +942,24 @@ public class HistoricalDataActivity extends AppCompatActivity {
      * Update all charts with processed data
      */
     private void updateCharts(List<Entry> mainEntries, List<Entry> area1Entries,
-                              List<Entry> area2Entries, List<Entry> area3Entries, List<String> dateLabels) {
+                              List<Entry> area2Entries, List<Entry> area3Entries, List<String> dateLabels,
+                              String area1Name, String area2Name, String area3Name) {
 
         runOnUiThread(() -> {
             try {
-                // Update main chart
                 if (mainChart != null && !mainEntries.isEmpty()) {
-                    LineDataSet dataSet = new LineDataSet(mainEntries, "Total Consumption (kWh)");
-                    dataSet.setColor(Color.BLUE);
-                    dataSet.setValueTextColor(Color.BLACK);
-                    dataSet.setLineWidth(2f);
-                    dataSet.setCircleRadius(4f);
-
-                    LineData lineData = new LineData(dataSet);
-                    mainChart.setData(lineData);
-                    mainChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(dateLabels));
-                    mainChart.invalidate();
+                    updateSingleChartDashboardStyle(mainChart, mainEntries, "Total Consumption (kWh)",
+                            getResources().getColor(R.color.brown), dateLabels);
                 }
 
-                // Update area charts
-                updateAreaChart(area1Chart, area1Entries, "Area 1 (kWh)", Color.GREEN, dateLabels);
-                updateAreaChart(area2Chart, area2Entries, "Area 2 (kWh)", Color.RED, dateLabels);
-                updateAreaChart(area3Chart, area3Entries, "Area 3 (kWh)", Color.YELLOW, dateLabels);
+                updateSingleChartDashboardStyle(area1Chart, area1Entries, area1Name + " (kWh)",
+                        getResources().getColor(R.color.brown), dateLabels);
+
+                updateSingleChartDashboardStyle(area2Chart, area2Entries, area2Name + " (kWh)",
+                        getResources().getColor(R.color.brown), dateLabels);
+
+                updateSingleChartDashboardStyle(area3Chart, area3Entries, area3Name + " (kWh)",
+                        getResources().getColor(R.color.brown), dateLabels);
 
             } catch (Exception e) {
                 Log.e(TAG, "Error updating charts: " + e.getMessage());
@@ -756,23 +968,67 @@ public class HistoricalDataActivity extends AppCompatActivity {
     }
 
     /**
-     * Update individual area chart
+     * Update area labels in historical UI
      */
-    private void updateAreaChart(LineChart chart, List<Entry> entries, String label, int color, List<String> dateLabels) {
-        if (chart != null && !entries.isEmpty()) {
-            LineDataSet dataSet = new LineDataSet(entries, label);
-            dataSet.setColor(color);
-            dataSet.setValueTextColor(Color.BLACK);
-            dataSet.setLineWidth(2f);
-            dataSet.setCircleRadius(3f);
-            dataSet.setCircleColor(color);
+    private void updateHistoricalAreaLabels(String area1Name, String area2Name, String area3Name) {
+        TextView area1Label = findViewById(R.id.area1_label);
+        TextView area2Label = findViewById(R.id.area2_label);
+        TextView area3Label = findViewById(R.id.area3_label);
 
+        if (area1Label != null) area1Label.setText(area1Name);
+        if (area2Label != null) area2Label.setText(area2Name);
+        if (area3Label != null) area3Label.setText(area3Name);
+    }
+
+
+    private void updateSingleChartDashboardStyle(LineChart chart, List<Entry> entries,
+                                                 String label, int color, List<String> dateLabels) {
+        if (chart == null || entries.isEmpty()) return;
+
+        try {
+            // Create dataset with dashboard-style formatting
+            LineDataSet dataSet = new LineDataSet(entries, label);
+
+            // Apply dashboard styling
+            dataSet.setColor(color);
+            dataSet.setValueTextColor(color);
+            dataSet.setLineWidth(2f);           // Match dashboard line width
+            dataSet.setDrawCircles(true);       // Show data points like dashboard
+            dataSet.setCircleColor(color);
+            dataSet.setCircleRadius(3f);
+            dataSet.setDrawFilled(true);        // Fill area under line like dashboard
+            dataSet.setFillColor(color);
+            dataSet.setFillAlpha(50);           // Semi-transparent fill
+            dataSet.setDrawValues(false);       // Don't show values on points
+
+            // Create line data
             LineData lineData = new LineData(dataSet);
             chart.setData(lineData);
+
+            // Apply axis colors (match dashboard)
+            chart.getAxisLeft().setGridColor(color);
+            chart.getAxisLeft().setTextColor(color);
+            chart.getXAxis().setGridColor(color);
+            chart.getXAxis().setTextColor(color);
+
+            // Set date labels
             chart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(dateLabels));
+
+            // Apply legend styling (match dashboard)
+            Legend legend = chart.getLegend();
+            legend.setTextColor(color);
+
+            // Refresh chart
             chart.invalidate();
+
+            Log.d(TAG, "Updated chart with " + entries.size() + " data points");
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating single chart: " + e.getMessage(), e);
         }
     }
+
+
 
     /**
      * Clear all displays when no data is available
@@ -869,6 +1125,8 @@ public class HistoricalDataActivity extends AppCompatActivity {
                     }
                 });
     }
+
+
 
     /**
      * Interface for electricity rate callback

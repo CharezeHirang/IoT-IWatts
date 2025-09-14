@@ -84,6 +84,9 @@ public class RealTimeDataProcessor {
         public int validReadings;
         public int batteryPercent;
         public boolean isCharging;
+
+        public boolean isFallbackData = false;
+        public String fallbackMessage = "";
     }
 
     /**
@@ -126,12 +129,19 @@ public class RealTimeDataProcessor {
         hourlyRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot hourlySnapshot) {
-                // Then get current hour log data
+                // Then get current hour log data (with fallback handling)
                 getCurrentHourLogData(databaseRef.child("logs"), date, voltageReference, new CurrentHourCallback() {
                     @Override
                     public void onCurrentHourProcessed(CurrentHourData currentHourData) {
                         try {
                             RealTimeData realTimeData = buildCompleteRealTimeData(hourlySnapshot, currentHourData, electricityRate, date);
+
+                            // Add status message if using fallback data
+                            if (currentHourData.isFallbackData && !currentHourData.fallbackMessage.isEmpty()) {
+                                Log.i(TAG, "Real-time data note: " + currentHourData.fallbackMessage);
+                                // You can show this message to the user if needed
+                                // realTimeData.statusMessage = currentHourData.fallbackMessage;
+                            }
 
                             // Calculate real peaks from log data (async)
                             calculateRealAreaPeaksFromLogData(realTimeData, date, voltageReference, callback);
@@ -143,7 +153,27 @@ public class RealTimeDataProcessor {
 
                     @Override
                     public void onError(String error) {
-                        callback.onError(error);
+                        // Even if current hour processing fails, still try to show data from hourly summaries
+                        Log.w(TAG, "Current hour processing failed: " + error + ", using hourly summaries only");
+
+                        // Create empty current hour data and continue
+                        createEmptyCurrentHourData(new CurrentHourCallback() {
+                            @Override
+                            public void onCurrentHourProcessed(CurrentHourData emptyData) {
+                                try {
+                                    RealTimeData realTimeData = buildCompleteRealTimeData(hourlySnapshot, emptyData, electricityRate, date);
+                                    calculateRealAreaPeaksFromLogData(realTimeData, date, voltageReference, callback);
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Error building real-time data with empty current hour: " + e.getMessage(), e);
+                                    callback.onError("Failed to process real-time data");
+                                }
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                callback.onError("Failed to create fallback data");
+                            }
+                        });
                     }
                 });
             }
@@ -161,10 +191,11 @@ public class RealTimeDataProcessor {
     private void getCurrentHourLogData(DatabaseReference logsRef, String date, double voltageReference, CurrentHourCallback callback) {
         Calendar now = Calendar.getInstance(PHILIPPINE_TIMEZONE);
         String currentHourStr = timeFormat.format(now.getTime());
+        int currentHour = now.get(Calendar.HOUR_OF_DAY);
 
         // Create time range for current hour
-        String startTime = date + "T" + String.format("%02d:00:00", now.get(Calendar.HOUR_OF_DAY));
-        String endTime = date + "T" + String.format("%02d:59:59", now.get(Calendar.HOUR_OF_DAY));
+        String startTime = date + "T" + String.format("%02d:00:00", currentHour);
+        String endTime = date + "T" + String.format("%02d:59:59", currentHour);
 
         Log.d(TAG, "Getting current hour log data for " + currentHourStr + " (" + startTime + " to " + endTime + ")");
 
@@ -175,27 +206,106 @@ public class RealTimeDataProcessor {
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (!snapshot.exists()) {
-                            Log.d(TAG, " urrent hour log data found");
-                            callback.onError("No current hour data available");
-                            return;
-                        }
-
-                        try {
-                            CurrentHourData currentHourData = processCurrentHourLogs(snapshot, currentHourStr, voltageReference);
-                            callback.onCurrentHourProcessed(currentHourData);
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error processing current hour logs: " + e.getMessage(), e);
-                            callback.onError("Failed to process current hour logs");
+                        if (snapshot.exists()) {
+                            // Current hour has data, process it
+                            try {
+                                CurrentHourData currentHourData = processCurrentHourLogs(snapshot, currentHourStr, voltageReference);
+                                callback.onCurrentHourProcessed(currentHourData);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error processing current hour logs: " + e.getMessage(), e);
+                                // Fallback to previous hour
+                                tryPreviousHourAsFallback(logsRef, date, currentHour, voltageReference, callback);
+                            }
+                        } else {
+                            Log.d(TAG, "No current hour log data found, trying fallback to previous hour");
+                            // No current hour data, try previous hour as fallback
+                            tryPreviousHourAsFallback(logsRef, date, currentHour, voltageReference, callback);
                         }
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         Log.e(TAG, "Error getting current hour log data: " + error.getMessage());
-                        callback.onError("Database error: " + error.getMessage());
+                        // Try fallback even on database error
+                        tryPreviousHourAsFallback(logsRef, date, currentHour, voltageReference, callback);
                     }
                 });
+    }
+
+    private void tryPreviousHourAsFallback(DatabaseReference logsRef, String date, int currentHour,
+                                           double voltageReference, CurrentHourCallback callback) {
+        // Try previous hour (or previous day's last hour if current hour is 0)
+        Calendar previousHourCal = Calendar.getInstance(PHILIPPINE_TIMEZONE);
+        previousHourCal.add(Calendar.HOUR_OF_DAY, -1);
+
+        String fallbackDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(previousHourCal.getTime());
+        int fallbackHour = previousHourCal.get(Calendar.HOUR_OF_DAY);
+        String fallbackHourStr = String.format("%02d", fallbackHour);
+
+        String startTime = fallbackDate + "T" + String.format("%02d:00:00", fallbackHour);
+        String endTime = fallbackDate + "T" + String.format("%02d:59:59", fallbackHour);
+
+        Log.d(TAG, "Trying fallback to previous hour: " + fallbackHourStr + " (" + startTime + " to " + endTime + ")");
+
+        logsRef.orderByKey()
+                .startAt(startTime)
+                .endAt(endTime)
+                .limitToLast(50)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            try {
+                                // Process previous hour data but mark it as fallback
+                                CurrentHourData fallbackData = processCurrentHourLogs(snapshot, fallbackHourStr, voltageReference);
+                                fallbackData.isFallbackData = true; // Add this flag to CurrentHourData class
+                                fallbackData.fallbackMessage = "Using previous hour data (no current data available)";
+                                callback.onCurrentHourProcessed(fallbackData);
+                                Log.d(TAG, "Successfully using previous hour as fallback");
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error processing fallback hour data: " + e.getMessage(), e);
+                                // Create empty current hour data as final fallback
+                                createEmptyCurrentHourData(callback);
+                            }
+                        } else {
+                            Log.d(TAG, "No fallback hour data found either, using empty data");
+                            // No data in previous hour either, create empty data
+                            createEmptyCurrentHourData(callback);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e(TAG, "Error getting fallback hour data: " + error.getMessage());
+                        createEmptyCurrentHourData(callback);
+                    }
+                });
+    }
+
+    /**
+     * NEW METHOD: Create empty current hour data when no data is available
+     */
+    private void createEmptyCurrentHourData(CurrentHourCallback callback) {
+        Calendar now = Calendar.getInstance(PHILIPPINE_TIMEZONE);
+        String currentHourStr = timeFormat.format(now.getTime());
+
+        CurrentHourData emptyData = new CurrentHourData();
+        emptyData.hour = currentHourStr;
+        emptyData.avgTotalWatts = 0.0;
+        emptyData.avgArea1Watts = 0.0;
+        emptyData.avgArea2Watts = 0.0;
+        emptyData.avgArea3Watts = 0.0;
+        emptyData.peakWatts = 0.0;
+        emptyData.partialKwh = 0.0;
+        emptyData.partialCost = 0.0;
+        emptyData.validReadings = 0;
+        emptyData.batteryPercent = 0;
+        emptyData.isCharging = false;
+        emptyData.isFallbackData = false;
+        emptyData.fallbackMessage = "No data available for current period";
+
+        Log.d(TAG, "Created empty current hour data for display");
+        callback.onCurrentHourProcessed(emptyData);
     }
 
     /**
