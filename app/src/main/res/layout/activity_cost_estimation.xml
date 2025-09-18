@@ -1,0 +1,630 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CostEstimationActivity">
+
+
+    <View
+        android:id="@+id/top"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@drawable/bg_yellow_top"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/ic_hamburger"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="30dp"
+        tools:ignore="contentDescription"/>
+    <TextView
+        android:id="@+id/RealTimeText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="Cost Estimation"
+        app:layout_constraintTop_toBottomOf="@+id/top"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#863B17"/>
+    <View
+        android:id="@+id/dividerTop"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_margin="10dp"
+        android:background="@color/brown"
+        app:layout_constraintTop_toBottomOf="@id/RealTimeText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dividerTop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        android:padding="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:baselineAligned="false"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/historicalDataText"
+                android:weightSum="3">
+
+                <!-- Left part: Dates -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_weight="2"
+                    android:layout_gravity="center">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/startingDate"
+                        android:layout_marginBottom="10dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_yellowish"
+                        android:textColorHint="#863B17"
+                        app:suffixTextColor="#863B17">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etStartingDate"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:clickable="true"
+                            android:inputType="date"
+                            android:textColor="#863B17"
+                            android:textSize="18sp"
+                            android:hint="From" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/endingDate"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_yellowish"
+                        android:textColorHint="#863B17"
+                        app:suffixTextColor="#863B17">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etEndingDate"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:clickable="true"
+                            android:inputType="date"
+                            android:textColor="#863B17"
+                            android:textSize="18sp"
+                            android:hint="To" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <!-- Right part: ImageView -->
+                <ImageView
+                    android:id="@+id/dateImage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:src="@drawable/img_bulb_sticker"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerInside"
+                    android:contentDescription="Calendar Icon" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_margin="10dp"
+                android:layout_gravity="center">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/batelecII"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_yellowish"
+                    android:textColorHint="#863B17"
+                    app:suffixText=" / kwh"
+                    app:suffixTextColor="#863B17"
+                    app:prefixTextColor="#863B17"
+                    app:prefixText="₱">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:textAlignment="center"
+                        android:id="@+id/etBatelecRate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal"
+                        android:textColor="#863B17"
+                        android:textSize="20sp"
+                        android:hint="@string/text23" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+            <FrameLayout
+                android:id="@+id/bg_estimatedCost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/dividerTop2"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="10dp"
+                android:paddingTop="10dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="20dp"
+                android:background="@drawable/bg_light_yellow"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_gravity="center"
+                        android:id="@+id/tvTotalCost"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text22"
+                        android:textStyle="bold"
+                        android:textSize="50sp"
+                        android:textColor="#863B17"
+                        android:layout_marginEnd="5dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Estimated Total Cost"
+                        android:textSize="13sp"
+                        android:textColor="#863B17"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="5dp"/>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_marginTop="10dp"
+                        android:background="#863B17" />
+                </LinearLayout>
+
+                <!-- LinearLayout for other TextViews -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="110dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:weightSum="3">
+
+                    <TextView
+                        android:id="@+id/tvTotalKwh"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/text22"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:textSize="15sp"
+                        android:textColor="#863B17"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/text24"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:textSize="15sp"
+                        android:textColor="#863B17"/>
+
+                    <TextView
+                        android:id="@+id/tvBatelecRate"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/text22"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:textSize="15sp"
+                        android:textColor="#863B17"/>
+                </LinearLayout>
+
+            </FrameLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="horizontal"
+                android:layout_margin="5dp"
+                android:weightSum="2">
+                <LinearLayout
+                    android:id="@+id/bg_mainConsumption"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_margin="5dp"
+                    android:gravity="center"
+                    android:padding="5dp"
+                    android:background="@drawable/bg_gray">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text53"
+                        android:textColor="#863B17"
+                        android:textSize="13sp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="10dp"/>
+                    <TextView
+                        android:id="@+id/tvTotalUsage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text13"
+                        android:textColor="#863B17"
+                        android:textAlignment="center"
+                        android:textSize="35sp"
+                        android:textStyle="bold"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center"
+                        android:textSize="15sp"
+                        android:text="kwh"
+                        android:textColor="@color/brown"
+                        android:layout_marginBottom="10dp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:padding="5dp"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/bg_gray">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text54"
+                        android:textColor="#863B17"
+                        android:textSize="13sp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginStart="10dp"/>
+
+                    <TextView
+                        android:id="@+id/tvDailyCost"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text22"
+                        android:textAlignment="center"
+                        android:textColor="#863B17"
+                        android:textSize="35sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center"
+                        android:textSize="15sp"
+                        android:text="@string/text22"
+                        android:textColor="@color/brown"
+
+                        android:layout_marginBottom="10dp"/>
+                </LinearLayout>
+
+            </LinearLayout>
+            <FrameLayout
+                android:id="@+id/bg_dailyCost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/bg_consumptionInfo"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:background="@drawable/bg_gray"
+                android:layout_margin="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text55"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginStart="20dp"
+                    android:textSize="15sp"
+                    android:textColor="#863B17"
+                    />
+
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/dailyCost_chart"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="250dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginTop="50dp"
+                    android:layout_marginBottom="10dp"
+                    android:padding="10dp"/>
+            </FrameLayout>
+            <FrameLayout
+                android:id="@+id/bg_areaCost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/bg_dailyCost"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:background="@drawable/bg_gray"
+                android:layout_margin="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text56"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginStart="20dp"
+                    android:textSize="15sp"
+                    android:textColor="#863B17"/>
+                <com.github.mikephil.charting.charts.HorizontalBarChart
+                    android:id="@+id/area_chart"
+                    android:layout_marginStart="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="250dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginTop="50dp"
+                    android:padding="10dp"/>
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/comparison"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/bg_electricityRate"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_light_yellow"
+                android:layout_marginEnd="10dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginBottom="20dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#863B17"
+                    android:text="@string/text60"
+                    android:layout_marginTop="10dp"
+                    android:textAlignment="center"
+                    android:textSize="15sp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:baselineAligned="false">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:id="@+id/area1_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/text16"
+                            android:drawableLeft="@drawable/ic_area1"
+                            android:layout_marginTop="10dp"
+                            android:textAlignment="center"
+                            android:textColor="#863B17"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:drawablePadding="10dp"
+                            android:gravity="center_vertical"
+                            android:paddingStart="20dp"
+                            android:paddingEnd="20dp"
+                            tools:ignore="RtlCompat" />
+                        <TextView
+                            android:id="@+id/area2_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/text17"
+                            android:drawableLeft="@drawable/ic_area2"
+                            android:layout_marginTop="40dp"
+                            android:textAlignment="center"
+                            android:textColor="#863B17"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:drawablePadding="10dp"
+                            android:gravity="center_vertical"
+                            android:paddingStart="20dp"
+                            android:paddingEnd="20dp"
+                            tools:ignore="RtlCompat"/>
+                        <TextView
+                            android:id="@+id/area3_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/text18"
+                            android:layout_marginTop="70dp"
+                            android:drawableLeft="@drawable/ic_area3"
+                            android:textAlignment="center"
+                            android:textColor="#863B17"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:drawablePadding="10dp"
+                            android:gravity="center_vertical"
+                            android:paddingStart="20dp"
+                            android:paddingEnd="20dp"
+                            tools:ignore="RtlCompat"/>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/text62"
+                            android:layout_marginTop="110dp"
+                            android:layout_marginStart="10dp"
+                            android:textAlignment="textStart"
+                            android:textColor="#863B17"
+                            android:textSize="13sp"/>
+                        <TextView
+                            android:id="@+id/tvProjectedText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/text63"
+                            android:layout_marginTop="140dp"
+                            android:layout_marginBottom="20dp"
+                            android:textAlignment="center"
+                            android:paddingStart="10dp"
+                            android:textColor="#863B17"
+                            android:textSize="13sp"
+                            tools:ignore="RtlSymmetry" />
+                    </FrameLayout>
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+
+                        <TextView
+                            android:id="@+id/tvArea1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/text22"
+                            android:layout_marginTop="10dp"
+                            android:textAlignment="center"
+                            android:textColor="#863B17"
+                            android:textSize="18sp"
+                            android:textStyle="bold"/>
+                        <TextView
+                            android:id="@+id/tvArea2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/text22"
+                            android:layout_marginTop="40dp"
+                            android:textAlignment="center"
+                            android:textColor="#863B17"
+                            android:textSize="18sp"
+                            android:textStyle="bold"/>
+                        <TextView
+                            android:id="@+id/tvArea3"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/text22"
+                            android:layout_marginTop="70dp"
+                            android:textAlignment="center"
+                            android:textColor="#863B17"
+                            android:textSize="18sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/tvProjectedCost"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/text22"
+                            android:layout_marginTop="120dp"
+                            android:layout_marginStart="10dp"
+                            android:textAlignment="center"
+                            android:textColor="#863B17"
+                            android:textStyle="bold"
+                            android:textSize="30sp"/>
+
+                    </FrameLayout>
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+    </ScrollView>
+    <LinearLayout
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@drawable/bg_button"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="20dp"
+        android:weightSum="5">
+
+        <ImageView
+            android:id="@+id/img_historical_analysis"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:layout_margin="10dp"
+            tools:ignore="ContentDescription"
+            android:src="@drawable/ic_img_historical_analysis" />
+
+        <ImageView
+            android:id="@+id/img_realtime_monitoring"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:layout_margin="10dp"
+            tools:ignore="ContentDescription"
+            android:src="@drawable/ic_img_realtime_monitoring" />
+
+        <ImageView
+            android:id="@+id/img_homepage"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:layout_margin="10dp"
+            tools:ignore="ContentDescription"
+            android:src="@drawable/ic_img_homepage" />
+
+        <ImageView
+            android:id="@+id/img_cost_estimation"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_margin="10dp"
+            android:layout_weight="1"
+            tools:ignore="ContentDescription"
+            android:src="@drawable/ic_img_cost_estimation" />
+
+        <ImageView
+            android:id="@+id/img_settings"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_margin="10dp"
+            android:layout_weight="1"
+            tools:ignore="ContentDescription"
+            android:src="@drawable/ic_img_settings" />
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
