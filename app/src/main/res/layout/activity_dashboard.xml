@@ -247,6 +247,7 @@
 
                 <!-- Area Icon -->
                 <TextView
+                    android:id="@+id/area1_icon"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:text="🏠"
@@ -312,6 +313,7 @@
 
                 <!-- Area Icon -->
                 <TextView
+                    android:id="@+id/area2_icon"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:text="🏠"
@@ -377,6 +379,7 @@
 
                 <!-- Area Icon -->
                 <TextView
+                    android:id="@+id/area3_icon"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:text="🏠"

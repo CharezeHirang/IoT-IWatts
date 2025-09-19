@@ -1,9 +1,14 @@
 package com.example.sampleiwatts;
 
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -43,7 +48,7 @@ public class DashboardActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private TextView tvTotalCost, tvElectricityRate, tvBatteryLife,tvTotalConsumption, area1_details, area2_details, area3_details, activated;
     private TextView tvArea1Kwh, tvArea2Kwh, tvArea3Kwh,  tvArea1Percentage, tvArea2Percentage, tvArea3Percentage, tvPeakTime, tvPeakValue;
-    private TextView tvPercentageChange, tvTrendIcon;
+    private TextView tvPercentageChange, tvTrendIcon, area1_icon, area2_icon, area3_icon;
     private ImageView ivBatteryImage;
     private LineChart lineChart1, lineChart2, lineChart3;
 
@@ -70,11 +75,92 @@ public class DashboardActivity extends AppCompatActivity {
     private boolean isArea1Editable = false;
     private boolean isArea2Editable = false;
     private boolean isArea3Editable = false;
+
+    // Method to get appropriate icon based on area name
+    private String getIconForAreaName(String areaName) {
+        if (areaName == null || areaName.trim().isEmpty()) {
+            return "🏠"; // Default house icon
+        }
+        
+        String name = areaName.toLowerCase().trim();
+        
+        // Living room variations
+        if (name.contains("living") || name.contains("lounge") || name.contains("family")) {
+            return "🛋️";
+        }
+        
+        // Dining area variations
+        if (name.contains("dining") || name.contains("eat")) {
+            return "🍴";
+        }
+        
+        // Kitchen variations
+        if (name.contains("kitchen") || name.contains("cook")) {
+            return "🍳";
+        }
+        
+        // Bedroom variations
+        if (name.contains("bedroom") || name.contains("bed") || name.contains("sleep") || name.contains("room")) {
+            return "🛏️";
+        }
+        
+        // Bathroom variations
+        if (name.contains("bathroom") || name.contains("toilet") || name.contains("comfort") || 
+            name.contains("cr") || name.contains("restroom") || name.contains("wash")) {
+            return "🚿";
+        }
+        
+        // Hallway/Corridor variations
+        if (name.contains("hallway") || name.contains("corridor") || name.contains("hall") || 
+            name.contains("passage") || name.contains("walkway")) {
+            return "🏠";
+        }
+        
+        // Study/Office variations
+        if (name.contains("study") || name.contains("office") || name.contains("work") || 
+            name.contains("desk") || name.contains("library")) {
+            return "📚";
+        }
+        
+        // Garage variations
+        if (name.contains("garage") || name.contains("carport") || name.contains("parking")) {
+            return "🚗";
+        }
+        
+        // Garden/Yard variations
+        if (name.contains("garden") || name.contains("yard") || name.contains("outdoor") || 
+            name.contains("backyard") || name.contains("front yard")) {
+            return "🌿";
+        }
+        
+        // Laundry area variations
+        if (name.contains("laundry") || name.contains("wash") || name.contains("drying")) {
+            return "🧺";
+        }
+        
+        // Balcony/Terrace variations
+        if (name.contains("balcony") || name.contains("terrace") || name.contains("patio")) {
+            return "🪜";
+        }
+        
+        // Porch/Entrance variations
+        if (name.contains("porch") || name.contains("entrance") || name.contains("entrance") || 
+            name.contains("foyer") || name.contains("lobby")) {
+            return "🏠";
+        }
+        
+        // Default fallback
+        return "🏠";
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_dashboard);
+
+        area1_icon = findViewById(R.id.area1_icon);
+        area2_icon = findViewById(R.id.area2_icon);
+        area3_icon = findViewById(R.id.area3_icon);
 
         tvPercentageChange = findViewById(R.id.tvPercentageChange);
         tvTrendIcon = findViewById(R.id.tvTrendIcon);
@@ -153,26 +239,69 @@ public class DashboardActivity extends AppCompatActivity {
         etArea2 = findViewById(R.id.etArea2);
         etArea3 = findViewById(R.id.etArea3);
 
+        // Make EditText fields non-editable by default
+        etArea1.setFocusable(false);
+        etArea1.setClickable(false);
+        etArea1.setLongClickable(false);
+        etArea1.setCursorVisible(false);
+        
+        etArea2.setFocusable(false);
+        etArea2.setClickable(false);
+        etArea2.setLongClickable(false);
+        etArea2.setCursorVisible(false);
+        
+        etArea3.setFocusable(false);
+        etArea3.setClickable(false);
+        etArea3.setLongClickable(false);
+        etArea3.setCursorVisible(false);
 
-        
-        // Add click listeners to EditText fields to handle updates
-        etArea1.setOnClickListener(v -> {
-            if (isArea1Editable) {
-                updateArea1Name();
+        // Add text change listeners to update icons dynamically
+        etArea1.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                updateAreaIcon(1, s.toString());
+                updateAreaDetailsHeader(1, s.toString());
             }
         });
-        
-        etArea2.setOnClickListener(v -> {
-            if (isArea2Editable) {
-                updateArea2Name();
+
+        etArea2.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                updateAreaIcon(2, s.toString());
+                updateAreaDetailsHeader(2, s.toString());
             }
         });
-        
-        etArea3.setOnClickListener(v -> {
-            if (isArea3Editable) {
-                updateArea3Name();
+
+        etArea3.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                updateAreaIcon(3, s.toString());
+                updateAreaDetailsHeader(3, s.toString());
             }
         });
+
+        // Add touch listeners to handle edit icon clicks
+        setupEditTextTouchListener(etArea1, 1);
+        setupEditTextTouchListener(etArea2, 2);
+        setupEditTextTouchListener(etArea3, 3);
         tvTotalConsumption = findViewById(R.id.tvTotalConsumption);
         ivBatteryImage = findViewById(R.id.ivBatteryImage);
         tvBatteryLife = findViewById(R.id.tvBatteryLife);
@@ -570,18 +699,12 @@ public class DashboardActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(DashboardActivity.this, "Area 1 Name updated", Toast.LENGTH_SHORT).show();
                     // Make field non-editable again after successful update
-                    isArea1Editable = false;
-                    etArea1.setFocusable(false);
-                    etArea1.setClickable(false);
-                    etArea1.clearFocus();
+                    disableEditing(etArea1, 1);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(DashboardActivity.this, "Error updating Area 1 Name", Toast.LENGTH_SHORT).show();
                     // Make field non-editable again even on failure
-                    isArea1Editable = false;
-                    etArea1.setFocusable(false);
-                    etArea1.setClickable(false);
-                    etArea1.clearFocus();
+                    disableEditing(etArea1, 1);
                 });
     }
     private String capitalizeFirstLetter(String str) {
@@ -590,6 +713,144 @@ public class DashboardActivity extends AppCompatActivity {
         }
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
+
+    // Helper method to update area icon based on area number and name
+    private void updateAreaIcon(int areaNumber, String areaName) {
+        String icon = getIconForAreaName(areaName);
+        
+        switch (areaNumber) {
+            case 1:
+                if (area1_icon != null) {
+                    area1_icon.setText(icon);
+                }
+                break;
+            case 2:
+                if (area2_icon != null) {
+                    area2_icon.setText(icon);
+                }
+                break;
+            case 3:
+                if (area3_icon != null) {
+                    area3_icon.setText(icon);
+                }
+                break;
+        }
+    }
+
+    // Helper method to update area details header with icon
+    private void updateAreaDetailsHeader(int areaNumber, String areaName) {
+        String icon = getIconForAreaName(areaName);
+        String headerText = icon + " " + areaName + " Details";
+        
+        switch (areaNumber) {
+            case 1:
+                if (area1_details != null) {
+                    area1_details.setText(headerText);
+                }
+                break;
+            case 2:
+                if (area2_details != null) {
+                    area2_details.setText(headerText);
+                }
+                break;
+            case 3:
+                if (area3_details != null) {
+                    area3_details.setText(headerText);
+                }
+                break;
+        }
+    }
+
+    // Setup touch listener for EditText to detect clicks on edit icon
+    private void setupEditTextTouchListener(EditText editText, int areaNumber) {
+        editText.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    Drawable drawableEnd = editText.getCompoundDrawables()[2]; // Get drawableEnd
+                    if (drawableEnd != null) {
+                        int drawableWidth = drawableEnd.getIntrinsicWidth();
+                        int editTextWidth = editText.getWidth();
+                        int drawableX = editTextWidth - editText.getPaddingRight() - drawableWidth;
+                        
+                        if (event.getX() >= drawableX) {
+                            // Edit icon was clicked
+                            enableEditing(editText, areaNumber);
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    // Enable editing for the specified EditText
+    private void enableEditing(EditText editText, int areaNumber) {
+        editText.setFocusable(true);
+        editText.setFocusableInTouchMode(true);
+        editText.setClickable(true);
+        editText.setCursorVisible(true);
+        editText.requestFocus();
+        
+        // Set the appropriate editable flag
+        switch (areaNumber) {
+            case 1:
+                isArea1Editable = true;
+                break;
+            case 2:
+                isArea2Editable = true;
+                break;
+            case 3:
+                isArea3Editable = true;
+                break;
+        }
+        
+        // Add OnEditorActionListener to handle Enter key
+        editText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE || 
+                (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER)) {
+                // Save the changes
+                switch (areaNumber) {
+                    case 1:
+                        updateArea1Name();
+                        break;
+                    case 2:
+                        updateArea2Name();
+                        break;
+                    case 3:
+                        updateArea3Name();
+                        break;
+                }
+                return true;
+            }
+            return false;
+        });
+    }
+
+    // Disable editing for the specified EditText
+    private void disableEditing(EditText editText, int areaNumber) {
+        editText.setFocusable(false);
+        editText.setClickable(false);
+        editText.setLongClickable(false);
+        editText.setCursorVisible(false);
+        editText.clearFocus();
+        editText.setOnEditorActionListener(null);
+        
+        // Clear the appropriate editable flag
+        switch (areaNumber) {
+            case 1:
+                isArea1Editable = false;
+                break;
+            case 2:
+                isArea2Editable = false;
+                break;
+            case 3:
+                isArea3Editable = false;
+                break;
+        }
+    }
+
     private void updateArea2Name() {
         String area2Name = etArea2.getText().toString().trim();
         if (area2Name.isEmpty()) {
@@ -602,18 +863,12 @@ public class DashboardActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(DashboardActivity.this, "Area 2 Name updated", Toast.LENGTH_SHORT).show();
                     // Make field non-editable again after successful update
-                    isArea2Editable = false;
-                    etArea2.setFocusable(false);
-                    etArea2.setClickable(false);
-                    etArea2.clearFocus();
+                    disableEditing(etArea2, 2);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(DashboardActivity.this, "Error updating Area 2 Name", Toast.LENGTH_SHORT).show();
                     // Make field non-editable again even on failure
-                    isArea2Editable = false;
-                    etArea2.setFocusable(false);
-                    etArea2.setClickable(false);
-                    etArea2.clearFocus();
+                    disableEditing(etArea2, 2);
                 });
     }
     private void updateArea3Name() {
@@ -628,18 +883,12 @@ public class DashboardActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(DashboardActivity.this, "Area 3 Name updated", Toast.LENGTH_SHORT).show();
                     // Make field non-editable again after successful update
-                    isArea3Editable = false;
-                    etArea3.setFocusable(false);
-                    etArea3.setClickable(false);
-                    etArea3.clearFocus();
+                    disableEditing(etArea3, 3);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(DashboardActivity.this, "Error updating Area 3 Name", Toast.LENGTH_SHORT).show();
                     // Make field non-editable again even on failure
-                    isArea3Editable = false;
-                    etArea3.setFocusable(false);
-                    etArea3.setClickable(false);
-                    etArea3.clearFocus();
+                    disableEditing(etArea3, 3);
                 });
     }
     private void fetchAreaNames() {
@@ -655,24 +904,32 @@ public class DashboardActivity extends AppCompatActivity {
                 // Set the area names to the EditTexts
                 if (area1Name != null) {
                     etArea1.setText(area1Name);
-                    area1_details.setText(area1Name + "Details");
+                    updateAreaIcon(1, area1Name);
+                    updateAreaDetailsHeader(1, area1Name);
                 } else {
                     etArea1.setText("Area 1 Name not available");
-
+                    updateAreaIcon(1, "Area 1");
+                    updateAreaDetailsHeader(1, "Area 1");
                 }
 
                 if (area2Name != null) {
                     etArea2.setText(area2Name);
-                    area2_details.setText(area2Name + "Details");
+                    updateAreaIcon(2, area2Name);
+                    updateAreaDetailsHeader(2, area2Name);
                 } else {
                     etArea2.setText("Area 2 Name not available");
+                    updateAreaIcon(2, "Area 2");
+                    updateAreaDetailsHeader(2, "Area 2");
                 }
 
                 if (area3Name != null) {
                     etArea3.setText(area3Name);
+                    updateAreaIcon(3, area3Name);
+                    updateAreaDetailsHeader(3, area3Name);
                 } else {
                     etArea3.setText("Area 3 Name not available");
-                    area3_details.setText(area3Name + "Details");
+                    updateAreaIcon(3, "Area 3");
+                    updateAreaDetailsHeader(3, "Area 3");
                 }
             }
 
