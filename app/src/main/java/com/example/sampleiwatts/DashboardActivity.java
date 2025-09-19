@@ -1,8 +1,6 @@
 package com.example.sampleiwatts;
 
 import android.os.Bundle;
-import android.text.SpannableString;
-import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -11,14 +9,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.example.sampleiwatts.managers.DataProcessingManager;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
@@ -52,7 +45,7 @@ public class DashboardActivity extends AppCompatActivity {
     LinearLayout popArea1, popArea2, popArea3;
     CardView area1_card, area2_card, area3_card;
     ImageView ic_close, close2, close3;
-    private DataProcessingManager processingManager;
+
     private long lastLogsUpdateAtMs = 0L;
     private String lastActivationSeenKey = null; // latest inner push key we've seen for activation heartbeats
     private final long logsStaleAfterMs = 120_000L; // 2 minutes with no updates => inactive
@@ -195,7 +188,7 @@ public class DashboardActivity extends AppCompatActivity {
         ButtonNavigator.setupButtons(this, buttonLayout);
 
         IWattsApplication app = (IWattsApplication) getApplication();
-        processingManager = app.getProcessingManager();
+
 
         Log.d(TAG, "MainActivity created");
 
@@ -205,10 +198,6 @@ public class DashboardActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        Log.d(TAG, "MainActivity resumed - processing data");
-
-        DataProcessingManager manager = ((IWattsApplication) getApplication()).getProcessingManager();
-        manager.processDataInForeground();
         // Kick off activation checker loop
         activationHandler.removeCallbacks(activationChecker);
         activationHandler.post(activationChecker);
