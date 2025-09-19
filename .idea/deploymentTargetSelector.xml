@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-09-11T12:32:29.772107700Z">
+        <DropdownSelection timestamp="2025-09-18T22:28:29.219982600Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Chareze\.android\avd\iwatts.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Chareze\.android\avd\iwatts_2.avd" />
             </handle>
           </Target>
         </DropdownSelection>

@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -35,23 +36,102 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Calendar;
 import java.util.Locale;
 
 public class DashboardActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private TextView tvTotalCost, tvElectricityRate, tvBatteryLife,tvTotalConsumption,tvTodayKwh, tvCurrentTime;
+    private TextView tvTotalCost, tvElectricityRate, tvBatteryLife,tvTotalConsumption, area1_details, area2_details, area3_details, activated;
     private TextView tvArea1Kwh, tvArea2Kwh, tvArea3Kwh,  tvArea1Percentage, tvArea2Percentage, tvArea3Percentage, tvPeakTime, tvPeakValue;
+    private TextView tvPercentageChange, tvTrendIcon;
     private ImageView ivBatteryImage;
     private LineChart lineChart1, lineChart2, lineChart3;
 
     private DatabaseReference db;
     private EditText etArea1, etArea2, etArea3;
+    LinearLayout popArea1, popArea2, popArea3;
+    CardView area1_card, area2_card, area3_card;
+    ImageView ic_close, close2, close3;
     private DataProcessingManager processingManager;
+    private long lastLogsUpdateAtMs = 0L;
+    private String lastActivationSeenKey = null; // latest inner push key we've seen for activation heartbeats
+    private final long logsStaleAfterMs = 120_000L; // 2 minutes with no updates => inactive
+    private final android.os.Handler activationHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private final Runnable activationChecker = new Runnable() {
+        @Override public void run() {
+            long now = System.currentTimeMillis();
+            boolean active = (now - lastLogsUpdateAtMs) <= logsStaleAfterMs;
+            updateActivationText(active);
+            activationHandler.postDelayed(this, 30_000L); // check every 30s
+        }
+    };
+
+
+    private boolean isArea1Editable = false;
+    private boolean isArea2Editable = false;
+    private boolean isArea3Editable = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_dashboard);
+
+        tvPercentageChange = findViewById(R.id.tvPercentageChange);
+        tvTrendIcon = findViewById(R.id.tvTrendIcon);
+        activated = findViewById(R.id.activated);
+
+        area1_details = findViewById(R.id.area1_details);
+        area2_details = findViewById(R.id.area2_details);
+        area3_details = findViewById(R.id.area3_details);
+
+        popArea1 = findViewById(R.id.popArea1);
+        area1_card = findViewById(R.id.area1_card);
+        ic_close = findViewById(R.id.close1);
+
+        area1_card.setOnClickListener(v -> {
+            if (popArea1.getVisibility() == View.GONE) {
+                popArea1.setVisibility(View.VISIBLE);
+            } else {
+                popArea1.setVisibility(View.GONE);
+            }
+        });
+
+        ic_close.setOnClickListener(v -> {
+            popArea1.setVisibility(View.GONE);
+        });
+
+        popArea2 = findViewById(R.id.popArea2);
+        area2_card = findViewById(R.id.area2_card);
+        close2 = findViewById(R.id.close2);
+
+        area2_card.setOnClickListener(v -> {
+            if (popArea2.getVisibility() == View.GONE) {
+                popArea2.setVisibility(View.VISIBLE);
+            } else {
+                popArea2.setVisibility(View.GONE);
+            }
+        });
+
+        close2.setOnClickListener(v -> {
+            popArea2.setVisibility(View.GONE);
+        });
+
+        popArea3 = findViewById(R.id.popArea3);
+        area3_card = findViewById(R.id.area3_card);
+        close3 = findViewById(R.id.close3);
+
+        area3_card.setOnClickListener(v -> {
+            if (popArea3.getVisibility() == View.GONE) {
+                popArea3.setVisibility(View.VISIBLE);
+            } else {
+                popArea3.setVisibility(View.GONE);
+            }
+        });
+
+        close3.setOnClickListener(v -> {
+            popArea3.setVisibility(View.GONE);
+        });
+
 
         lineChart1 = findViewById(R.id.area1_chart);
         lineChart2 = findViewById(R.id.area2_chart);
@@ -66,14 +146,33 @@ public class DashboardActivity extends AppCompatActivity {
         tvArea3Percentage = findViewById(R.id.tvArea3Percentage);
         tvPeakTime = findViewById(R.id.tvPeakTime);
         tvPeakValue =  findViewById(R.id.tvPeakValue);
+        tvPercentageChange = findViewById(R.id.tvPercentageChange);
+        tvTrendIcon = findViewById(R.id.tvTrendIcon);
+
         etArea1 = findViewById(R.id.etArea1);
-        etArea1.setOnClickListener(v -> {updateArea1Name();});
         etArea2 = findViewById(R.id.etArea2);
-        etArea2.setOnClickListener(v -> {updateArea2Name();});
         etArea3 = findViewById(R.id.etArea3);
-        etArea3.setOnClickListener(v -> {updateArea3Name();});
-        tvTodayKwh = findViewById(R.id.tvTodayKwh);
-        tvCurrentTime = findViewById(R.id.tvCurrentTime);
+
+
+        
+        // Add click listeners to EditText fields to handle updates
+        etArea1.setOnClickListener(v -> {
+            if (isArea1Editable) {
+                updateArea1Name();
+            }
+        });
+        
+        etArea2.setOnClickListener(v -> {
+            if (isArea2Editable) {
+                updateArea2Name();
+            }
+        });
+        
+        etArea3.setOnClickListener(v -> {
+            if (isArea3Editable) {
+                updateArea3Name();
+            }
+        });
         tvTotalConsumption = findViewById(R.id.tvTotalConsumption);
         ivBatteryImage = findViewById(R.id.ivBatteryImage);
         tvBatteryLife = findViewById(R.id.tvBatteryLife);
@@ -82,14 +181,15 @@ public class DashboardActivity extends AppCompatActivity {
         fetchTotalCost();
         fetchElectricityRate();
         fetchBatteryLife();
+        startActivationWatcher();
         fetchTotalKwh();
-        fetchTotalKwhForDay();
         fetchAreaNames();
         fetchAreaKwh();
         fetchPeakWatts();
         fetchArea1();
         fetchArea2();
         fetchArea3();
+        fetchUsageTrend();
         LinearLayout buttonLayout = findViewById(R.id.button);
 
         ButtonNavigator.setupButtons(this, buttonLayout);
@@ -109,6 +209,9 @@ public class DashboardActivity extends AppCompatActivity {
 
         DataProcessingManager manager = ((IWattsApplication) getApplication()).getProcessingManager();
         manager.processDataInForeground();
+        // Kick off activation checker loop
+        activationHandler.removeCallbacks(activationChecker);
+        activationHandler.post(activationChecker);
     }
     private void fetchTotalCost() {
         DatabaseReference costFilterDateRef = db.child("cost_filter_date");
@@ -202,7 +305,7 @@ public class DashboardActivity extends AppCompatActivity {
                     String formattedRate = String.format("%.2f", electricityRatePerKwh);
 
                     // Update the UI
-                    tvElectricityRate.setText("₱ " + formattedRate + " / kWh");
+                    tvElectricityRate.setText("₱ " + formattedRate + " / kwh");
                 } else {
                     tvElectricityRate.setText("Electricity rate not available");
                 }
@@ -216,115 +319,158 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
     private void fetchBatteryLife() {
-        // Reference to the "logs" node to get the most recent battery percentage
+        // Reference to the "logs" node to get the most recent battery percentage across ALL dates
         DatabaseReference logsRef = db.child("logs");
 
-        // Add a listener to fetch the battery life from Firebase
         logsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 int batteryPercentage = 0;
-                boolean foundBatteryData = false;
                 boolean isCharging = false;
 
-                Log.d("BatteryLife", "Total log entries found: " + dataSnapshot.getChildrenCount());
+                // Prefer the entry with the largest numeric timestamp (timestamp/created_at/ts).
+                // If no numeric timestamp is present anywhere, fall back to the newest push key globally.
+                String selectedDateKey = null;
+                String selectedPushKey = null;
+                DataSnapshot selectedSnapshot = null;
+                long bestTimestamp = Long.MIN_VALUE;
+                boolean usedTimestamp = false;
 
-                // Loop through the log entries to find the most recent one with battery data
                 for (DataSnapshot dateSnapshot : dataSnapshot.getChildren()) {
-                    String dateKey = dateSnapshot.getKey();
-                    Log.d("BatteryLife", "Processing date key: " + dateKey);
-                    
-                    // Loop through the log entries under each date
                     for (DataSnapshot logSnapshot : dateSnapshot.getChildren()) {
-                        String logKey = logSnapshot.getKey();
-                        Log.d("BatteryLife", "Processing log key: " + logKey);
-                        
-                        // Get the Vbat_percent value from the log entry
-                        Object vbatPercentObj = logSnapshot.child("Vbat_percent").getValue();
-                        // Get the Charging status from the log entry
-                        Object chargingObj = logSnapshot.child("Charging").getValue();
-                        
-                        Log.d("BatteryLife", "Vbat_percent: " + vbatPercentObj + ", Charging: " + chargingObj);
-                        
-                        if (vbatPercentObj != null) {
-                            if (vbatPercentObj instanceof Number) {
-                                batteryPercentage = ((Number) vbatPercentObj).intValue();
-                            } else if (vbatPercentObj instanceof String) {
-                                try {
-                                    batteryPercentage = Integer.parseInt((String) vbatPercentObj);
-                                } catch (NumberFormatException e) {
-                                    Log.e("BatteryLife", "Error parsing Vbat_percent: " + vbatPercentObj);
-                                    continue;
-                                }
+                        String pushKey = logSnapshot.getKey();
+                        if (pushKey == null) continue;
+
+                        // Try to read a timestamp from common field names
+                        Long ts = extractTimestamp(logSnapshot);
+                        if (ts != null) {
+                            if (!usedTimestamp || ts > bestTimestamp) {
+                                bestTimestamp = ts;
+                                selectedSnapshot = logSnapshot;
+                                selectedDateKey = dateSnapshot.getKey();
+                                selectedPushKey = pushKey;
+                                usedTimestamp = true;
                             }
-                            
-                            // Parse charging status
-                            if (chargingObj != null) {
-                                if (chargingObj instanceof Boolean) {
-                                    isCharging = (Boolean) chargingObj;
-                                } else if (chargingObj instanceof String) {
-                                    isCharging = Boolean.parseBoolean((String) chargingObj);
-                                }
+                        } else if (!usedTimestamp) {
+                            // Only use push key ordering if we haven't found any timestamps yet
+                            if (selectedPushKey == null || pushKey.compareTo(selectedPushKey) > 0) {
+                                selectedPushKey = pushKey;
+                                selectedSnapshot = logSnapshot;
+                                selectedDateKey = dateSnapshot.getKey();
                             }
-                            
-                            Log.d("BatteryLife", "Found battery data - Percentage: " + batteryPercentage + ", Charging: " + isCharging);
-                            foundBatteryData = true;
-                            break; // Use the first (most recent) entry found
                         }
                     }
-                    if (foundBatteryData) break; // Exit outer loop if we found data
                 }
 
-                if (foundBatteryData) {
-                    // Determine what text to display based on charging status
-                    String displayText;
-                    if (isCharging) {
-                        displayText = "Charging";
-                    } else {
-                        displayText = batteryPercentage + "%";
+                if (selectedSnapshot != null) {
+                    Object vbatPercentObj = selectedSnapshot.child("Vbat_percent").getValue();
+                    Object chargingObj = selectedSnapshot.child("Charging").getValue();
+
+                    if (vbatPercentObj instanceof Number) {
+                        batteryPercentage = ((Number) vbatPercentObj).intValue();
+                    } else if (vbatPercentObj instanceof String) {
+                        try { batteryPercentage = Integer.parseInt((String) vbatPercentObj); } catch (NumberFormatException ignored) { }
                     }
-                    
-                    // Set appropriate drawable based on charging status first, then battery percentage
+
+                    if (chargingObj instanceof Boolean) {
+                        isCharging = (Boolean) chargingObj;
+                    } else if (chargingObj instanceof String) {
+                        isCharging = Boolean.parseBoolean((String) chargingObj);
+                    }
+
+                    Log.d("BatteryLifeSelected", "date=" + selectedDateKey + ", key=" + selectedPushKey + ", pct=" + batteryPercentage + ", charging=" + isCharging + ", usedTimestamp=" + usedTimestamp + (usedTimestamp ? (", ts=" + bestTimestamp) : ""));
+                }
+
+                if (selectedSnapshot != null) {
+                    String displayText = isCharging ? "Charging" : (batteryPercentage + "%");
+
                     if (isCharging) {
                         tvBatteryLife.setText(displayText);
-                        ivBatteryImage.setImageResource(R.drawable.ic_battery10); // Battery 10 drawable for charging
+                        ivBatteryImage.setImageResource(R.drawable.ic_battery10);
                     } else if (batteryPercentage >= 95) {
                         tvBatteryLife.setText(displayText);
-                        ivBatteryImage.setImageResource(R.drawable.ic_battery1); // Battery 1 drawable
+                        ivBatteryImage.setImageResource(R.drawable.ic_battery1);
                     } else if (batteryPercentage >= 70) {
                         tvBatteryLife.setText(displayText);
-                        ivBatteryImage.setImageResource(R.drawable.ic_battery2); // Battery 2 drawable
+                        ivBatteryImage.setImageResource(R.drawable.ic_battery2);
                     } else if (batteryPercentage >= 55) {
                         tvBatteryLife.setText(displayText);
-                        ivBatteryImage.setImageResource(R.drawable.ic_battery3); // Battery 3 drawable
+                        ivBatteryImage.setImageResource(R.drawable.ic_battery3);
                     } else if (batteryPercentage >= 40) {
                         tvBatteryLife.setText(displayText);
-                        ivBatteryImage.setImageResource(R.drawable.ic_battery4); // Battery 4 drawable
+                        ivBatteryImage.setImageResource(R.drawable.ic_battery4);
                     } else if (batteryPercentage >= 25) {
                         tvBatteryLife.setText(displayText);
-                        ivBatteryImage.setImageResource(R.drawable.ic_battery5); // Battery 5 drawable
+                        ivBatteryImage.setImageResource(R.drawable.ic_battery5);
                     } else if (batteryPercentage >= 10) {
                         tvBatteryLife.setText(displayText);
-                        ivBatteryImage.setImageResource(R.drawable.ic_battery6); // Battery 6 drawable
+                        ivBatteryImage.setImageResource(R.drawable.ic_battery6);
                     } else if (batteryPercentage >= 5) {
                         tvBatteryLife.setText(displayText);
-                        ivBatteryImage.setImageResource(R.drawable.ic_battery7); // Battery 7 drawable
+                        ivBatteryImage.setImageResource(R.drawable.ic_battery7);
                     } else {
                         tvBatteryLife.setText(displayText);
-                        ivBatteryImage.setImageResource(R.drawable.ic_battery8); // Battery 8 drawable
+                        ivBatteryImage.setImageResource(R.drawable.ic_battery8);
                     }
                 } else {
                     tvBatteryLife.setText("Battery Life not available");
-                    ivBatteryImage.setImageResource(R.drawable.ic_battery9); // Default drawable if not available
+                    ivBatteryImage.setImageResource(R.drawable.ic_battery9);
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                // Handle any error in retrieving the data
                 Toast.makeText(DashboardActivity.this, "Error fetching battery life", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    // Dedicated activation watcher: listens to any change under logs and marks device active by heartbeat
+    private void startActivationWatcher() {
+        DatabaseReference logsRef = db.child("logs");
+        logsRef.addValueEventListener(new ValueEventListener() {
+            @Override public void onDataChange(DataSnapshot snapshot) {
+                // Find the newest inner push key across all date buckets
+                String latestKey = null;
+                for (DataSnapshot dateSnap : snapshot.getChildren()) {
+                    for (DataSnapshot logSnap : dateSnap.getChildren()) {
+                        String k = logSnap.getKey();
+                        if (k == null) continue;
+                        if (latestKey == null || k.compareTo(latestKey) > 0) latestKey = k;
+                    }
+                }
+
+                if (latestKey == null) {
+                    // No logs at all
+                    updateActivationText(false);
+                    return;
+                }
+
+                if (lastActivationSeenKey == null) {
+                    // Initialize without marking active yet; wait for a newer key
+                    lastActivationSeenKey = latestKey;
+                    updateActivationText(false);
+                    return;
+                }
+
+                if (!latestKey.equals(lastActivationSeenKey)) {
+                    // Newer log arrived → mark active and remember key/time
+                    lastActivationSeenKey = latestKey;
+                    lastLogsUpdateAtMs = System.currentTimeMillis();
+                    updateActivationText(true);
+                }
+            }
+            @Override public void onCancelled(DatabaseError error) { }
+        });
+    }
+
+    private void updateActivationText(boolean active) {
+        if (activated == null) return;
+        activated.setText(active ? "Connected" : "Not connected");
+        try {
+            int color = getResources().getColor(active ? R.color.green : R.color.red);
+            activated.setTextColor(color);
+        } catch (Exception ignored) { }
     }
     private void fetchTotalKwh() {
         // Reference to the cost_filter_date to get the starting and ending dates
@@ -389,11 +535,8 @@ public class DashboardActivity extends AppCompatActivity {
                             String formattedKwh = String.format("%.3f", cumulativeKwh);
                             Log.d("KwhTotal", "Total KWh: " + formattedKwh);
 
-                            String totalKwhText = formattedKwh + " kwh";
-                            SpannableString spannableString = new SpannableString(totalKwhText);
-                            spannableString.setSpan(new android.text.style.AbsoluteSizeSpan(50, true), 0, formattedKwh.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                            spannableString.setSpan(new android.text.style.AbsoluteSizeSpan(20, true), formattedKwh.length() + 1, totalKwhText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                            tvTotalConsumption.setText(spannableString);
+                            String totalKwhText = formattedKwh +" kwh";
+                            tvTotalConsumption.setText(totalKwhText);
 
                         }
 
@@ -414,39 +557,6 @@ public class DashboardActivity extends AppCompatActivity {
             }
         });
     }
-    private void fetchTotalKwhForDay() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        String currentDate = dateFormat.format(new Date());
-        DatabaseReference hourlySummariesRef = db.child("hourly_summaries").child(currentDate);
-
-        hourlySummariesRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                double totalKwh = 0.0;
-                for (DataSnapshot hourlySnapshot : dataSnapshot.getChildren()) {
-                    Object value = hourlySnapshot.child("total_kwh").getValue();
-                    if (value != null) {
-                        totalKwh += ((Number) value).doubleValue();
-                    }
-                }
-
-                // Get the current time in the desired format, including AM/PM
-                SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss a", Locale.getDefault());
-                String currentTime = timeFormat.format(new Date());
-
-                // Display the total kWh in the first TextView
-                tvTodayKwh.setText("Today's consumption: " + String.format("%.3f kWh", totalKwh));
-
-                // Display the current time with AM/PM in the second TextView
-                tvCurrentTime.setText("at " + currentTime);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(DashboardActivity.this, "Error fetching data", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
     private void updateArea1Name() {
         String area1Name = etArea1.getText().toString().trim();
         if (area1Name.isEmpty()) {
@@ -455,12 +565,23 @@ public class DashboardActivity extends AppCompatActivity {
         }
         area1Name = capitalizeFirstLetter(area1Name);
         DatabaseReference systemSettingsRef = db.child("system_settings");
+        String finalArea1Name = area1Name;
         systemSettingsRef.child("area1_name").setValue(area1Name)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(DashboardActivity.this, "Area 1 Name updated", Toast.LENGTH_SHORT).show();
+                    // Make field non-editable again after successful update
+                    isArea1Editable = false;
+                    etArea1.setFocusable(false);
+                    etArea1.setClickable(false);
+                    etArea1.clearFocus();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(DashboardActivity.this, "Error updating Area 1 Name", Toast.LENGTH_SHORT).show();
+                    // Make field non-editable again even on failure
+                    isArea1Editable = false;
+                    etArea1.setFocusable(false);
+                    etArea1.setClickable(false);
+                    etArea1.clearFocus();
                 });
     }
     private String capitalizeFirstLetter(String str) {
@@ -480,9 +601,19 @@ public class DashboardActivity extends AppCompatActivity {
         systemSettingsRef.child("area2_name").setValue(area2Name)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(DashboardActivity.this, "Area 2 Name updated", Toast.LENGTH_SHORT).show();
+                    // Make field non-editable again after successful update
+                    isArea2Editable = false;
+                    etArea2.setFocusable(false);
+                    etArea2.setClickable(false);
+                    etArea2.clearFocus();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(DashboardActivity.this, "Error updating Area 2 Name", Toast.LENGTH_SHORT).show();
+                    // Make field non-editable again even on failure
+                    isArea2Editable = false;
+                    etArea2.setFocusable(false);
+                    etArea2.setClickable(false);
+                    etArea2.clearFocus();
                 });
     }
     private void updateArea3Name() {
@@ -496,9 +627,19 @@ public class DashboardActivity extends AppCompatActivity {
         systemSettingsRef.child("area3_name").setValue(area3Name)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(DashboardActivity.this, "Area 3 Name updated", Toast.LENGTH_SHORT).show();
+                    // Make field non-editable again after successful update
+                    isArea3Editable = false;
+                    etArea3.setFocusable(false);
+                    etArea3.setClickable(false);
+                    etArea3.clearFocus();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(DashboardActivity.this, "Error updating Area 3 Name", Toast.LENGTH_SHORT).show();
+                    // Make field non-editable again even on failure
+                    isArea3Editable = false;
+                    etArea3.setFocusable(false);
+                    etArea3.setClickable(false);
+                    etArea3.clearFocus();
                 });
     }
     private void fetchAreaNames() {
@@ -511,15 +652,18 @@ public class DashboardActivity extends AppCompatActivity {
                 String area2Name = dataSnapshot.child("area2_name").getValue(String.class);
                 String area3Name = dataSnapshot.child("area3_name").getValue(String.class);
 
-                // Set the area names to the TextViews
+                // Set the area names to the EditTexts
                 if (area1Name != null) {
                     etArea1.setText(area1Name);
+                    area1_details.setText(area1Name + "Details");
                 } else {
                     etArea1.setText("Area 1 Name not available");
+
                 }
 
                 if (area2Name != null) {
                     etArea2.setText(area2Name);
+                    area2_details.setText(area2Name + "Details");
                 } else {
                     etArea2.setText("Area 2 Name not available");
                 }
@@ -528,6 +672,7 @@ public class DashboardActivity extends AppCompatActivity {
                     etArea3.setText(area3Name);
                 } else {
                     etArea3.setText("Area 3 Name not available");
+                    area3_details.setText(area3Name + "Details");
                 }
             }
 
@@ -637,9 +782,9 @@ public class DashboardActivity extends AppCompatActivity {
                             tvArea3Kwh.setText(formattedArea3Kwh);
 
                             // Set the corresponding percentages for each area in separate TextViews
-                            tvArea1Percentage.setText(formattedArea1Percentage + "%");
-                            tvArea2Percentage.setText(formattedArea2Percentage + "%");
-                            tvArea3Percentage.setText(formattedArea3Percentage + "%");
+                            tvArea1Percentage.setText(formattedArea1Percentage );
+                            tvArea2Percentage.setText(formattedArea2Percentage );
+                            tvArea3Percentage.setText(formattedArea3Percentage );
                         }
 
                         @Override
@@ -763,6 +908,54 @@ public class DashboardActivity extends AppCompatActivity {
             public void onCancelled(DatabaseError databaseError) {
                 Log.e("FirebaseError", "Error fetching cost filter data: " + databaseError.getMessage());
             }
+        });
+    }
+
+    // Computes usage trend: yesterday (from daily_summaries) vs today-so-far (sum of hourly_summaries for current date)
+    private void fetchUsageTrend() {
+        final SimpleDateFormat ymd = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        final Calendar cal = Calendar.getInstance();
+        final String todayKey = ymd.format(cal.getTime());
+        cal.add(Calendar.DAY_OF_YEAR, -1);
+        final String yesterdayKey = ymd.format(cal.getTime());
+
+        // Step 1: read yesterday total_kwh from daily_summaries
+        db.child("daily_summaries").child(yesterdayKey).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override public void onDataChange(DataSnapshot dsYesterday) {
+                Double yesterdayTotal = dsYesterday.child("total_kwh").getValue(Double.class);
+                if (yesterdayTotal == null) yesterdayTotal = 0.0;
+
+                // Step 2: sum today's hourly total_kwh from hourly_summaries/{today}
+                Double finalYesterdayTotal = yesterdayTotal;
+                db.child("hourly_summaries").child(todayKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override public void onDataChange(DataSnapshot dsTodayHours) {
+                        double todaySoFar = 0.0;
+                        for (DataSnapshot hourSnap : dsTodayHours.getChildren()) {
+                            Double k = hourSnap.child("total_kwh").getValue(Double.class);
+                            if (k != null) todaySoFar += k;
+                        }
+
+                        // Compute percentage change ((today - yesterday) / yesterday) * 100
+                        Double pctChange;
+                        if (finalYesterdayTotal <= 0.0) {
+                            // If no data yesterday, define change as 100% if today>0 else 0%
+                            pctChange = todaySoFar > 0.0 ? 100.0 : 0.0;
+                        } else {
+                            pctChange = ((todaySoFar - finalYesterdayTotal) / finalYesterdayTotal) * 100.0;
+                        }
+
+                        // Update UI
+                        String sign = pctChange >= 0 ? "+" : "";
+                        String pctText = String.format(Locale.getDefault(), "%s%.1f%%", sign, pctChange);
+                        tvPercentageChange.setText(pctText);
+                        tvTrendIcon.setText(pctChange >= 0 ? "↗️" : "↘️");
+                    }
+
+                    @Override public void onCancelled(DatabaseError error) { }
+                });
+            }
+
+            @Override public void onCancelled(DatabaseError error) { }
         });
     }
     private void fetchArea1() {
@@ -1079,6 +1272,48 @@ public class DashboardActivity extends AppCompatActivity {
                 Log.e("FirebaseError", "Error fetching cost filter data: " + databaseError.getMessage());
             }
         });
+    }
+
+    private Long extractTimestamp(DataSnapshot logSnapshot) {
+        // Try common field names for timestamps and coerce to long
+        Object v;
+        String[] keys = new String[] { "timestamp", "created_at", "createdAt", "ts", "time" };
+        for (String k : keys) {
+            v = logSnapshot.child(k).getValue();
+            if (v instanceof Number) return ((Number) v).longValue();
+            if (v instanceof String) {
+                try {
+                    return Long.parseLong((String) v);
+                } catch (NumberFormatException ignored) { }
+            }
+        }
+        return null;
+    }
+    // Heuristic score for ordering date buckets with mixed formats
+    private long computeDateBucketScore(String key) {
+        if (key == null) return Long.MIN_VALUE;
+        try {
+            if (key.startsWith("UPTIME-")) {
+                // UPTIME-HH:MM:SS → convert to seconds
+                String t = key.substring("UPTIME-".length());
+                String[] parts = t.split(":");
+                if (parts.length == 3) {
+                    int h = Integer.parseInt(parts[0]);
+                    int m = Integer.parseInt(parts[1]);
+                    int s = Integer.parseInt(parts[2]);
+                    return 1_000_000_000L + h * 3600L + m * 60L + s; // add bias to prefer uptime over plain dates
+                }
+            }
+        } catch (Exception ignored) { }
+
+        try {
+            // Try ISO-like 2025-09-18T17:48:06Z
+            SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
+            Date d = iso.parse(key);
+            if (d != null) return d.getTime();
+        } catch (Exception ignored) { }
+
+        return key.hashCode();
     }
 
 

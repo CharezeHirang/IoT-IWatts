@@ -44,521 +44,402 @@
         app:layout_constraintTop_toBottomOf="@id/RealTimeText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dividerTop"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dividerTop"
         app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:padding="5dp"
-        android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp">
+
         <LinearLayout
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout
-                android:orientation="horizontal"
-                android:id="@+id/date"
+            <!-- Area 1 -->
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:baselineAligned="false"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/historicalDataText"
-                android:weightSum="3">
-
-                <!-- Left part: Dates -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_weight="2"
-                    android:layout_gravity="center">
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/startingDate"
-                        android:layout_marginBottom="10dp"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_yellowish"
-                        android:textColorHint="#863B17"
-                        app:suffixTextColor="#863B17">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etStartingDate"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:focusable="false"
-                            android:clickable="true"
-                            android:inputType="date"
-                            android:textColor="#863B17"
-                            android:textSize="18sp"
-                            android:hint="From" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/endingDate"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_yellowish"
-                        android:textColorHint="#863B17"
-                        app:suffixTextColor="#863B17">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etEndingDate"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:focusable="false"
-                            android:clickable="true"
-                            android:inputType="date"
-                            android:textColor="#863B17"
-                            android:textSize="18sp"
-                            android:hint="To" />
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-
-                <!-- Right part: ImageView -->
-                <ImageView
-                    android:id="@+id/dateImage"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:src="@drawable/img_bulb_sticker"
-                    android:adjustViewBounds="true"
-                    android:scaleType="centerInside"
-                    android:contentDescription="Calendar Icon" />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:background="@drawable/bg_gray"
                 android:layout_margin="10dp"
-                android:layout_gravity="center">
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/batelecII"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+                android:gravity="center">
+
+                <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_yellowish"
-                    android:textColorHint="#863B17"
-                    app:suffixText=" / kwh"
-                    app:suffixTextColor="#863B17"
-                    app:prefixTextColor="#863B17"
-                    app:prefixText="₱">
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:textAlignment="center"
-                        android:id="@+id/etBatelecRate"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="numberDecimal"
-                        android:textColor="#863B17"
-                        android:textSize="20sp"
-                        android:hint="@string/text23" />
-                </com.google.android.material.textfield.TextInputLayout>
+                    android:scrollbars="none">
 
-            </LinearLayout>
-            <FrameLayout
-                android:id="@+id/bg_estimatedCost"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/dividerTop2"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="10dp"
-                android:paddingTop="10dp"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
-                android:paddingBottom="20dp"
-                android:background="@drawable/bg_light_yellow"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:orientation="vertical">
-                    <TextView
-                        android:layout_gravity="center"
-                        android:id="@+id/tvTotalCost"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/text22"
-                        android:textStyle="bold"
-                        android:textSize="50sp"
-                        android:textColor="#863B17"
-                        android:layout_marginEnd="5dp"/>
+                        android:orientation="horizontal">
 
-                    <TextView
+                        <!-- Main Area 1 Content -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:minWidth="300dp">
+
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="20dp"
+                                android:weightSum="2"
+                                android:gravity="center">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical"
+                                    android:gravity="center">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="📊 USAGE"
+                                        android:textColor="#863B17"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold"/>
+
+                                    <TextView
+                                        android:id="@+id/tvArea1Kwh"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/text19"
+                                        android:textColor="#863B17"
+                                        android:textAlignment="center"
+                                        android:textStyle="bold"
+                                        android:textSize="32sp"
+                                        android:layout_marginTop="8dp"/>
+
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical"
+                                    android:gravity="center">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="📈 PERCENTAGE"
+                                        android:textColor="#863B17"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold"/>
+
+                                    <TextView
+                                        android:id="@+id/tvArea1Percentage"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/text20"
+                                        android:textColor="#863B17"
+                                        android:textAlignment="center"
+                                        android:textSize="28sp"
+                                        android:textStyle="bold"
+                                        android:layout_marginTop="8dp"/>
+
+                                </LinearLayout>
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Area 1 Chart (Hidden initially, visible on swipe) -->
+                        <com.github.mikephil.charting.charts.LineChart
+                            android:id="@+id/area1_chart"
+                            android:layout_width="300dp"
+                            android:layout_height="200dp"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginEnd="10dp"
+                            android:padding="10dp"/>
+
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+            </FrameLayout>
+
+            <!-- Area 2 -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_gray"
+                android:layout_marginTop="20dp"
+                android:gravity="center">
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none">
+
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Estimated Total Cost"
-                        android:textSize="13sp"
-                        android:textColor="#863B17"
-                        android:layout_gravity="center"
-                        android:layout_marginStart="5dp"/>
+                        android:orientation="horizontal">
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="2dp"
-                        android:layout_marginTop="10dp"
-                        android:background="#863B17" />
-                </LinearLayout>
+                        <!-- Main Area 2 Content -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:minWidth="300dp">
 
-                <!-- LinearLayout for other TextViews -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="110dp"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginEnd="20dp"
-                    android:weightSum="3">
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/area2"
+                                style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_yellowish"
+                                android:textColorHint="#863B17"
+                                app:suffixTextColor="#863B17"
+                                android:gravity="center"
+                                app:endIconMode="custom"
+                                app:endIconDrawable="@drawable/ic_edit"
+                                app:endIconTint="#863B17">
 
-                    <TextView
-                        android:id="@+id/tvTotalKwh"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/text22"
-                        android:textStyle="bold"
-                        android:gravity="center"
-                        android:textSize="15sp"
-                        android:textColor="#863B17"/>
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etArea2"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:hint="@string/text17"
+                                    android:inputType="text"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="16sp" />
+                            </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/text24"
-                        android:textStyle="bold"
-                        android:gravity="center"
-                        android:textSize="15sp"
-                        android:textColor="#863B17"/>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="20dp"
+                                android:weightSum="2"
+                                android:gravity="center">
 
-                    <TextView
-                        android:id="@+id/tvBatelecRate"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/text22"
-                        android:textStyle="bold"
-                        android:gravity="center"
-                        android:textSize="15sp"
-                        android:textColor="#863B17"/>
-                </LinearLayout>
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical"
+                                    android:gravity="center">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="📊 USAGE"
+                                        android:textColor="#863B17"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold"/>
+
+                                    <TextView
+                                        android:id="@+id/tvArea2Kwh"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/text19"
+                                        android:textColor="#863B17"
+                                        android:textAlignment="center"
+                                        android:textStyle="bold"
+                                        android:textSize="32sp"
+                                        android:layout_marginTop="8dp"/>
+
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical"
+                                    android:gravity="center">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="📈 PERCENTAGE"
+                                        android:textColor="#863B17"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold"/>
+
+                                    <TextView
+                                        android:id="@+id/tvArea2Percentage"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/text20"
+                                        android:textColor="#863B17"
+                                        android:textAlignment="center"
+                                        android:textSize="28sp"
+                                        android:textStyle="bold"
+                                        android:layout_marginTop="8dp"/>
+
+                                </LinearLayout>
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Area 2 Chart (Hidden initially, visible on swipe) -->
+                        <com.github.mikephil.charting.charts.LineChart
+                            android:id="@+id/area2_chart"
+                            android:layout_width="300dp"
+                            android:layout_height="200dp"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginEnd="10dp"
+                            android:padding="10dp"/>
+
+                    </LinearLayout>
+                </HorizontalScrollView>
 
             </FrameLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:orientation="horizontal"
-                android:layout_margin="5dp"
-                android:weightSum="2">
-                <LinearLayout
-                    android:id="@+id/bg_mainConsumption"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_margin="5dp"
-                    android:gravity="center"
-                    android:padding="5dp"
-                    android:background="@drawable/bg_gray">
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text53"
-                        android:textColor="#863B17"
-                        android:textSize="13sp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_marginStart="10dp"/>
-                    <TextView
-                        android:id="@+id/todays_total_value"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text13"
-                        android:textColor="#863B17"
-                        android:textAlignment="center"
-                        android:textSize="35sp"
-                        android:textStyle="bold"/>
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center"
-                        android:textSize="15sp"
-                        android:text="kwh"
-                        android:textColor="@color/brown"
-                        android:layout_marginBottom="10dp"/>
-                </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:padding="5dp"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:layout_margin="5dp"
-                    android:background="@drawable/bg_gray">
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text54"
-                        android:textColor="#863B17"
-                        android:textSize="13sp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginStart="10dp"/>
-
-                    <TextView
-                        android:id="@+id/peak_usage_value"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text22"
-                        android:textAlignment="center"
-                        android:textColor="#863B17"
-                        android:textSize="35sp"
-                        android:textStyle="bold" />
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center"
-                        android:textSize="15sp"
-                        android:text="@string/text22"
-                        android:textColor="@color/brown"
-
-                        android:layout_marginBottom="10dp"/>
-                </LinearLayout>
-
-            </LinearLayout>
+            <!-- Area 3 -->
             <FrameLayout
-                android:id="@+id/bg_dailyCost"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/bg_consumptionInfo"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
                 android:background="@drawable/bg_gray"
-                android:layout_margin="10dp">
+                android:layout_marginTop="20dp"
+                android:gravity="center">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/text55"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginStart="20dp"
-                    android:textSize="15sp"
-                    android:textColor="#863B17"
-                    />
-
-
-                <com.github.mikephil.charting.charts.BarChart
-                    android:id="@+id/dailyCost_chart"
-                    android:layout_width="match_parent"
-                    android:layout_height="250dp"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginTop="50dp"
-                    android:layout_marginBottom="10dp"
-                    android:padding="10dp"/>
-            </FrameLayout>
-            <FrameLayout
-                android:id="@+id/bg_areaCost"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/bg_dailyCost"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:background="@drawable/bg_gray"
-                android:layout_margin="10dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/text56"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginStart="20dp"
-                    android:textSize="15sp"
-                    android:textColor="#863B17"/>
-                <com.github.mikephil.charting.charts.BarChart
-                    android:id="@+id/area_chart"
-                    android:layout_marginStart="10dp"
-                    android:background="@drawable/bg_light_yellow"
-                    android:layout_width="match_parent"
-                    android:layout_height="250dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginBottom="10dp"
-                    android:layout_marginTop="50dp"
-                    android:padding="10dp"/>
-            </FrameLayout>
-
-            <FrameLayout
-                android:id="@+id/comparison"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/bg_electricityRate"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_light_yellow"
-                android:layout_marginEnd="10dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginBottom="20dp">
-                <TextView
+                <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#863B17"
-                    android:text="@string/text60"
-                    android:layout_marginTop="10dp"
-                    android:textAlignment="center"
-                    android:textSize="15sp"/>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="30dp"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:baselineAligned="false">
+                    android:scrollbars="none">
 
-                    <FrameLayout
-                        android:layout_width="match_parent"
+                    <LinearLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1">
+                        android:orientation="horizontal">
 
-                        <TextView
+                        <!-- Main Area 3 Content -->
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/text16"
-                            android:drawableLeft="@drawable/ic_area1"
-                            android:layout_marginTop="10dp"
-                            android:textAlignment="center"
-                            android:textColor="#863B17"
-                            android:textSize="15sp"
-                            android:textStyle="bold"
-                            android:drawablePadding="10dp"
-                            android:gravity="center_vertical"
-                            android:paddingStart="20dp"
-                            android:paddingEnd="20dp"
-                            tools:ignore="RtlCompat" />
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/text17"
-                            android:drawableLeft="@drawable/ic_area2"
-                            android:layout_marginTop="40dp"
-                            android:textAlignment="center"
-                            android:textColor="#863B17"
-                            android:textSize="15sp"
-                            android:textStyle="bold"
-                            android:drawablePadding="10dp"
-                            android:gravity="center_vertical"
-                            android:paddingStart="20dp"
-                            android:paddingEnd="20dp"
-                            tools:ignore="RtlCompat"/>
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/text18"
-                            android:layout_marginTop="70dp"
-                            android:drawableLeft="@drawable/ic_area3"
-                            android:textAlignment="center"
-                            android:textColor="#863B17"
-                            android:textSize="15sp"
-                            android:textStyle="bold"
-                            android:drawablePadding="10dp"
-                            android:gravity="center_vertical"
-                            android:paddingStart="20dp"
-                            android:paddingEnd="20dp"
-                            tools:ignore="RtlCompat"/>
+                            android:orientation="vertical"
+                            android:minWidth="300dp">
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/text62"
-                            android:layout_marginTop="110dp"
-                            android:layout_marginStart="10dp"
-                            android:textAlignment="textStart"
-                            android:textColor="#863B17"
-                            android:textSize="13sp"/>
-                        <TextView
-                            android:id="@+id/tvProjectedText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/text63"
-                            android:layout_marginTop="140dp"
-                            android:layout_marginBottom="20dp"
-                            android:textAlignment="center"
-                            android:paddingStart="10dp"
-                            android:textColor="#863B17"
-                            android:textSize="13sp"
-                            tools:ignore="RtlSymmetry" />
-                    </FrameLayout>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1">
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/area3"
+                                style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_yellowish"
+                                android:textColorHint="#863B17"
+                                app:suffixTextColor="#863B17"
+                                android:gravity="center"
+                                app:endIconMode="custom"
+                                app:endIconDrawable="@drawable/ic_edit"
+                                app:endIconTint="#863B17">
 
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etArea3"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:hint="@string/text18"
+                                    android:inputType="text"
+                                    android:textAlignment="center"
+                                    android:textColor="#863B17"
+                                    android:textSize="16sp" />
+                            </com.google.android.material.textfield.TextInputLayout>
 
-                        <TextView
-                            android:id="@+id/tvArea1"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/text22"
-                            android:layout_marginTop="10dp"
-                            android:textAlignment="center"
-                            android:textColor="#863B17"
-                            android:textSize="18sp"
-                            android:textStyle="bold"/>
-                        <TextView
-                            android:id="@+id/tvArea2"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/text22"
-                            android:layout_marginTop="40dp"
-                            android:textAlignment="center"
-                            android:textColor="#863B17"
-                            android:textSize="18sp"
-                            android:textStyle="bold"/>
-                        <TextView
-                            android:id="@+id/tvArea3"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/text22"
-                            android:layout_marginTop="70dp"
-                            android:textAlignment="center"
-                            android:textColor="#863B17"
-                            android:textSize="18sp"
-                            android:textStyle="bold"/>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="20dp"
+                                android:weightSum="2"
+                                android:gravity="center">
 
-                        <TextView
-                            android:id="@+id/tvProjectedCost"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/text22"
-                            android:layout_marginTop="120dp"
-                            android:layout_marginStart="10dp"
-                            android:textAlignment="center"
-                            android:textColor="#863B17"
-                            android:textStyle="bold"
-                            android:textSize="30sp"/>
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical"
+                                    android:gravity="center">
 
-                    </FrameLayout>
-                </LinearLayout>
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="📊 USAGE"
+                                        android:textColor="#863B17"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold"/>
+
+                                    <TextView
+                                        android:id="@+id/tvArea3Kwh"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/text19"
+                                        android:textColor="#863B17"
+                                        android:textAlignment="center"
+                                        android:textStyle="bold"
+                                        android:textSize="32sp"
+                                        android:layout_marginTop="8dp"/>
+
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical"
+                                    android:gravity="center">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="📈 PERCENTAGE"
+                                        android:textColor="#863B17"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold"/>
+
+                                    <TextView
+                                        android:id="@+id/tvArea3Percentage"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/text20"
+                                        android:textColor="#863B17"
+                                        android:textAlignment="center"
+                                        android:textSize="28sp"
+                                        android:textStyle="bold"
+                                        android:layout_marginTop="8dp"/>
+
+                                </LinearLayout>
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Area 3 Chart (Hidden initially, visible on swipe) -->
+                        <com.github.mikephil.charting.charts.LineChart
+                            android:id="@+id/area3_chart"
+                            android:layout_width="300dp"
+                            android:layout_height="200dp"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginEnd="10dp"
+                            android:padding="10dp"/>
+
+                    </LinearLayout>
+                </HorizontalScrollView>
+
             </FrameLayout>
+
         </LinearLayout>
     </ScrollView>
+
+
+
     <LinearLayout
         android:id="@+id/button"
         android:layout_width="match_parent"
