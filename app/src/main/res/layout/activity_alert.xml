@@ -258,33 +258,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
             </LinearLayout>
-            <TextView
-                android:id="@+id/kwh_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Time met: "
-                android:textSize="16sp" />
-            <TextView
-                android:id="@+id/cost_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Time met: "
-                android:textSize="16sp" />
-
-
-            <TextView
-                android:id="@+id/total_cost"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Total Cost: "
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/total_kwh"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Total kWh: "
-                android:textSize="16sp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"

@@ -15,6 +15,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SampleIWATTS">
         <activity
+            android:name=".Z_5_Connection_Success"
+            android:exported="false" />
+        <activity
+            android:name=".Z_4_Device_Password"
+            android:exported="false" />
+        <activity
+            android:name=".Z_3_Device_Found"
+            android:exported="false" />
+        <activity
+            android:name=".Z_2_Scanning_Device"
+            android:exported="false" />
+        <activity
+            android:name=".Z_1_SearchDeviceActivity"
+            android:exported="false" />
+        <activity
             android:name=".AboutUsActivity"
             android:exported="false" />
         <activity

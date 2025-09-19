@@ -47,7 +47,6 @@
         app:layout_constraintTop_toBottomOf="@id/RealTimeText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -367,10 +366,12 @@
                     android:textColor="#863B17"
                     />
 
+
                 <com.github.mikephil.charting.charts.BarChart
                     android:id="@+id/dailyCost_chart"
                     android:layout_width="match_parent"
-                    android:layout_height="250dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="250dp"
                     android:layout_marginStart="10dp"
                     android:layout_marginEnd="10dp"
                     android:layout_marginTop="50dp"
@@ -395,12 +396,12 @@
                     android:layout_marginStart="20dp"
                     android:textSize="15sp"
                     android:textColor="#863B17"/>
-                <com.github.mikephil.charting.charts.LineChart
+                <com.github.mikephil.charting.charts.HorizontalBarChart
                     android:id="@+id/area_chart"
                     android:layout_marginStart="10dp"
-                    android:background="@drawable/bg_light_yellow"
                     android:layout_width="match_parent"
-                    android:layout_height="250dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="250dp"
                     android:layout_marginEnd="10dp"
                     android:layout_marginBottom="10dp"
                     android:layout_marginTop="50dp"
@@ -441,6 +442,7 @@
                         android:layout_weight="1">
 
                         <TextView
+                            android:id="@+id/area1_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/text16"
@@ -456,6 +458,7 @@
                             android:paddingEnd="20dp"
                             tools:ignore="RtlCompat" />
                         <TextView
+                            android:id="@+id/area2_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/text17"
@@ -471,6 +474,7 @@
                             android:paddingEnd="20dp"
                             tools:ignore="RtlCompat"/>
                         <TextView
+                            android:id="@+id/area3_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/text18"

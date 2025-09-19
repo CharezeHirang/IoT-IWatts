@@ -25,5 +25,7 @@ public class G_TipsActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+
+
     }
 }
