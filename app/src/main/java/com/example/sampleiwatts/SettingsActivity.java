@@ -9,13 +9,14 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    Button btnDeviceSettings, btnNotification, btnAlert, btnTips, btnAboutUs, btnLogout;
+    CardView btnDeviceSettings, btnNotification, btnAlert, btnTips, btnAboutUs, btnLogout;
     ImageView icBack;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
