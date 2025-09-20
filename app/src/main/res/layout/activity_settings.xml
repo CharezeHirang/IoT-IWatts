@@ -49,7 +49,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="230dp"
+        android:layout_marginBottom="390dp"
         android:text="@string/text69"
         android:textColor="@color/white"
         android:textStyle="bold"
@@ -103,6 +103,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="30dp"
         android:text="@string/text70"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="25sp"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_logout"
+        android:layout_width="280dp"
+        android:layout_height="70dp"
+        android:background="@drawable/bg_button"
+        app:layout_constraintTop_toBottomOf="@id/btn_about"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="30dp"
+        android:text="LOGOUT"
         android:textColor="@color/white"
         android:textStyle="bold"
         android:textSize="25sp"/>

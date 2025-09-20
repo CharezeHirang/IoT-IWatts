@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_gradient"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp">
+
+        <!-- Logo -->
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginBottom="32dp"
+            android:src="@drawable/ic_launcher_foreground"
+            android:contentDescription="I-WATTS Logo" />
+
+        <!-- App Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="I-WATTS"
+            android:textColor="#863B17"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <!-- Subtitle -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="48dp"
+            android:text="Power Monitoring System"
+            android:textColor="#863B17"
+            android:textSize="16sp" />
+
+        <!-- Login Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <!-- Login Title -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="24dp"
+                    android:text="Device Login"
+                    android:textColor="#863B17"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <!-- Username Input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:hint="Username"
+                    >
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/usernameEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:textColor="#863B17" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Password Input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    android:hint="Password"
+                    app:endIconMode="password_toggle"
+                    >
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/passwordEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:textColor="#863B17" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Login Button -->
+                <Button
+                    android:id="@+id/loginButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginBottom="16dp"
+                    android:backgroundTint="#863B17"
+                    android:text="LOGIN"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="8dp" />
+
+                <!-- Default Credentials Info -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Default: PowerLogger / admin123"
+                    android:textColor="#666666"
+                    android:layout_marginBottom="24dp"
+                    android:textSize="12sp"
+                    android:textStyle="italic" />
+
+                <!-- Hardware Setup Instructions Card (Always Visible) -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="8dp"
+                    app:cardBackgroundColor="#FFF3E0">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <!-- Instructions Title -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginBottom="16dp"
+                            android:text="Hardware Setup Instructions"
+                            android:textColor="#863B17"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <!-- Step-by-step instructions -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="12dp"
+                            android:text="📋 To setup your PowerLogger device:"
+                            android:textColor="#863B17"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1. Turn OFF the PowerLogger device\n2. HOLD the button on top while turning ON\n3. Keep holding for 10 seconds, then release\n4. Connect your phone to 'PowerLogger' WiFi\n5. Use password: admin123\n6. Return to this app and click Setup"
+                            android:textColor="#666666"
+                            android:textSize="13sp"
+                            android:lineSpacingExtra="2dp" />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Hardware Setup Button (Shows when connected to PowerLogger) -->
+        <Button
+            android:id="@+id/setupButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:backgroundTint="#FFA726"
+            android:text="CONFIGURE DEVICE WIFI"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:cornerRadius="8dp"
+            app:icon="@android:drawable/ic_menu_manage"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp" />
+
+        <!-- Connection Status -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="💡 Follow the instructions above to setup your device"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            android:textStyle="italic" />
+
+    </LinearLayout>
+
+</ScrollView>
