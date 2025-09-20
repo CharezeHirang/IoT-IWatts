@@ -45,16 +45,18 @@ import java.util.Calendar;
 import java.util.Locale;
 
 public class DashboardActivity extends AppCompatActivity {
+
     private static final String TAG = "MainActivity";
     private TextView tvTotalCost, tvElectricityRate, tvBatteryLife,tvTotalConsumption, area1_details, area2_details, area3_details, activated;
     private TextView tvArea1Kwh, tvArea2Kwh, tvArea3Kwh,  tvArea1Percentage, tvArea2Percentage, tvArea3Percentage, tvPeakTime, tvPeakValue;
-    private TextView tvPercentageChange, tvTrendIcon, area1_icon, area2_icon, area3_icon;
-    private ImageView ivBatteryImage;
+    private TextView tvPercentageChange,  area1_icon, area2_icon, area3_icon;
+
+    private ImageView ivBatteryImage,tvTrendIcon;
     private LineChart lineChart1, lineChart2, lineChart3;
 
     private DatabaseReference db;
     private EditText etArea1, etArea2, etArea3;
-    LinearLayout popArea1, popArea2, popArea3;
+    LinearLayout popArea1, popArea2, popArea3, percentageChangeContainer;
     CardView area1_card, area2_card, area3_card;
     ImageView ic_close, close2, close3;
     private DataProcessingManager processingManager;
@@ -155,7 +157,6 @@ public class DashboardActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_dashboard);
 
         area1_icon = findViewById(R.id.area1_icon);
@@ -218,7 +219,7 @@ public class DashboardActivity extends AppCompatActivity {
             popArea3.setVisibility(View.GONE);
         });
 
-
+        percentageChangeContainer = findViewById(R.id.percentageChangeContainer);
         lineChart1 = findViewById(R.id.area1_chart);
         lineChart2 = findViewById(R.id.area2_chart);
         lineChart3 = findViewById(R.id.area3_chart);
@@ -1202,10 +1203,25 @@ public class DashboardActivity extends AppCompatActivity {
                         }
 
                         // Update UI
-                        String sign = pctChange >= 0 ? "+" : "";
+                        String sign = pctChange > 0 ? "+" : "";
                         String pctText = String.format(Locale.getDefault(), "%s%.1f%%", sign, pctChange);
                         tvPercentageChange.setText(pctText);
-                        tvTrendIcon.setText(pctChange >= 0 ? "↗️" : "↘️");
+                        
+                        if (pctChange == 0.0) {
+                            // Hide trend icon when percentage change is exactly 0.0
+                            tvTrendIcon.setVisibility(View.GONE);
+                        } else {
+                            // Show trend icon for any non-zero change
+                            tvTrendIcon.setVisibility(View.VISIBLE);
+                            if (pctChange > 0) {
+                                tvTrendIcon.setImageResource(R.drawable.ic_up);
+                                percentageChangeContainer.setBackgroundResource(R.drawable.bg_percentage);
+                            } else {
+                                tvTrendIcon.setImageResource(R.drawable.ic_down);
+                                percentageChangeContainer.setBackgroundResource(R.drawable.bg_percentage_change);
+                            }
+                        }
+
                     }
 
                     @Override public void onCancelled(DatabaseError error) { }

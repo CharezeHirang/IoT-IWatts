@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Top bar -->
+
     <View
         android:id="@+id/top"
         android:layout_width="match_parent"
@@ -14,7 +14,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
-
     <ImageView
         android:layout_width="30dp"
         android:layout_height="30dp"
@@ -24,543 +23,726 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="30dp"
         tools:ignore="contentDescription"/>
-
     <TextView
         android:id="@+id/RealTimeText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"
-        android:text="Cost Estimation"
+        android:text="Real-Time Monitoring"
         app:layout_constraintTop_toBottomOf="@+id/top"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="10dp"
-        android:textSize="20sp"
+        android:textSize="13sp"
         android:textStyle="bold"
         android:textColor="#863B17"/>
-
     <View
         android:id="@+id/dividerTop"
         android:layout_width="0dp"
         android:layout_height="2dp"
-        android:layout_marginTop="10dp"
+        android:layout_margin="10dp"
         android:background="@color/brown"
         app:layout_constraintTop_toBottomOf="@id/RealTimeText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Scrollable content -->
+    <LinearLayout
+        android:id="@+id/consumption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/dividerTop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:weightSum="2">
+        <androidx.cardview.widget.CardView
+            android:id="@+id/bg_mainConsumption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="#FEF9E7"
+            android:padding="16dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="12dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text33"
+                    android:textColor="#863B17"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp"/>
+                <TextView
+                    android:id="@+id/todays_total_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text13"
+                    android:textColor="#863B17"
+                    android:textAlignment="center"
+                    android:textSize="25sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:textSize="12sp"
+                    android:text="kwh"
+                    android:textColor="#863B17"
+                    android:alpha="0.8"/>
+                <TextView
+                    android:id="@+id/todays_total_percentage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:text="@string/text35"
+                    android:textColor="#863B17"
+                    android:textSize="12sp"
+                    android:alpha="0.7"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="8dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="#FEF9E7"
+            android:padding="16dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="12dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text36"
+                    android:textColor="#863B17"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp"/>
+                <TextView
+                    android:id="@+id/peak_usage_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text13"
+                    android:textColor="#863B17"
+                    android:textAlignment="center"
+                    android:textSize="25sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:textSize="12sp"
+                    android:text="w"
+                    android:textColor="#863B17"
+                    android:alpha="0.8"/>
+                <TextView
+                    android:id="@+id/peak_usage_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text55"
+                    android:textColor="#863B17"
+                    android:textSize="12sp"
+                    android:textAlignment="center"
+                    android:alpha="0.7"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="8dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/cost"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/consumption"
+        android:layout_gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="2">
+        <androidx.cardview.widget.CardView
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_weight="2"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="#F3E787"
+            android:padding="16dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text37"
+                    android:textColor="#863B17"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp"/>
+                <TextView
+                    android:id="@+id/estimated_cost_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text22"
+                    android:textColor="#863B17"
+                    android:textAlignment="center"
+                    android:textSize="25sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp"/>
+                <TextView
+                    android:id="@+id/estimated_cost_details"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text22"
+                    android:textColor="#863B17"
+                    android:textSize="10sp"
+                    android:textAlignment="center"
+                    android:alpha="0.7"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="4dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dividerTop"
+        app:layout_constraintTop_toBottomOf="@+id/cost"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/button"
         android:padding="5dp"
-        android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp">
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <LinearLayout
-                android:orientation="horizontal"
-                android:id="@+id/date"
+
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:baselineAligned="false"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/historicalDataText"
-                android:weightSum="2">
-
-                <!-- Left part: Dates -->
-                <LinearLayout
-                    android:layout_marginEnd="2dp"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_weight="1"
-                    android:layout_gravity="center_vertical">
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/startingDate"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColorHint="#863B17"
-                        app:suffixTextColor="#863B17">
-
-                        <EditText
-                            android:id="@+id/etStartingDate"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:focusable="false"
-                            android:clickable="true"
-                            android:inputType="date"
-                            android:hint="From"
-                            android:textColorHint="#863B17"
-                            android:textColor="#863B17"
-                            android:textSize="18sp"
-                            android:paddingTop="6dp"
-                            android:paddingBottom="6dp"
-                            android:drawableEnd="@drawable/ic_edit"
-                            android:drawableTint="#863B17" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_weight="1"
-                    android:layout_gravity="center_vertical">
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/endingDate"
-                        android:layout_marginStart="2dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColorHint="#863B17"
-                        app:suffixTextColor="#863B17">
-
-                        <EditText
-                            android:id="@+id/etEndingDate"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:focusable="false"
-                            android:clickable="true"
-                            android:inputType="date"
-                            android:hint="To"
-                            android:textColorHint="#863B17"
-                            android:textColor="#863B17"
-                            android:textSize="18sp"
-                            android:paddingTop="6dp"
-                            android:paddingBottom="6dp"
-                            android:drawableEnd="@drawable/ic_edit"
-                            android:drawableTint="#863B17" />
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_margin="5dp"
-                android:gravity="center_vertical"
-                android:layout_gravity="center_vertical">
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/batelecII"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColorHint="#863B17"
-                    app:suffixText=" / kwh"
-                    app:suffixTextColor="#863B17"
-                    app:prefixTextColor="#863B17"
-                    app:prefixText="₱">
-                    <EditText
-                        android:textAlignment="center"
-                        android:id="@+id/etBatelecRate"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="numberDecimal"
-                        android:textColor="#863B17"
-                        android:textSize="20sp"
-                        android:paddingTop="6dp"
-                        android:paddingBottom="6dp"
-                        android:hint="@string/text23"
-                        android:drawableEnd="@drawable/ic_edit"
-                        android:drawableTint="#863B17"/>
-                </com.google.android.material.textfield.TextInputLayout>
-
-            </LinearLayout>
-            <LinearLayout
-                android:id="@+id/bg_estimatedCost"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:text="@string/text51"
+                android:textAlignment="center"
+                android:layout_marginTop="15dp"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginTop="20dp"
-                android:padding="20dp"
-                android:weightSum="3"
-                android:elevation="18dp"
-                android:translationZ="18dp"
-                android:outlineProvider="bounds"
-                android:clipToOutline="true"
-                android:background="@drawable/bg_light_red">
-
-                <!-- Cost details -->
-                <LinearLayout
-                    android:layout_width="0dp"
+                android:textSize="13sp"
+                android:layout_marginBottom="10dp"
+                android:textColor="#863B17"/>
+            <LinearLayout
+                android:id="@+id/area1_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp"
+                android:background="@drawable/bg_yellowish"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp">
+                <TextView
+                    android:id="@+id/area1_label"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="2"
+                    android:text="@string/text16"
+                    android:textColor="#863B17"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="10dp"
+                    android:textSize="14sp"
+                    android:textStyle="bold"/>
+                <FrameLayout
+                    android:id="@+id/area1_chart_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:padding="10dp">
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/tvTotalCost"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text22"
-                        android:textStyle="bold"
-                        android:textSize="30sp"
-                        android:textColor="#863B17"
-                        android:layout_gravity="center"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Estimated Total Cost"
-                        android:textSize="13sp"
-                        android:textColor="#863B17"
-                        android:layout_gravity="center"/>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="2dp"
-                        android:layout_marginTop="10dp"
-                        android:background="#863B17" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
                         android:orientation="horizontal"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:weightSum="3">
+                        android:layout_margin="10dp"
+                        android:weightSum="2">
 
-                        <TextView
-                            android:id="@+id/tvTotalKwh"
+                        <LinearLayout
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:text="@string/text22"
-                            android:textStyle="bold"
-                            android:gravity="center"
-                            android:textSize="15sp"
-                            android:textColor="#863B17"/>
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Total Consumption"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="12sp"/>
+                            <TextView
+                                android:id="@+id/area1_total_consumption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="13.1 kWh"
+                                android:layout_marginTop="2dp"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
 
-                        <TextView
+                        <LinearLayout
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:text="@string/text24"
-                            android:textStyle="bold"
-                            android:gravity="center"
-                            android:textSize="15sp"
-                            android:textColor="#863B17"/>
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Peak Consumption"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="12sp"/>
+                            <TextView
+                                android:id="@+id/area1_peak_consumption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="179W at 14:30"
+                                android:layout_marginTop="2dp"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
 
-                        <TextView
-                            android:id="@+id/tvBatelecRate"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/text22"
-                            android:textStyle="bold"
-                            android:gravity="center"
-                            android:textSize="15sp"
-                            android:textColor="#863B17"/>
                     </LinearLayout>
-                </LinearLayout>
-
-                <!-- Bulb image -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <ImageView
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/img_bulb_sticker"/>
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginBottom="15dp"
+                        android:layout_marginEnd="10dp"
+                        android:orientation="horizontal"
+                        android:weightSum="2">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Estimated Cost"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="12sp"/>
+                            <TextView
+                                android:id="@+id/area1_estimated_cost"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₱20.57"
+                                android:layout_marginTop="2dp"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Share of Total"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="12sp"/>
+                            <TextView
+                                android:id="@+id/area1_share_percentage"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="38%"
+                                android:layout_marginTop="2dp"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+
                 </LinearLayout>
             </LinearLayout>
             <LinearLayout
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="20dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
+                android:id="@+id/area2_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/bg_estimatedCost"
-                app:layout_constraintBottom_toTopOf="@+id/bg_moreInfo"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginTop="20dp"
+                android:padding="10dp"
+                android:background="@drawable/bg_yellowish"
 
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp">
+                <TextView
+                    android:id="@+id/area2_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text17"
+                    android:textColor="#863B17"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="10dp"
+                    android:textSize="14sp"
+                    android:textStyle="bold"/>
+                <FrameLayout
+                    android:id="@+id/area2_chart_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:padding="10dp">
+                </FrameLayout>
                 <LinearLayout
-                    android:id="@+id/otherInfo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:orientation="horizontal"
-                    android:weightSum="2">
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/totalUsage_card"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_margin="10dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    android:background="@drawable/bg_gray">
+                    android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
                         android:orientation="horizontal"
-                        android:padding="20dp"
-                        android:gravity="center_vertical">
+                        android:layout_margin="10dp"
+                        android:weightSum="2">
 
-                        <!-- Area Icon -->
-                        <TextView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:text="📊"
-                            android:textSize="24sp"
-                            android:gravity="center"
-                            android:background="@drawable/bg_yellowish"
-                            android:layout_marginEnd="16dp"/>
-                        <!-- Area Info -->
                         <LinearLayout
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tvTotalUsage"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textStyle="bold"
-                                android:textColor="#863B17"
-                                android:textSize="20sp"/>
-
+                            android:orientation="vertical"
+                            android:gravity="center">
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Total Usage"
+                                android:text="Total Consumption"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="12sp"/>
+                            <TextView
+                                android:id="@+id/area2_total_consumption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="13.1 kWh"
+                                android:layout_marginTop="2dp"
+                                android:textAlignment="center"
                                 android:textColor="#863B17"
                                 android:textSize="14sp"
-                                android:alpha="0.7"/>
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Peak Consumption"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="12sp"/>
+                            <TextView
+                                android:id="@+id/area2_peak_consumption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="179W at 14:30"
+                                android:layout_marginTop="2dp"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginBottom="15dp"
+                        android:layout_marginEnd="10dp"
+                        android:orientation="horizontal"
+                        android:weightSum="2">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Estimated Cost"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="12sp"/>
+                            <TextView
+                                android:id="@+id/area2_estimated_cost"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₱20.57"
+                                android:layout_marginTop="2dp"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Share of Total"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="12sp"/>
+                            <TextView
+                                android:id="@+id/area2_share_percentage"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="38%"
+                                android:layout_marginTop="2dp"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
                         </LinearLayout>
 
                     </LinearLayout>
 
-                </androidx.cardview.widget.CardView>
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/dailyCost_card"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_margin="10dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    android:background="@drawable/bg_gray">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="20dp"
-                        android:gravity="center_vertical">
-
-                        <!-- Area Icon -->
-                        <TextView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:text="💰"
-                            android:textSize="24sp"
-                            android:gravity="center"
-                            android:background="@drawable/bg_yellowish"
-                            android:layout_marginEnd="16dp"/>
-                        <!-- Area Info -->
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tvDailyCost"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textStyle="bold"
-                                android:textColor="#863B17"
-                                android:textSize="20sp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Daily Cost"
-                                android:textColor="#863B17"
-                                android:textSize="14sp"
-                                android:alpha="0.7"/>
-                        </LinearLayout>
-
-                    </LinearLayout>
-
-                </androidx.cardview.widget.CardView>
                 </LinearLayout>
-
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/daily_card"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    android:background="@drawable/bg_gray">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="20dp"
-                        android:gravity="center_vertical">
-
-                        <!-- Area Icon -->
-                        <TextView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:text="🗓️"
-                            android:textSize="24sp"
-                            android:gravity="center"
-                            android:background="@drawable/bg_yellowish"
-                            android:layout_marginEnd="16dp"/>
-                        <!-- Area Info -->
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="text"
-                                android:text="Daily Cost Breakdown"
-                                android:textColor="#863B17"
-                                android:textSize="18sp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Click to view details"
-                                android:textColor="#863B17"
-                                android:textSize="14sp"
-                                android:alpha="0.7"/>
-                        </LinearLayout>
-
-                        <!-- Arrow Text Icon -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="▶"
-                            android:textColor="#863B17"
-                            android:textSize="25sp"
-                            android:layout_marginStart="8dp"/>
-
-                    </LinearLayout>
-
-                </androidx.cardview.widget.CardView>
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/area_card"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    android:background="@drawable/bg_gray">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="20dp"
-                        android:gravity="center_vertical">
-
-                        <!-- Area Icon -->
-                        <TextView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:text="🏠"
-                            android:textSize="24sp"
-                            android:gravity="center"
-                            android:background="@drawable/bg_yellowish"
-                            android:layout_marginEnd="16dp"/>
-                        <!-- Area Info -->
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="text"
-                                android:text="Area Cost Comparison"
-                                android:textColor="#863B17"
-                                android:textSize="18sp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Click to view details"
-                                android:textColor="#863B17"
-                                android:textSize="14sp"
-                                android:alpha="0.7"/>
-                        </LinearLayout>
-
-                        <!-- Arrow Text Icon -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="▶"
-                            android:textColor="#863B17"
-                            android:textSize="25sp"
-                            android:layout_marginStart="8dp"/>
-
-                    </LinearLayout>
-
-                </androidx.cardview.widget.CardView>
-
             </LinearLayout>
+            <LinearLayout
+                android:id="@+id/area3_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:padding="10dp"
+                android:background="@drawable/bg_yellowish"
+
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp">
+                <TextView
+                    android:id="@+id/area3_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text18"
+                    android:textColor="#863B17"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="10dp"
+                    android:textSize="14sp"
+                    android:textStyle="bold"/>
+                <FrameLayout
+                    android:id="@+id/area3_chart_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:padding="10dp">
+                </FrameLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:layout_margin="10dp"
+                        android:weightSum="2">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Total Consumption"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="12sp"/>
+                            <TextView
+                                android:id="@+id/area3_total_consumption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="13.1 kWh"
+                                android:layout_marginTop="2dp"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Peak Consumption"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="12sp"/>
+                            <TextView
+                                android:id="@+id/area3_peak_consumption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="179W at 14:30"
+                                android:layout_marginTop="2dp"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginBottom="15dp"
+                        android:layout_marginEnd="10dp"
+                        android:orientation="horizontal"
+                        android:weightSum="2">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Estimated Cost"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="12sp"/>
+                            <TextView
+                                android:id="@+id/area3_estimated_cost"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₱20.57"
+                                android:layout_marginTop="2dp"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Share of Total"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="12sp"/>
+                            <TextView
+                                android:id="@+id/area3_share_percentage"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="38%"
+                                android:layout_marginTop="2dp"
+                                android:textAlignment="center"
+                                android:textColor="#863B17"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+            </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
     <LinearLayout
         android:id="@+id/button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@drawable/bg_button"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="20dp"
-        android:background="@drawable/bg_button"
-        android:weightSum="5"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:weightSum="5">
 
         <ImageView
             android:id="@+id/img_historical_analysis"
@@ -593,8 +775,8 @@
             android:id="@+id/img_cost_estimation"
             android:layout_width="0dp"
             android:layout_height="30dp"
-            android:layout_weight="1"
             android:layout_margin="10dp"
+            android:layout_weight="1"
             tools:ignore="ContentDescription"
             android:src="@drawable/ic_img_cost_estimation" />
 
@@ -602,191 +784,11 @@
             android:id="@+id/img_settings"
             android:layout_width="0dp"
             android:layout_height="30dp"
-            android:layout_weight="1"
             android:layout_margin="10dp"
+            android:layout_weight="1"
             tools:ignore="ContentDescription"
             android:src="@drawable/ic_img_settings" />
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/popAreaDaily"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#A5000000"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="20dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <!-- Main Content Card -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="12dp"
-            app:cardBackgroundColor="#FFFFFF">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="24dp">
-
-                <!-- Header with Close Button -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="20dp">
-
-                    <TextView
-                        android:id="@+id/area3_details"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="🗓️ Daily Cost Breakdown"
-                        android:textColor="#863B17"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-
-                    <ImageView
-                        android:id="@+id/closeDaily"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:background="?android:attr/selectableItemBackgroundBorderless"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:padding="6dp"
-                        android:src="@drawable/ic_close"
-                        android:scaleType="centerInside" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="5dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📈 Consumption Trend"
-                        android:textColor="#863B17"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="12dp" />
-
-                    <com.github.mikephil.charting.charts.LineChart
-                        android:id="@+id/dailyCost_chart"
-                        android:layout_width="match_parent"
-                        android:layout_height="230dp"
-                        android:paddingTop="25dp"
-                        android:paddingStart="15dp"
-                        android:paddingEnd="15dp"
-                        android:paddingBottom="20dp"/>
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
 
     </LinearLayout>
-    <LinearLayout
-        android:id="@+id/popArea"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#A5000000"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="20dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Main Content Card -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="12dp"
-            app:cardBackgroundColor="#FFFFFF">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="24dp">
-
-                <!-- Header with Close Button -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="20dp">
-
-                    <TextView
-                        android:id="@+id/area_details"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="💰 Area Cost Consumption"
-                        android:textColor="#863B17"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-
-                    <ImageView
-                        android:id="@+id/closeArea"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:background="?android:attr/selectableItemBackgroundBorderless"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:padding="6dp"
-                        android:src="@drawable/ic_close"
-                        android:scaleType="centerInside" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="5dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📈 Consumption Trend"
-                        android:textColor="#863B17"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="12dp" />
-
-                    <com.github.mikephil.charting.charts.LineChart
-                        android:id="@+id/area_chart"
-                        android:layout_width="match_parent"
-                        android:layout_height="230dp"
-                        android:paddingTop="25dp"
-                        android:paddingStart="15dp"
-                        android:paddingEnd="15dp"
-                        android:paddingBottom="20dp"/>
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
