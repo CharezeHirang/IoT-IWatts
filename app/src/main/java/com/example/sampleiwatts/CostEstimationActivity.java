@@ -5,7 +5,9 @@ import android.graphics.Color;
 import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,6 +16,7 @@ import android.text.Editable;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -50,7 +53,10 @@ public class CostEstimationActivity extends AppCompatActivity {
     EditText etStartingDate, etEndingDate, etBatelecRate;
     TextView tvCostView, tvKwhView, tvElectricityRate, tvTotalUsage, tvDailyCost, tvArea1,tvArea2,tvArea3, tvProjectedText, tvProjectedCost, area1_name, area2_name, area3_name;
     BarChart barChart;
+    LinearLayout popDaily, popArea;
     HorizontalBarChart areaChart;
+    CardView daily_card, area_card;
+    ImageView closeDaily, closeArea;
     private DatabaseReference db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +66,34 @@ public class CostEstimationActivity extends AppCompatActivity {
         LinearLayout buttonLayout = findViewById(R.id.button);
         barChart = findViewById(R.id.dailyCost_chart);
         areaChart = findViewById(R.id.area_chart);
+
+        daily_card = findViewById(R.id.daily_card);
+        popDaily = findViewById(R.id.popDaily);
+        closeDaily = findViewById(R.id.closeDaily);
+        daily_card.setOnClickListener(v -> {
+            if (popDaily.getVisibility() == View.GONE) {
+                popDaily.setVisibility(View.VISIBLE);
+            } else {
+                popDaily.setVisibility(View.GONE);
+            }
+        });
+        closeDaily.setOnClickListener(v -> {
+            popDaily.setVisibility(View.GONE);
+        });
+
+        closeArea = findViewById(R.id.closeArea);
+        area_card = findViewById(R.id.area_card);
+        popArea = findViewById(R.id.popArea);
+        area_card.setOnClickListener( v->{
+            if (popArea.getVisibility()==View.GONE){
+                popArea.setVisibility(View.VISIBLE);
+            } else{
+                popArea.setVisibility(View.GONE);
+            }
+        });
+        closeArea.setOnClickListener(v -> {
+            popArea.setVisibility(View.GONE);
+        });
 
         area1_name = findViewById(R.id.area1_name);
         area2_name = findViewById(R.id.area2_name);
@@ -78,24 +112,6 @@ public class CostEstimationActivity extends AppCompatActivity {
             updateElectricityRate();
         });
 
-        // Add TextWatcher for real-time updates when electricity rate changes
-        etBatelecRate.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // Not needed
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Not needed
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                // Update electricity rate when text changes
-                updateElectricityRate();
-            }
-        });
         tvElectricityRate = findViewById(R.id.tvBatelecRate);
         db = FirebaseDatabase.getInstance().getReference();
         ButtonNavigator.setupButtons(this, buttonLayout);
@@ -944,7 +960,6 @@ public class CostEstimationActivity extends AppCompatActivity {
             @Override public void onCancelled(DatabaseError error) { }
         });
     }
-
     private void loadAreaCostChart() {
         DatabaseReference systemSettingsRef = db.child("system_settings");
         DatabaseReference hourlySummariesRef = db.child("hourly_summaries");
