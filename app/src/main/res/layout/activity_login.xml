@@ -163,10 +163,10 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="1. Turn OFF the PowerLogger device\n2. HOLD the button on top while turning ON\n3. Keep holding for 10 seconds, then release\n4. Connect your phone to 'PowerLogger' WiFi\n5. Use password: admin123\n6. Return to this app and click Setup"
+                            android:lineSpacingExtra="2dp"
+                            android:text="1. Turn OFF the PowerLogger device\nnote: The device should not charging\n2. HOLD the button on top while turning ON\n3. Keep holding for 10 seconds, then release\n4. Connect your phone to 'PowerLogger' WiFi\n5. Use password: admin123\n6. Return to this app and click Setup"
                             android:textColor="#666666"
-                            android:textSize="13sp"
-                            android:lineSpacingExtra="2dp" />
+                            android:textSize="13sp" />
 
                     </LinearLayout>
 
