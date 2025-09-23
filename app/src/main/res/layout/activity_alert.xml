@@ -8,54 +8,44 @@
     tools:context=".AlertActivity">
 
     <View
-        android:layout_width="wrap_content"
-        android:layout_height="80dp"
+        android:id="@+id/top"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
         android:background="@drawable/bg_yellow_top"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
-
     <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:src="@drawable/ic_hamburger"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="15dp"
-        tools:ignore="contentDescription"/>
-    <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:src="@drawable/ic_notification"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginEnd="15dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="30dp"
         tools:ignore="contentDescription"/>
     <TextView
-        android:id="@+id/alertText"
+        android:id="@+id/RealTimeText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"
-        android:text="@string/text112"
-        app:layout_constraintTop_toTopOf="parent"
+        android:text="Alert Settings"
+        app:layout_constraintTop_toBottomOf="@+id/top"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="90dp"
-        android:textSize="20sp"
+        android:layout_marginTop="10dp"
+        android:textSize="15sp"
         android:textStyle="bold"
         android:textColor="#863B17"/>
     <View
         android:id="@+id/dividerTop"
         android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:background="#E5E5E5"
-        app:layout_constraintTop_toBottomOf="@id/alertText"
+        android:layout_height="2dp"
+        android:layout_margin="10dp"
+        android:background="@color/brown"
+        app:layout_constraintTop_toBottomOf="@id/RealTimeText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Scrollable content -->
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -82,9 +72,9 @@
                 android:text="Alert Thresholds"
                 android:textColor="#863B17"
                 android:textStyle="bold"
-                android:textSize="20sp" />
+                android:textSize="17sp" />
 <LinearLayout
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:orientation="horizontal">
@@ -94,16 +84,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:background="@drawable/bg_yellowish"
         android:textColorHint="#863B17"
         app:hintEnabled="true"
         app:hintTextColor="#863B17"
-        app:suffixText="watts"
+        app:suffixText="kwh"
         app:suffixTextColor="#863B17">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etPowerValue"
-            android:layout_width="350dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="numberDecimal"
             android:textColor="#863B17"
@@ -120,19 +109,18 @@
                 android:textAlignment="center"
                 android:text="Get alerted when power exceeds this value"
                 android:textColor="#863B17"
-                android:textSize="15sp" />
+                android:textSize="13sp" />
 <LinearLayout
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:layout_gravity="center">
+    android:layout_gravity="center"
+    android:orientation="horizontal">
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilBudget"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="350dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:background="@drawable/bg_yellowish"
         android:textColorHint="#863B17"
         app:prefixTextColor="#863B17"
         app:prefixText="₱">
@@ -157,7 +145,7 @@
                 android:text="Get alerted when your projected bill exceeds this amount"
                 android:textColor="#863B17"
                 android:textAlignment="center"
-                android:textSize="15sp" />
+                android:textSize="13sp" />
 
             <View
                 android:layout_width="match_parent"
@@ -174,7 +162,7 @@
                 android:text="Alert Types"
                 android:textColor="#863B17"
                 android:textStyle="bold"
-                android:textSize="20sp" />
+                android:textSize="17sp" />
 
             <!-- Voltage Fluctuations -->
             <LinearLayout
@@ -195,7 +183,9 @@
                 <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switchVoltage"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    app:trackTint="@color/switch_track_tint"
+                    app:thumbTint="@color/switch_thumb_tint"/>
             </LinearLayout>
 
             <!-- System Updates -->
@@ -217,7 +207,9 @@
                 <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switchSystemUpdates"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    app:trackTint="@color/switch_track_tint"
+                    app:thumbTint="@color/switch_thumb_tint"/>
             </LinearLayout>
 
             <View
@@ -235,7 +227,7 @@
                 android:text="Notification Methods"
                 android:textColor="#863B17"
                 android:textStyle="bold"
-                android:textSize="20sp" />
+                android:textSize="17sp" />
 
             <!-- Push Notifications -->
             <LinearLayout
@@ -256,25 +248,32 @@
                 <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switchPush"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+
+                    app:trackTint="@color/switch_track_tint"
+                    app:thumbTint="@color/switch_thumb_tint"/>
             </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSave"
-                android:layout_gravity="center"
-                android:layout_width="250dp"
-                android:layout_height="60dp"
-                android:layout_marginTop="100dp"
-                android:text="SAVE SETTINGS"
-                android:textAllCaps="true"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                app:cornerRadius="28dp"
-                app:iconGravity="textStart"
-                app:backgroundTint="#8B4513" />
+
 
         </LinearLayout>
 
     </ScrollView>
-
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSave"
+        android:layout_gravity="center"
+        android:layout_width="250dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="100dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="50dp"
+        android:text="SAVE SETTINGS"
+        android:textAllCaps="true"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        app:cornerRadius="28dp"
+        app:iconGravity="textStart"
+        app:backgroundTint="#8B4513" />
 </androidx.constraintlayout.widget.ConstraintLayout>

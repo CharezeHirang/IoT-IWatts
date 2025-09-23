@@ -102,7 +102,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
         
         // Bedroom variations
-        if (name.contains("bedroom") || name.contains("bed") || name.contains("sleep") || name.contains("room")) {
+        if (name.contains("bedroom") || name.contains("bed") || name.contains("sleep")) {
             return "🛏️";
         }
         
@@ -142,7 +142,7 @@ public class DashboardActivity extends AppCompatActivity {
         
         // Balcony/Terrace variations
         if (name.contains("balcony") || name.contains("terrace") || name.contains("patio")) {
-            return "🪜";
+            return "\uD83C\uDFE1";
         }
         
         // Porch/Entrance variations
@@ -516,6 +516,7 @@ public class DashboardActivity extends AppCompatActivity {
 
                     if (isCharging) {
                         tvBatteryLife.setText(displayText);
+                        tvBatteryLife.setTextSize(17); // Set text size to 17sp for "Charging"
                         ivBatteryImage.setImageResource(R.drawable.ic_battery10);
                     } else if (batteryPercentage >= 95) {
                         tvBatteryLife.setText(displayText);
@@ -698,6 +699,8 @@ public class DashboardActivity extends AppCompatActivity {
         String finalArea1Name = area1Name;
         systemSettingsRef.child("area1_name").setValue(area1Name)
                 .addOnSuccessListener(aVoid -> {
+                    // Clear focus after successful update
+                    etArea1.clearFocus();
                     Toast.makeText(DashboardActivity.this, "Area 1 Name updated", Toast.LENGTH_SHORT).show();
                     // Make field non-editable again after successful update
                     disableEditing(etArea1, 1);
@@ -862,6 +865,8 @@ public class DashboardActivity extends AppCompatActivity {
         DatabaseReference systemSettingsRef = db.child("system_settings");
         systemSettingsRef.child("area2_name").setValue(area2Name)
                 .addOnSuccessListener(aVoid -> {
+                    // Clear focus after successful update
+                    etArea2.clearFocus();
                     Toast.makeText(DashboardActivity.this, "Area 2 Name updated", Toast.LENGTH_SHORT).show();
                     // Make field non-editable again after successful update
                     disableEditing(etArea2, 2);
@@ -882,6 +887,8 @@ public class DashboardActivity extends AppCompatActivity {
         DatabaseReference systemSettingsRef = db.child("system_settings");
         systemSettingsRef.child("area3_name").setValue(area3Name)
                 .addOnSuccessListener(aVoid -> {
+                    // Clear focus after successful update
+                    etArea3.clearFocus();
                     Toast.makeText(DashboardActivity.this, "Area 3 Name updated", Toast.LENGTH_SHORT).show();
                     // Make field non-editable again after successful update
                     disableEditing(etArea3, 3);
@@ -1310,7 +1317,7 @@ public class DashboardActivity extends AppCompatActivity {
 
                                 Legend legend = lineChart1.getLegend();
                                 legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-                                legend.setForm(Legend.LegendForm.LINE);
+                                legend.setForm(Legend.LegendForm.SQUARE);
                                 legend.setTextColor(getResources().getColor(R.color.brown));
 
                                 lineChart1.invalidate();
@@ -1415,7 +1422,7 @@ public class DashboardActivity extends AppCompatActivity {
 
                                 Legend legend = lineChart2.getLegend();
                                 legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-                                legend.setForm(Legend.LegendForm.LINE);
+                                legend.setForm(Legend.LegendForm.SQUARE);
                                 legend.setTextColor(getResources().getColor(R.color.brown));
 
                                 lineChart2.invalidate();
@@ -1520,7 +1527,7 @@ public class DashboardActivity extends AppCompatActivity {
 
                                 Legend legend = lineChart3.getLegend();
                                 legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-                                legend.setForm(Legend.LegendForm.LINE);
+                                legend.setForm(Legend.LegendForm.SQUARE);
                                 legend.setTextColor(getResources().getColor(R.color.brown));
 
                                 lineChart3.invalidate();

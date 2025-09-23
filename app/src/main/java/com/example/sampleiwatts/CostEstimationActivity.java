@@ -149,8 +149,9 @@ public class CostEstimationActivity extends AppCompatActivity {
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this,
                 (view, selectedYear, selectedMonth, selectedDay) -> {
-                    // Format date (yyyy-MM-dd)
-                    String date = selectedYear + "-" + (selectedMonth + 1) + "-" + selectedDay;
+                    // Format date (yyyy-MM-dd with leading zeros)
+                    String date = String.format(Locale.getDefault(), "%04d-%02d-%02d",
+                            selectedYear, selectedMonth + 1, selectedDay);
                     etStartingDate.setText(date);
 
                     // Save to Firebase
@@ -191,31 +192,37 @@ public class CostEstimationActivity extends AppCompatActivity {
     }
     private void validateEndingDate(String startingDateStr) {
         String endingDateStr = etEndingDate.getText().toString().trim();
-        if (!startingDateStr.isEmpty() && !endingDateStr.isEmpty()) {
+        if (!startingDateStr.isEmpty()) {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                 Date startingDate = sdf.parse(startingDateStr);
-                Date endingDate = sdf.parse(endingDateStr);
+                Date endingDate = endingDateStr.isEmpty() ? null : sdf.parse(endingDateStr);
 
-                // If the ending date is more than 31 days after the starting date, update it
-                if (startingDate != null && endingDate != null) {
+                if (startingDate != null) {
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(startingDate);
-                    calendar.add(Calendar.DAY_OF_MONTH, 31);  // Add 31 days to starting date
+                    calendar.add(Calendar.DAY_OF_MONTH, 30);  // start + 30 days = 31-day inclusive window
                     Date validEndingDate = calendar.getTime();
 
-                    // If the selected ending date exceeds the valid ending date, update it
-                    if (endingDate.after(validEndingDate)) {
-                        etEndingDate.setText(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(validEndingDate));
-                        // Optionally save the new ending date to Firebase
+                    // Case 1: No ending date yet → set to start+30 (inclusive 31 days)
+                    if (endingDate == null) {
+                        String newEnd = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(validEndingDate);
+                        etEndingDate.setText(newEnd);
                         DatabaseReference costFilterRef = db.child("cost_filter_date");
-                        costFilterRef.child("ending_date").setValue(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(validEndingDate))
-                                .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(CostEstimationActivity.this, "Ending date adjusted to 31 days from the new starting date", Toast.LENGTH_SHORT).show();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Toast.makeText(CostEstimationActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
+                        costFilterRef.child("ending_date").setValue(newEnd)
+                                .addOnSuccessListener(aVoid -> Toast.makeText(CostEstimationActivity.this, "Ending date set to 31-day window", Toast.LENGTH_SHORT).show())
+                                .addOnFailureListener(e -> Toast.makeText(CostEstimationActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        return;
+                    }
+
+                    // Case 2: Ending date exists but exceeds 31-day window → clamp to start+30
+                    if (endingDate.after(validEndingDate)) {
+                        String newEnd = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(validEndingDate);
+                        etEndingDate.setText(newEnd);
+                        DatabaseReference costFilterRef = db.child("cost_filter_date");
+                        costFilterRef.child("ending_date").setValue(newEnd)
+                                .addOnSuccessListener(aVoid -> Toast.makeText(CostEstimationActivity.this, "Ending date adjusted to 31 days from the new starting date", Toast.LENGTH_SHORT).show())
+                                .addOnFailureListener(e -> Toast.makeText(CostEstimationActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                     }
                 }
             } catch (ParseException e) {
@@ -271,7 +278,7 @@ public class CostEstimationActivity extends AppCompatActivity {
         // 🚀 Ending date must be today or later
         datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
 
-        // If starting date exists, force ending_date ≥ starting_date
+        // If starting date exists, force ending_date within [start, start+30]
         String startingDateStr = etStartingDate.getText().toString().trim();
         if (!startingDateStr.isEmpty()) {
             try {
@@ -284,7 +291,7 @@ public class CostEstimationActivity extends AppCompatActivity {
                     // Calculate the maximum allowed ending date (31 days after the starting date)
                     Calendar maxEndDateCalendar = Calendar.getInstance();
                     maxEndDateCalendar.setTime(startingDate);
-                    maxEndDateCalendar.add(Calendar.DAY_OF_MONTH, 31); // Adding 31 days
+                    maxEndDateCalendar.add(Calendar.DAY_OF_MONTH, 30); // start + 30 days (inclusive 31)
 
                     datePickerDialog.getDatePicker().setMaxDate(maxEndDateCalendar.getTimeInMillis());
                 }
@@ -335,73 +342,81 @@ public class CostEstimationActivity extends AppCompatActivity {
                 String startingDateString = dataSnapshot.child("starting_date").getValue(String.class);
                 String endingDateString = dataSnapshot.child("ending_date").getValue(String.class);
 
-                // Log the raw data fetched
-                Log.d("CostEstimation", "Raw Starting Date: " + startingDateString);
-                Log.d("CostEstimation", "Raw Ending Date: " + endingDateString);
+                if (startingDateString == null || endingDateString == null) {
+                    tvCostView.setText("₱ 0.00");
+                    return;
+                }
 
                 SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                 try {
                     Date startingDate = dateFormatter.parse(startingDateString);
                     Date endingDate = dateFormatter.parse(endingDateString);
 
-                    Log.d("CostEstimation", "Parsed Starting Date: " + startingDate);
-                    Log.d("CostEstimation", "Parsed Ending Date: " + endingDate);
+                    // Normalize dates to midnight to avoid timezone issues
+                    java.util.Calendar calStart = java.util.Calendar.getInstance();
+                    calStart.setTime(startingDate);
+                    calStart.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    calStart.set(java.util.Calendar.MINUTE, 0);
+                    calStart.set(java.util.Calendar.SECOND, 0);
+                    calStart.set(java.util.Calendar.MILLISECOND, 0);
 
-                    db.child("hourly_summaries").orderByKey().addValueEventListener(new ValueEventListener() {
+                    java.util.Calendar calEnd = java.util.Calendar.getInstance();
+                    calEnd.setTime(endingDate);
+                    calEnd.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    calEnd.set(java.util.Calendar.MINUTE, 0);
+                    calEnd.set(java.util.Calendar.SECOND, 0);
+                    calEnd.set(java.util.Calendar.MILLISECOND, 0);
+
+                    Date finalStartDate = new Date(calStart.getTimeInMillis());
+                    Date finalEndDate = new Date(calEnd.getTimeInMillis());
+
+                    // Fetch hourly summaries and calculate total cost
+                    DatabaseReference hourlySummariesRef = db.child("hourly_summaries");
+                    hourlySummariesRef.orderByKey().addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            double cumulativeCost = 0;
+                            double totalCost = 0.0;
 
-                            // Loop through each date in the hourly summaries
                             for (DataSnapshot dateSnapshot : dataSnapshot.getChildren()) {
                                 String dateKey = dateSnapshot.getKey();
                                 Date currentDate = null;
                                 try {
                                     currentDate = dateFormatter.parse(dateKey);
                                 } catch (ParseException e) {
-                                    Log.e("CostEstimation", "Error parsing date: " + dateKey);
+                                    continue; // Skip invalid dates
                                 }
 
-                                Log.d("CostEstimation", "Processing Date: " + dateKey);
-                                Log.d("CostEstimation", "Current Date: " + currentDate);
-
-                                // Check if the current date is within the range of starting and ending dates
-                                if ((currentDate.equals(startingDate) || currentDate.after(startingDate)) &&
-                                        (currentDate.equals(endingDate) || currentDate.before(endingDate))) {
-
-                                    // Loop through hourly data for the current date
+                                // Check if date is within range (inclusive)
+                                if (currentDate != null && !currentDate.before(finalStartDate) && !currentDate.after(finalEndDate)) {
+                                    // Sum all hourly costs for this date
                                     for (DataSnapshot hourSnapshot : dateSnapshot.getChildren()) {
                                         Double hourlyCost = hourSnapshot.child("total_cost").getValue(Double.class);
-
                                         if (hourlyCost != null) {
-                                            Log.d("CostEstimation", "Hourly Cost for " + dateKey + ": ₱" + hourlyCost);
-                                            cumulativeCost += hourlyCost;
-                                        } else {
-                                            Log.d("CostEstimation", "No hourly cost for " + dateKey);
+                                            totalCost += hourlyCost;
                                         }
                                     }
                                 }
                             }
 
-                            // Format the total cost
-                            String formattedCost = String.format("%.2f", cumulativeCost);
+                            // Display the total cost
+                            String formattedCost = String.format("%.2f", totalCost);
                             tvCostView.setText("₱ " + formattedCost);
                         }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
-                            Log.e("FirebaseError", "Error fetching hourly summaries: " + databaseError.getMessage());
+                            Toast.makeText(CostEstimationActivity.this, "Error fetching hourly summaries", Toast.LENGTH_SHORT).show();
                         }
                     });
                 } catch (ParseException e) {
                     e.printStackTrace();
-                    Log.e("CostEstimation", "Error parsing dates: " + e.getMessage());
+                    tvCostView.setText("₱ 0.00");
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.e("FirebaseError", "Error fetching cost filter data: " + databaseError.getMessage());
+                Toast.makeText(CostEstimationActivity.this, "Error fetching date filter", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -539,6 +554,8 @@ public class CostEstimationActivity extends AppCompatActivity {
             DatabaseReference deviceRef = db.child("system_settings");
             deviceRef.child("electricity_rate_per_kwh").setValue(rate)
                     .addOnSuccessListener(aVoid -> {
+                        // Clear focus after successful update
+                        etBatelecRate.clearFocus();
                         // Successfully updated the rate
                         Toast.makeText(CostEstimationActivity.this, "Electricity Rate updated", Toast.LENGTH_SHORT).show();
                     })
@@ -683,31 +700,54 @@ public class CostEstimationActivity extends AppCompatActivity {
         costFilterDateRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // 1. Fetch the starting date from Firebase
                 String startingDateString = dataSnapshot.child("starting_date").getValue(String.class);
+                String endingDateString   = dataSnapshot.child("ending_date").getValue(String.class);
+
                 SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
                 try {
-                    // 2. Parse the starting date
                     Date startingDate = dateFormatter.parse(startingDateString);
+                    Date endingDate   = endingDateString != null ? dateFormatter.parse(endingDateString) : null;
 
-                    // 3. Get today's date
-                    Date todayDate = new Date();
+                    if (startingDate == null) return;
+                    if (endingDate == null) endingDate = new Date();
 
-                    // 4. Calculate the number of days passed from the starting date to today
-                    long diffInMillis = todayDate.getTime() - startingDate.getTime();
-                    long daysPassed = TimeUnit.MILLISECONDS.toDays(diffInMillis);
+                    // Normalize both dates to midnight to avoid timezone/hour offsets
+                    java.util.Calendar calStart = java.util.Calendar.getInstance();
+                    calStart.setTime(startingDate);
+                    calStart.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    calStart.set(java.util.Calendar.MINUTE, 0);
+                    calStart.set(java.util.Calendar.SECOND, 0);
+                    calStart.set(java.util.Calendar.MILLISECOND, 0);
 
-                    // 5. Fetch the hourly cost data from Firebase for the period from the starting date to today
+                    java.util.Calendar calEnd = java.util.Calendar.getInstance();
+                    calEnd.setTime(endingDate);
+                    calEnd.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    calEnd.set(java.util.Calendar.MINUTE, 0);
+                    calEnd.set(java.util.Calendar.SECOND, 0);
+                    calEnd.set(java.util.Calendar.MILLISECOND, 0);
+
+                    long startMs = calStart.getTimeInMillis();
+                    long endMs   = calEnd.getTimeInMillis();
+                    if (endMs < startMs) {
+                        long t = startMs; startMs = endMs; endMs = t;
+                    }
+
+                    long daysBetween = TimeUnit.MILLISECONDS.toDays(endMs - startMs) + 1; // inclusive
+                    if (daysBetween <= 0) daysBetween = 1;
+
+                    Date finalStartDate = new Date(startMs);
+                    Date finalEndDate = new Date(endMs);
+
+                    // Fetch the hourly cost data within [start, end]
                     DatabaseReference hourlySummariesRef = db.child("hourly_summaries");
+                    final double[] cumulativeCost = {0};
 
-                    // 6. Calculate the cumulative cost for the period
-                    final double[] cumulativeCost = {0};  // Using an array to handle it in the callback
-
+                    long finalDaysBetween = daysBetween;
                     hourlySummariesRef.orderByKey().addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            // Loop through the hourly summaries to accumulate the total cost
+                            cumulativeCost[0] = 0;
                             for (DataSnapshot dateSnapshot : dataSnapshot.getChildren()) {
                                 String dateKey = dateSnapshot.getKey();
                                 Date currentDate = null;
@@ -717,28 +757,21 @@ public class CostEstimationActivity extends AppCompatActivity {
                                     e.printStackTrace();
                                 }
 
-                                // If the date is within the range (from startingDate to today), accumulate the cost
-                                if (currentDate != null && currentDate.after(startingDate) && currentDate.before(todayDate) ||
-                                        currentDate.equals(startingDate) || currentDate.equals(todayDate)) {
+                                if (currentDate != null && !currentDate.before(finalStartDate) && !currentDate.after(finalEndDate)) {
                                     for (DataSnapshot hourSnapshot : dateSnapshot.getChildren()) {
                                         Double hourlyCost = hourSnapshot.child("total_cost").getValue(Double.class);
-                                        if (hourlyCost != null) {
-                                            cumulativeCost[0] += hourlyCost; // Accumulate the hourly cost
-                                        }
+                                        if (hourlyCost != null) cumulativeCost[0] += hourlyCost;
                                     }
                                 }
                             }
 
-                            // 7. Calculate the daily average cost
-                            double dailyAverageCost = cumulativeCost[0] / daysPassed;
+                            double dailyAverageCost = cumulativeCost[0] / (double) finalDaysBetween;
+                            // Project to the selected window length (e.g., 31 days)
+                            double projectedMonthlyCost = dailyAverageCost * (double) finalDaysBetween;
 
-                            // 8. Project the monthly cost (assuming a 30-day month)
-                            double projectedMonthlyCost = dailyAverageCost * 30;  // For a 30-day month
-
-                            // 9. Display the projected monthly cost in the TextView
                             String formattedCost = String.format("%.2f", projectedMonthlyCost);
                             tvProjectedCost.setText("₱ " + formattedCost);
-                            tvProjectedText.setText("Based on the current " + daysPassed + "-day consumption pattern");
+                            tvProjectedText.setText("Based on the current " + finalDaysBetween + "-day consumption pattern");
                         }
 
                         @Override
@@ -748,7 +781,7 @@ public class CostEstimationActivity extends AppCompatActivity {
                     });
                 } catch (ParseException e) {
                     e.printStackTrace();
-                    Toast.makeText(CostEstimationActivity.this, "Error parsing starting date", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CostEstimationActivity.this, "Error parsing dates", Toast.LENGTH_SHORT).show();
                 }
             }
 

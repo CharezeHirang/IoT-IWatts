@@ -41,6 +41,7 @@ public class AlertActivity extends AppCompatActivity {
     private Double electricityRatePerKwh = null;
     private boolean updatingFromPower = false;
     private boolean updatingFromBudget = false;
+    private boolean settingsAlreadySaved = false;
 
     MaterialSwitch switchVoltage, switchSystemUpdates, switchPush;
     MaterialButton btnSave;
@@ -170,6 +171,9 @@ public class AlertActivity extends AppCompatActivity {
     }
 
     private void saveSettingsAndThreshold() {
+        // Reset the flag for new save operation
+        settingsAlreadySaved = false;
+        
         // Only Push requires OS notification permission for background delivery
         boolean wantsPush = switchPush != null && switchPush.isChecked();
 
@@ -185,6 +189,12 @@ public class AlertActivity extends AppCompatActivity {
     }
 
     private void continueSavingSettings() {
+        // Prevent duplicate execution
+        if (settingsAlreadySaved) {
+            return;
+        }
+        settingsAlreadySaved = true;
+        
         String kwhText = etPowerValue != null && etPowerValue.getText()!=null ? etPowerValue.getText().toString().trim() : "";
         String costText = etBudgetValue != null && etBudgetValue.getText()!=null ? etBudgetValue.getText().toString().trim() : "";
 
@@ -202,10 +212,27 @@ public class AlertActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> Toast.makeText(AlertActivity.this, "Settings saved", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e -> Toast.makeText(AlertActivity.this, "Failed to save", Toast.LENGTH_SHORT).show());
 
-        // Start listeners based on switches
-        if (switchVoltage != null && switchVoltage.isChecked()) startVoltageMonitoring();
-        if (switchPush != null && switchPush.isChecked()) startThresholdMonitoring();
-        if (switchSystemUpdates != null && switchSystemUpdates.isChecked()) notifyNow("System Updates", "You will receive updates and changes notifications.");
+        // Send toggle alerts for voltage and system updates
+        if (switchVoltage != null && switchVoltage.isChecked()) {
+            notifyNow("Voltage Fluctuation", "You will receive voltage fluctuation messages.");
+            startVoltageMonitoring();
+        } else {
+            notifyNow("Voltage Fluctuation", "You won't receive voltage fluctuation messages.");
+        }
+        
+        if (switchSystemUpdates != null && switchSystemUpdates.isChecked()) {
+            notifyNow("System Updates", "You will receive updates and changes notifications.");
+        } else {
+            notifyNow("System Updates", "You won't receive system updates notifications.");
+        }
+        
+        // Send toggle alert for push notifications
+        if (switchPush != null && switchPush.isChecked()) {
+            notifyNow("Push Notifications", "You will see push notifications.");
+            startThresholdMonitoring();
+        } else {
+            notifyNow("Push Notifications", "You can directly see notifications in the app.");
+        }
     }
 
     private boolean hasNotificationPermission() {
@@ -251,8 +278,11 @@ public class AlertActivity extends AppCompatActivity {
     }
 
     private void notifyNow(String title, String message) {
+        // Always send to database
+        logAlertToDatabase(title, message);
+        
+        // Send push notification if enabled and permission granted
         boolean canPush = (switchPush != null && switchPush.isChecked()) && hasNotificationPermission();
-
         if (canPush) {
             NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             if (manager != null) {
@@ -265,17 +295,7 @@ public class AlertActivity extends AppCompatActivity {
                 int id = (int) System.currentTimeMillis();
                 manager.notify(id, builder.build());
             }
-        } else {
-            // In-app notification: open NotificationActivity with details
-            Intent intent = new Intent(this, NotificationActivity.class);
-            intent.putExtra("alert_title", title);
-            intent.putExtra("alert_message", message);
-            intent.putExtra("alert_time", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
-            startActivity(intent);
         }
-
-        // Log to Firebase alerts collection (always)
-        logAlertToDatabase(title, message);
     }
 
     private void logAlertToDatabase(String title, String message) {
@@ -287,6 +307,8 @@ public class AlertActivity extends AppCompatActivity {
         data.put("title", title);
         data.put("message", message);
         data.put("time", timestamp);
+        data.put("read", false);
+        data.put("delete", false);
         alertsRef.push().setValue(data);
     }
 

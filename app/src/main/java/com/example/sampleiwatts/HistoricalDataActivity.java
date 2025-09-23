@@ -5,15 +5,19 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -96,9 +100,12 @@ public class HistoricalDataActivity extends AppCompatActivity {
     private TextView area3EstimatedCost;
     private TextView area3PeakConsumption;
     private TextView area3SharePercentage;
-
+    private ImageView closeDaily;
+    private ScrollView graph_scroll;
+    private ScrollView report_scroll;
+    private CardView consumption_card;
     // Data storage
-    private Map<String, List<Map<String, Object>>> historicalData;
+    private Map<String, List<Map<String, Object>>> historicalData; // key "days" -> list of per-day maps
     private double electricityRate = 9.85; // Default BATELEC II rate
 
     @Override
@@ -117,6 +124,40 @@ public class HistoricalDataActivity extends AppCompatActivity {
         setupDatePickers();
         setupChartContainers();
         loadHistoricalData();
+        closeDaily = findViewById(R.id.closeDaily);
+        graph_scroll = findViewById(R.id.graph_scroll);
+        report_scroll = findViewById(R.id.report_scroll);
+        consumption_card = findViewById(R.id.consumption_card);
+
+        consumption_card.setOnClickListener(v -> {
+            if (graph_scroll.getVisibility() == View.GONE) {
+                graph_scroll.setVisibility(View.VISIBLE);
+            } else {
+                graph_scroll.setVisibility(View.GONE);
+            }
+        });
+
+        closeDaily.setOnClickListener(v -> {
+            graph_scroll.setVisibility(View.GONE);
+        });
+
+        // Report card opens report_scroll modal
+        CardView reportCard = findViewById(R.id.report_card);
+        if (reportCard != null) {
+            reportCard.setOnClickListener(v -> {
+                populateReportCard();
+                report_scroll.setVisibility(View.VISIBLE);
+            });
+        }
+
+        TextView closeReport = findViewById(R.id.closeReport);
+        if (closeReport != null) {
+            closeReport.setOnClickListener(v -> {
+                report_scroll.setVisibility(View.GONE);
+            });
+        }
+
+
 
         Log.d(TAG, "HistoricalDataActivity created with Philippine timezone");
     }
@@ -373,6 +414,9 @@ public class HistoricalDataActivity extends AppCompatActivity {
             areaDailyData.put("area2", new ArrayList<>());
             areaDailyData.put("area3", new ArrayList<>());
 
+            // Prepare container for day-by-day report
+            List<Map<String, Object>> daysList = new ArrayList<>();
+
             for (DataSnapshot daySnapshot : dataSnapshot.getChildren()) {
                 try {
                     String dateKey = daySnapshot.getKey();
@@ -439,6 +483,23 @@ public class HistoricalDataActivity extends AppCompatActivity {
                             processAreaDailyData(areaDailyData, "area2", area2Kwh);
                             processAreaDailyData(areaDailyData, "area3", area3Kwh);
                         }
+
+                        // Build compact per-day record for report card
+                        Map<String, Object> reportItem = new HashMap<>();
+                        reportItem.put("date", dateKey);
+                        reportItem.put("kwh", dayConsumption != null ? dayConsumption : 0.0);
+                        reportItem.put("cost", dayCost != null ? dayCost : 0.0);
+                        reportItem.put("peak_watts", dayPeak != null ? dayPeak : 0.0);
+                        // Optional area fields (tolerant to missing data)
+                        Map<String, Object> areaBreakdownCopy = new HashMap<>();
+                        Object a1Obj = dayData.get("area1_kwh");
+                        Object a2Obj = dayData.get("area2_kwh");
+                        Object a3Obj = dayData.get("area3_kwh");
+                        if (a1Obj != null) areaBreakdownCopy.put("area1", getDoubleValue(a1Obj));
+                        if (a2Obj != null) areaBreakdownCopy.put("area2", getDoubleValue(a2Obj));
+                        if (a3Obj != null) areaBreakdownCopy.put("area3", getDoubleValue(a3Obj));
+                        reportItem.put("areas", areaBreakdownCopy);
+                        daysList.add(reportItem);
                     }
                 } catch (Exception e) {
                     Log.w(TAG, "Error processing day data for " + daySnapshot.getKey() + ": " + e.getMessage());
@@ -446,6 +507,9 @@ public class HistoricalDataActivity extends AppCompatActivity {
             }
 
             Log.d(TAG, String.format("Processed %d days of historical data", dayCount));
+
+            // Store day list for report
+            historicalData.put("days", daysList);
 
             // Update UI with processed data
             updateSummaryDisplay(totalConsumption, totalCost, peakDay, dayCount);
@@ -567,14 +631,14 @@ public class HistoricalDataActivity extends AppCompatActivity {
      */
     private void updateSummaryDisplay(double totalConsumption, double totalCost, String peakDay, int dayCount) {
         try {
-            selectedTotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", totalConsumption));
-            selectedTotalCost.setText(String.format(Locale.getDefault(), "₱%.2f", totalCost));
+            selectedTotalConsumption.setText(String.format(Locale.getDefault(), "%.2f", totalConsumption));
+            selectedTotalCost.setText(String.format(Locale.getDefault(), "₱ %.2f", totalCost));
 
             if (dayCount > 0) {
                 double dailyAvg = totalConsumption / dayCount;
-                selectedDailyAverage.setText(String.format(Locale.getDefault(), "%.2f kWh", dailyAvg));
+                selectedDailyAverage.setText(String.format(Locale.getDefault(), "%.2f", dailyAvg));
             } else {
-                selectedDailyAverage.setText("0.0 kWh");
+                selectedDailyAverage.setText("0.0");
             }
 
             if (!peakDay.isEmpty()) {
@@ -584,8 +648,8 @@ public class HistoricalDataActivity extends AppCompatActivity {
             }
 
             // Update comparison section (selected period)
-            selectedDateRangeTotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", totalConsumption));
-            selectedDateRangeTotalCost.setText(String.format(Locale.getDefault(), "₱%.2f", totalCost));
+            selectedDateRangeTotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kwh", totalConsumption));
+            selectedDateRangeTotalCost.setText(String.format(Locale.getDefault(), "₱ %.2f", totalCost));
 
         } catch (Exception e) {
             Log.e(TAG, "Error updating summary display", e);
@@ -636,8 +700,8 @@ public class HistoricalDataActivity extends AppCompatActivity {
      */
     private void updateComparisonDisplay(double prevTotalConsumption, double prevTotalCost) {
         try {
-            previousTotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kWh", prevTotalConsumption));
-            previousTotalCost.setText(String.format(Locale.getDefault(), "₱%.2f", prevTotalCost));
+            previousTotalConsumption.setText(String.format(Locale.getDefault(), "%.2f kwh", prevTotalConsumption));
+            previousTotalCost.setText(String.format(Locale.getDefault(), "₱ %.2f", prevTotalCost));
         } catch (Exception e) {
             Log.e(TAG, "Error updating comparison display", e);
         }
@@ -811,5 +875,523 @@ public class HistoricalDataActivity extends AppCompatActivity {
         }
 
         return null;
+    }
+
+    private void populateReportCard() {
+        LinearLayout reportContainer = findViewById(R.id.report_container);
+        if (reportContainer == null) return;
+        reportContainer.removeAllViews();
+
+        // Title and range
+        TextView range = new TextView(this);
+        range.setText("Report Period: " + displayFormat.format(startDate.getTime()) + " - " + displayFormat.format(endDate.getTime()));
+        range.setTextColor(Color.parseColor("#2E7D32"));
+        range.setTextSize(14);
+        reportContainer.addView(range);
+
+        // Summary rows
+        addReportRow(reportContainer, "Total Consumption", selectedTotalConsumption.getText().toString() + " kWh");
+        addReportRow(reportContainer, "Average Daily", selectedDailyAverage.getText().toString() + " kWh");
+        addReportRow(reportContainer, "Total Cost", selectedTotalCost.getText().toString());
+        addReportRow(reportContainer, "Peak Day", selectedPeakDay.getText().toString());
+
+        // Area breakdown
+        TextView section = new TextView(this);
+        section.setText("Area Breakdown");
+        section.setTextColor(Color.parseColor("#863B17"));
+        section.setTextSize(16);
+        section.setPadding(0, 16, 0, 8);
+        section.setTypeface(null, android.graphics.Typeface.BOLD);
+        reportContainer.addView(section);
+
+        addReportRow(reportContainer, "Area 1 Usage", area1TotalConsumption.getText().toString());
+        addReportRow(reportContainer, "Area 1 Cost", area1EstimatedCost.getText().toString());
+        addReportRow(reportContainer, "Area 1 Share", area1SharePercentage.getText().toString());
+
+        // Divider between areas
+        View areaDiv1 = new View(this);
+        areaDiv1.setBackgroundColor(Color.parseColor("#DDDDDD"));
+        LinearLayout.LayoutParams areaDiv1Lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
+        areaDiv1Lp.setMargins(0, 12, 0, 12);
+        areaDiv1.setLayoutParams(areaDiv1Lp);
+        reportContainer.addView(areaDiv1);
+
+        addReportRow(reportContainer, "Area 2 Usage", area2TotalConsumption.getText().toString());
+        addReportRow(reportContainer, "Area 2 Cost", area2EstimatedCost.getText().toString());
+        addReportRow(reportContainer, "Area 2 Share", area2SharePercentage.getText().toString());
+
+        // Divider between areas
+        View areaDiv2 = new View(this);
+        areaDiv2.setBackgroundColor(Color.parseColor("#DDDDDD"));
+        LinearLayout.LayoutParams areaDiv2Lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
+        areaDiv2Lp.setMargins(0, 12, 0, 12);
+        areaDiv2.setLayoutParams(areaDiv2Lp);
+        reportContainer.addView(areaDiv2);
+
+        addReportRow(reportContainer, "Area 3 Usage", area3TotalConsumption.getText().toString());
+        addReportRow(reportContainer, "Area 3 Cost", area3EstimatedCost.getText().toString());
+        addReportRow(reportContainer, "Area 3 Share", area3SharePercentage.getText().toString());
+
+        // Removed Recommendations section as requested
+
+        // Day-by-day table
+        List<Map<String, Object>> days = historicalData.get("days");
+        if (days != null && !days.isEmpty()) {
+            TextView dayHeader = new TextView(this);
+            dayHeader.setText("Day-by-Day Details");
+            dayHeader.setTextColor(Color.parseColor("#863B17"));
+            dayHeader.setTextSize(16);
+            dayHeader.setTypeface(null, android.graphics.Typeface.BOLD);
+            dayHeader.setPadding(0, 16, 0, 8);
+            reportContainer.addView(dayHeader);
+
+            for (Map<String, Object> d : days) {
+                LinearLayout card = new LinearLayout(this);
+                card.setOrientation(LinearLayout.VERTICAL);
+                card.setPadding(16, 12, 16, 12);
+
+                TextView dTitle = new TextView(this);
+                dTitle.setText(String.valueOf(d.get("date")));
+                dTitle.setTextColor(Color.parseColor("#863B17"));
+                dTitle.setTextSize(14);
+                dTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+                card.addView(dTitle);
+
+                addReportRow(card, "kWh", String.format(Locale.getDefault(), "%.2f", (Double) d.get("kwh")));
+                addReportRow(card, "Cost", String.format(Locale.getDefault(), "₱ %.2f", (Double) d.get("cost")));
+                addReportRow(card, "Peak", String.format(Locale.getDefault(), "%.0f W", (Double) d.get("peak_watts")));
+
+                Object areasObj = d.get("areas");
+                if (areasObj instanceof Map) {
+                    Map<String, Object> ar = (Map<String, Object>) areasObj;
+                    boolean hasAny = false;
+                    Double a1 = getDoubleValue(ar.get("area1"));
+                    Double a2 = getDoubleValue(ar.get("area2"));
+                    Double a3 = getDoubleValue(ar.get("area3"));
+                    if (a1 != null && a1 > 0) { addReportRow(card, "Area 1", formatArea(a1)); hasAny = true; }
+                    if (a2 != null && a2 > 0) { addReportRow(card, "Area 2", formatArea(a2)); hasAny = true; }
+                    if (a3 != null && a3 > 0) { addReportRow(card, "Area 3", formatArea(a3)); hasAny = true; }
+                    // If there is no area breakdown in DB, simply skip area rows
+                    if (!hasAny) {
+                        // no-op
+                    }
+                }
+
+                // divider
+                View div = new View(this);
+                div.setBackgroundColor(Color.parseColor("#EEEEEE"));
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
+                lp.setMargins(0, 12, 0, 12);
+                div.setLayoutParams(lp);
+
+                reportContainer.addView(card);
+                reportContainer.addView(div);
+            }
+        }
+
+        // Wire up XML export buttons
+        TextView btnPdf = findViewById(R.id.btnExportPdf);
+        if (btnPdf != null) btnPdf.setOnClickListener(v -> confirmExportPdf());
+        TextView btnDoc = findViewById(R.id.btnExportDoc);
+        if (btnDoc != null) btnDoc.setOnClickListener(v -> confirmExportDoc());
+    }
+
+    private void confirmExportPdf() {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setTitle("Export PDF");
+        builder.setMessage("Do you want to export this report as a PDF to Downloads?");
+        builder.setPositiveButton("Export", (d, w) -> exportToPDF());
+        builder.setNegativeButton("Cancel", (d, w) -> d.dismiss());
+        android.app.AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setBackgroundColor(Color.parseColor("#863B17"));
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE);
+        dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE).setBackgroundColor(Color.parseColor("#CCCCCC"));
+        dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.parseColor("#863B17"));
+    }
+
+    private void confirmExportDoc() {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setTitle("Export Document");
+        builder.setMessage("Do you want to export this report as a DOCX to Downloads?");
+        builder.setPositiveButton("Export", (d, w) -> exportToDocument());
+        builder.setNegativeButton("Cancel", (d, w) -> d.dismiss());
+        android.app.AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setBackgroundColor(Color.parseColor("#863B17"));
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE);
+        dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE).setBackgroundColor(Color.parseColor("#CCCCCC"));
+        dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.parseColor("#863B17"));
+    }
+
+    private void exportToPDF() {
+        try {
+            LinearLayout reportContainer = findViewById(R.id.report_container);
+            if (reportContainer == null) return;
+
+            String pretty = buildReportText(reportContainer);
+            String[] lines = pretty.split("\n");
+
+            // PDF setup: A4 (595x842 points at 72dpi)
+            int pageWidth = 595;  // points
+            int pageHeight = 842; // points
+            int margin = 36;      // 0.5 inch
+            int y = margin;
+
+            android.graphics.pdf.PdfDocument pdf = new android.graphics.pdf.PdfDocument();
+            android.graphics.Paint paint = new android.graphics.Paint();
+            paint.setColor(android.graphics.Color.BLACK);
+            paint.setTextSize(12f);
+            paint.setAntiAlias(true);
+
+            // Typography
+            android.graphics.Paint titlePaint = new android.graphics.Paint(paint);
+            titlePaint.setTextSize(24f);
+            titlePaint.setFakeBoldText(true);
+
+            android.graphics.Paint subtitlePaint = new android.graphics.Paint(paint);
+            subtitlePaint.setTextSize(16f);
+            subtitlePaint.setFakeBoldText(true);
+
+            android.graphics.Paint headerPaint = new android.graphics.Paint(paint);
+            headerPaint.setTextSize(16f);
+            headerPaint.setFakeBoldText(true);
+
+            android.graphics.Paint datePaint = new android.graphics.Paint(paint);
+            datePaint.setTextSize(14f);
+            datePaint.setFakeBoldText(true);
+
+            android.graphics.pdf.PdfDocument.PageInfo pageInfo =
+                    new android.graphics.pdf.PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create();
+            android.graphics.pdf.PdfDocument.Page page = pdf.startPage(pageInfo);
+            android.graphics.Canvas canvas = page.getCanvas();
+
+            int lineHeight = (int) (paint.getFontMetrics().bottom - paint.getFontMetrics().top) + 2;
+            int usableWidth = pageWidth - margin * 2;
+
+            // Title centered
+            String title = "I-WATTS ENERGY REPORT";
+            float titleWidth = titlePaint.measureText(title);
+            canvas.drawText(title, (pageWidth - titleWidth) / 2f, y, titlePaint);
+            y += (int) (titlePaint.getFontMetrics().bottom - titlePaint.getFontMetrics().top) + 10;
+
+            // Report Period (if present in first few lines)
+            int idx = 0;
+            if (lines.length > 0 && lines[0].startsWith("Report Period")) {
+                String rp = lines[0];
+                float rpW = subtitlePaint.measureText(rp);
+                canvas.drawText(rp, (pageWidth - rpW) / 2f, y, subtitlePaint);
+                y += (int) (subtitlePaint.getFontMetrics().bottom - subtitlePaint.getFontMetrics().top) + 12;
+                idx = 1; // start rendering body from next line
+            }
+
+            for (int i = idx; i < lines.length; i++) {
+                String raw = lines[i];
+                String line = raw;
+                // Headers and spacing rules
+                if (line.equalsIgnoreCase("Area Breakdown")) {
+                    y += 6;
+                    // Left aligned header
+                    canvas.drawText(line, margin, y, headerPaint);
+                    y += (int) (headerPaint.getFontMetrics().bottom - headerPaint.getFontMetrics().top) + 6;
+                    continue;
+                }
+                if (line.equalsIgnoreCase("Day-by-Day Details")) {
+                    y += 8;
+                    canvas.drawText(line, margin, y, headerPaint);
+                    y += (int) (headerPaint.getFontMetrics().bottom - headerPaint.getFontMetrics().top) + 6;
+                    continue;
+                }
+                if (line.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                    y += 6; // space before each date
+                    // Left aligned date
+                    canvas.drawText(line, margin, y, datePaint);
+                    y += (int) (datePaint.getFontMetrics().bottom - datePaint.getFontMetrics().top) + 4;
+                    continue;
+                }
+                if (line.startsWith("Area 2 Usage") || line.startsWith("Area 3 Usage")) {
+                    // minimal spacing before new area block
+                    y += 2;
+                }
+                // Wrap long lines to fit page width
+                while (line.length() > 0) {
+                    int count = paint.breakText(line, true, usableWidth, null);
+                    String part = line.substring(0, count);
+                    if (y + lineHeight > pageHeight - margin) {
+                        pdf.finishPage(page);
+                        pageInfo = new android.graphics.pdf.PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pdf.getPages().size() + 1).create();
+                        page = pdf.startPage(pageInfo);
+                        canvas = page.getCanvas();
+                        y = margin;
+                    }
+                    if (part.trim().length() > 0) {
+                        canvas.drawText(part, margin, y, paint);
+                        y += lineHeight;
+                    }
+                    line = line.substring(count);
+                }
+            }
+
+            pdf.finishPage(page);
+
+            // Write to Downloads as application/pdf
+            String fileName = "IWatts_Report_" + System.currentTimeMillis() + ".pdf";
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                android.content.ContentValues values = new android.content.ContentValues();
+                values.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+                values.put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
+                values.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS);
+
+                android.content.ContentResolver resolver = getContentResolver();
+                android.net.Uri uri = resolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                if (uri == null) throw new IllegalStateException("Insert failed");
+                try (java.io.OutputStream os = resolver.openOutputStream(uri)) {
+                    if (os != null) pdf.writeTo(os);
+                }
+                Toast.makeText(this, "Saved to Downloads/" + fileName, Toast.LENGTH_LONG).show();
+            } else {
+                java.io.File dir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS);
+                if (!dir.exists()) dir.mkdirs();
+                java.io.File out = new java.io.File(dir, fileName);
+                try (java.io.FileOutputStream fos = new java.io.FileOutputStream(out)) {
+                    pdf.writeTo(fos);
+                }
+                Toast.makeText(this, "Saved to Downloads/" + fileName, Toast.LENGTH_LONG).show();
+            }
+
+            pdf.close();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Export PDF failed", e);
+            Toast.makeText(this, "Export failed", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void collectText(View root, StringBuilder out) {
+        if (root instanceof TextView) {
+            CharSequence t = ((TextView) root).getText();
+            if (t != null) out.append(t).append('\n');
+        } else if (root instanceof ViewGroup) {
+            ViewGroup vg = (ViewGroup) root;
+            for (int i = 0; i < vg.getChildCount(); i++) collectText(vg.getChildAt(i), out);
+        }
+    }
+
+    private String buildReportText(View root) {
+        StringBuilder sb = new StringBuilder();
+        // Only include content derived from the on-screen report; title is drawn by PDF renderer
+        renderView(root, sb);
+        return sb.toString();
+    }
+
+    private void renderView(View v, StringBuilder sb) {
+        if (v instanceof LinearLayout) {
+            LinearLayout ll = (LinearLayout) v;
+            if (ll.getChildCount() == 2 && ll.getChildAt(0) instanceof TextView && ll.getChildAt(1) instanceof TextView) {
+                String left = String.valueOf(((TextView) ll.getChildAt(0)).getText());
+                String right = String.valueOf(((TextView) ll.getChildAt(1)).getText());
+                sb.append(formatRow(left, right, 32)).append('\n');
+            } else {
+                for (int i = 0; i < ll.getChildCount(); i++) renderView(ll.getChildAt(i), sb);
+            }
+        } else if (v instanceof TextView) {
+            String text = String.valueOf(((TextView) v).getText());
+            if (text.trim().length() > 0) {
+                // Emphasize section headers
+                if (text.equalsIgnoreCase("Area Breakdown") || text.equalsIgnoreCase("Day-by-Day Details")) {
+                    sb.append('\n').append(text.toUpperCase()).append('\n');
+                } else if (text.startsWith("Area 1 ") || text.startsWith("Area 2 ") || text.startsWith("Area 3 ")) {
+                    sb.append(text).append('\n');
+                } else {
+                    sb.append(text).append('\n');
+                }
+            }
+        } else if (v instanceof ViewGroup) {
+            ViewGroup vg = (ViewGroup) v;
+            for (int i = 0; i < vg.getChildCount(); i++) renderView(vg.getChildAt(i), sb);
+        }
+    }
+
+    private String formatRow(String left, String right, int leftWidth) {
+        left = left.replace('\n', ' ').trim();
+        right = right.replace('\n', ' ').trim();
+        if (left.length() > leftWidth) left = left.substring(0, leftWidth);
+        String padded = String.format(java.util.Locale.getDefault(), "%-" + leftWidth + "s", left);
+        return padded + "  " + right;
+    }
+
+    private String repeat(char c, int n) {
+        char[] arr = new char[n];
+        java.util.Arrays.fill(arr, c);
+        return new String(arr);
+    }
+
+    private void exportToDocument() {
+        try {
+            LinearLayout reportContainer = findViewById(R.id.report_container);
+            if (reportContainer == null) return;
+
+            String pretty = buildReportText(reportContainer);
+            String[] lines = pretty.split("\n");
+
+            // Build minimal DOCX (WordprocessingML) with centered title/period and styled headers/dates
+            byte[] docxData = buildDocx(lines);
+            String fileName = "IWatts_Report_" + System.currentTimeMillis() + ".docx";
+            saveToDownloads(fileName, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", docxData);
+        } catch (Exception e) {
+            Log.e(TAG, "Export DOC failed", e);
+            Toast.makeText(this, "Export failed", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private byte[] buildDocx(String[] lines) throws Exception {
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(baos);
+
+        // [Content_Types].xml
+        String contentTypes = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">" +
+                "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>" +
+                "<Default Extension=\"xml\" ContentType=\"application/xml\"/>" +
+                "<Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/>" +
+                "</Types>";
+        putZipEntry(zos, "[Content_Types].xml", contentTypes.getBytes());
+
+        // _rels/.rels
+        String rels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
+                "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/>" +
+                "</Relationships>";
+        putZipEntry(zos, "_rels/.rels", rels.getBytes());
+
+        // word/document.xml
+        StringBuilder doc = new StringBuilder();
+        doc.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
+        doc.append("<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">");
+        doc.append("<w:body>");
+
+        // Title centered big bold
+        doc.append(p("I-WATTS ENERGY REPORT", true, 28, "center"));
+
+        // Report period if first line
+        int startIdx = 0;
+        if (lines.length > 0 && lines[0].startsWith("Report Period")) {
+            doc.append(p(lines[0], true, 20, "center"));
+            startIdx = 1;
+        }
+
+        // Body
+        for (int i = startIdx; i < lines.length; i++) {
+            String line = lines[i];
+            if (line.equalsIgnoreCase("Area Breakdown")) {
+                doc.append(spacer());
+                doc.append(p(line, true, 22, "left"));
+            } else if (line.equalsIgnoreCase("Day-by-Day Details")) {
+                doc.append(spacer());
+                doc.append(p(line, true, 22, "left"));
+            } else if (line.matches("\\\\d{4}-\\\\d{2}-\\\\d{2}")) {
+                doc.append(spacer());
+                doc.append(p(line, true, 18, "left"));
+            } else if (line.startsWith("Area 2 ") || line.startsWith("Area 3 ")) {
+                // add spacing before new area blocks
+                doc.append(spacer());
+                doc.append(p(line, false, 12, "left"));
+            } else {
+                doc.append(p(line, false, 12, "left"));
+            }
+        }
+
+        doc.append("<w:sectPr/>");
+        doc.append("</w:body></w:document>");
+        putZipEntry(zos, "word/document.xml", doc.toString().getBytes("UTF-8"));
+
+        zos.close();
+        return baos.toByteArray();
+    }
+
+    private String p(String text, boolean bold, int sizeHalfPoints, String align) {
+        // sizeHalfPoints is font size in half-points (Word expects half-points)
+        int sz = sizeHalfPoints;
+        String jc = "left";
+        if ("center".equalsIgnoreCase(align)) jc = "center";
+        StringBuilder sb = new StringBuilder();
+        sb.append("<w:p><w:pPr><w:jc w:val=\"").append(jc).append("\"/>");
+        sb.append("</w:pPr><w:r><w:rPr>");
+        if (bold) sb.append("<w:b/>");
+        sb.append("<w:sz w:val=\"").append(sz).append("\"/>");
+        sb.append("</w:rPr><w:t>").append(escapeXml(text)).append("</w:t></w:r></w:p>");
+        return sb.toString();
+    }
+
+    private String spacer() {
+        return "<w:p><w:r><w:t> </w:t></w:r></w:p>";
+    }
+
+    private String escapeXml(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
+    private void putZipEntry(java.util.zip.ZipOutputStream zos, String path, byte[] data) throws Exception {
+        zos.putNextEntry(new java.util.zip.ZipEntry(path));
+        zos.write(data);
+        zos.closeEntry();
+    }
+
+    private void saveToDownloads(String fileName, String mimeType, byte[] data) throws Exception {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            android.content.ContentValues values = new android.content.ContentValues();
+            values.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+            values.put(android.provider.MediaStore.MediaColumns.MIME_TYPE, mimeType);
+            values.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS);
+            values.put(android.provider.MediaStore.MediaColumns.IS_PENDING, 1);
+
+            android.net.Uri collection = android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            android.content.ContentResolver resolver = getContentResolver();
+            android.net.Uri item = resolver.insert(collection, values);
+            if (item == null) throw new IllegalStateException("Insert failed");
+            try (java.io.OutputStream os = resolver.openOutputStream(item)) {
+                if (os != null) os.write(data);
+            }
+            values.clear();
+            values.put(android.provider.MediaStore.MediaColumns.IS_PENDING, 0);
+            resolver.update(item, values, null, null);
+            Toast.makeText(this, "Saved to Downloads/" + fileName, Toast.LENGTH_LONG).show();
+        } else {
+            java.io.File dir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS);
+            if (!dir.exists()) dir.mkdirs();
+            java.io.File out = new java.io.File(dir, fileName);
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(out)) {
+                fos.write(data);
+            }
+            Toast.makeText(this, "Saved to Downloads/" + fileName, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void addReportRow(LinearLayout parent, String title, String value) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(0, 6, 0, 6);
+
+        TextView t = new TextView(this);
+        t.setText(title);
+        t.setTextColor(Color.parseColor("#863B17"));
+        t.setTextSize(12);
+        t.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+
+        TextView v = new TextView(this);
+        v.setText(value);
+        v.setTextColor(Color.parseColor("#863B17"));
+        v.setTextSize(12);
+
+        row.addView(t);
+        row.addView(v);
+        parent.addView(row);
+    }
+
+    private String formatArea(Object v) {
+        Double d = getDoubleValue(v);
+        if (d == null) d = 0.0;
+        return String.format(Locale.getDefault(), "%.2f kWh", d);
     }
 }
