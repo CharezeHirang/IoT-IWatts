@@ -4,14 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
-import com.example.sampleiwatts.managers.DataProcessingManager;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private DataProcessingManager processingManager;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,8 +18,7 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        IWattsApplication app = (IWattsApplication) getApplication();
-        processingManager = app.getProcessingManager();
+
 
         Log.d(TAG, "MainActivity created");
 
@@ -39,14 +37,5 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
 
-        // Process data when app becomes active
-        Log.d(TAG, "MainActivity resumed - processing data");
-
-        DataProcessingManager manager = ((IWattsApplication) getApplication()).getProcessingManager();
-        manager.processDataInForeground();
-    }
 }
