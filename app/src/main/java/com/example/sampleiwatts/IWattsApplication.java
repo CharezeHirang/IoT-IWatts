@@ -3,13 +3,13 @@ package com.example.sampleiwatts;
 
 import android.app.Application;
 import android.util.Log;
-import com.example.sampleiwatts.managers.DataProcessingManager;
+
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class IWattsApplication extends Application {
     private static final String TAG = "IWattsApplication";
-    private DataProcessingManager processingManager;
+
 
     @Override
     public void onCreate() {
@@ -29,14 +29,10 @@ public class IWattsApplication extends Application {
             Log.w(TAG, "Firebase persistence already enabled");
         }
 
-        // Initialize processing manager (no background processing)
-        processingManager = new DataProcessingManager(this);
-        processingManager.initializeAppProcessing();
+
 
         Log.d(TAG, "I-WATTS Application initialized successfully");
     }
 
-    public DataProcessingManager getProcessingManager() {
-        return processingManager;
-    }
+
 }
